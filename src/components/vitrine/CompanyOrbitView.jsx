@@ -115,16 +115,16 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
             >
               <motion.button
                 onClick={() => handleCompanyClick(comp)}
-                className="relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer"
+                className="relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer shadow-lg"
                 animate={{
-                  scale: isHovered ? 1.2 : 1,
+                  scale: isHovered ? 1.3 : 1,
                   borderColor: isHovered ? 'hsl(270 80% 65%)' : 'hsl(220 15% 15%)',
-                  boxShadow: isHovered ? '0 0 40px hsl(270 80% 65% / 0.8), 0 0 20px hsl(45 100% 55% / 0.4)' : '0 0 15px hsl(270 80% 65% / 0.4), 0 0 8px hsl(45 100% 55% / 0.2)',
+                  boxShadow: isHovered ? '0 0 50px hsl(270 80% 65% / 1), 0 0 30px hsl(45 100% 55% / 0.6), inset 0 0 20px hsl(270 80% 65% / 0.3)' : '0 0 15px hsl(270 80% 65% / 0.4), 0 0 8px hsl(45 100% 55% / 0.2)',
                 }}
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -6 }}
               >
                 {comp.logo_url ? (
-                  <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover brightness-110 contrast-110" />
+                  <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover brightness-125 contrast-125 group-hover:saturate-150" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
                     <Building2 className="w-8 h-8 text-muted-foreground" />
