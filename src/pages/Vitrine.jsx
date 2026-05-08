@@ -5,7 +5,7 @@ import { Search, Building2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCard from '@/components/video/VideoCard';
 import CompanyBanner from '@/components/vitrine/CompanyBanner';
-import VitrineHero from '@/components/vitrine/VitrineHero';
+import BannerCarousel from '@/components/home/BannerCarousel';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
@@ -70,6 +70,17 @@ export default function Vitrine() {
       <Navbar />
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
+          {/* Featured Banner Carousel */}
+          {videos.filter(v => v.type === 'banner').length > 0 && (
+            <div className="mb-14">
+              <BannerCarousel 
+                banners={videos.filter(v => v.type === 'banner').slice(0, 5)} 
+                companies={companiesMap}
+                interval={6000} 
+              />
+            </div>
+          )}
+
           {/* Search */}
           <div className="relative max-w-md mx-auto mb-10">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
