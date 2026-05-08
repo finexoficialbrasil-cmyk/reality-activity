@@ -100,7 +100,14 @@ export default function Vitrine() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{company.name}</h3>
+                    <h3
+                      className={`font-semibold text-sm truncate ${(company.website || company.phone) ? 'cursor-pointer hover:text-gold transition-colors' : ''}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (company.website) window.open(company.website, '_blank');
+                        else if (company.phone) window.open(`https://wa.me/${company.phone.replace(/\D/g, '')}`, '_blank');
+                      }}
+                    >{company.name}</h3>
                     <p className="text-xs text-muted-foreground">{company.category}</p>
                   </div>
                 </div>

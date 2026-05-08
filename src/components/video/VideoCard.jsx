@@ -233,6 +233,13 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     </div>
   ) : null;
 
+  const openCompanyLink = (e) => {
+    e.stopPropagation();
+    if (!company) return;
+    if (company.website) window.open(company.website, '_blank');
+    else if (company.phone) window.open(`https://wa.me/${company.phone.replace(/\D/g, '')}`, '_blank');
+  };
+
   const PointsBar = () => (
     <div className="flex items-center gap-3 pt-2 border-t border-border mt-2">
       <Star className="w-3.5 h-3.5 text-gold" />
@@ -266,7 +273,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         <div className="p-3">
           <h3 className="font-semibold text-sm text-foreground line-clamp-1">{video.title}</h3>
           {company && (
-            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+            <p onClick={openCompanyLink} className={`text-xs text-muted-foreground mt-0.5 flex items-center gap-1 ${(company.website || company.phone) ? 'cursor-pointer hover:text-gold transition-colors' : ''}`}>
               {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
               {company.name}
             </p>
@@ -305,7 +312,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         <div className="p-4">
           <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
           {company && (
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <p onClick={openCompanyLink} className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${(company.website || company.phone) ? 'cursor-pointer hover:text-gold transition-colors' : ''}`}>
               {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
               {company.name}
             </p>
@@ -343,7 +350,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
       <div className="p-4">
         <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
         {company && (
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <p onClick={openCompanyLink} className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${(company.website || company.phone) ? 'cursor-pointer hover:text-gold transition-colors' : ''}`}>
             {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
             {company.name}
           </p>
