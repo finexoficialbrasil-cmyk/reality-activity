@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, ExternalLink } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import useGameSound from '@/hooks/useGameSound';
 
 export default function CompanyOrbitView({ company, otherCompanies }) {
   const [hoveredCompany, setHoveredCompany] = useState(null);
   const [initialized, setInitialized] = useState(false);
+  const { playHoverSound, playClickSound } = useGameSound();
 
   useEffect(() => {
     setInitialized(true);
@@ -24,6 +26,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   };
 
   const handleCompanyClick = async (comp) => {
+    playClickSound();
     if (comp.website) {
       window.open(comp.website, '_blank');
     } else if (comp.phone) {
@@ -84,7 +87,10 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
                 marginTop: '-24px',
                 zIndex: isHovered ? 50 : 10,
               }}
-              onMouseEnter={() => setHoveredCompany(comp.id)}
+              onMouseEnter={() => {
+                setHoveredCompany(comp.id);
+                playHoverSound();
+              }}
               onMouseLeave={() => setHoveredCompany(null)}
             >
               <motion.button
