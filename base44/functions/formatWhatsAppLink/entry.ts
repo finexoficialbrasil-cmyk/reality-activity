@@ -9,26 +9,29 @@ Deno.serve(async (req) => {
     }
 
     // Remove tudo que não é número
-    let phoneClean = phone.replace(/\D/g, '');
+    let phoneClean = String(phone).replace(/\D/g, '').trim();
     
-    // Se tem menos de 10 dígitos, inválido
-    if (phoneClean.length < 10) {
-      return Response.json({ error: 'Telefone inválido' }, { status: 400 });
+    // Se vazio, inválido
+    if (!phoneClean || phoneClean.length < 10) {
+      return Response.json({ error: 'Telefone inválido', received: phone }, { status: 400 });
     }
 
     // Se não começa com 55, adiciona (código Brasil)
     if (!phoneClean.startsWith('55')) {
       phoneClean = '55' + phoneClean;
     }
+    
+    // Garante que começa com +
+    const finalPhone = phoneClean.startsWith('+') ? phoneClean : '+' + phoneClean;
 
     const message = `Olá! Conheci seu trabalho pelo grupo Reality Activity e tenho interesse nos seus produtos e sistemas. Pode me enviar mais detalhes?`;
     const encodedMsg = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${phoneClean}?text=${encodedMsg}`;
+    const whatsappUrl = `https://wa.me/${finalPhone}?text=${encodedMsg}`;
 
     return Response.json({ 
       success: true, 
       url: whatsappUrl,
-      phone: phoneClean 
+      phone: finalPhone 
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
