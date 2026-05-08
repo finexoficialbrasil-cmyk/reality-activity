@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, ExternalLink } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function CompanyOrbitView({ company, otherCompanies }) {
   const [hoveredCompany, setHoveredCompany] = useState(null);
@@ -32,16 +33,22 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     return points;
   };
 
-  const handleCompanyClick = (comp) => {
+  const handleCompanyClick = async (comp) => {
     if (comp.website) {
       window.open(comp.website, '_blank');
     } else if (comp.phone) {
-      let phoneClean = comp.phone.replace(/\D/g, '');
-      // Se não tem código de país, adiciona +55 (Brasil)
-      if (!phoneClean.startsWith('55')) phoneClean = '55' + phoneClean;
-      const message = `Olá! Conheci seu trabalho pelo grupo Reality Activity e tenho interesse nos seus produtos e sistemas. Pode me enviar mais detalhes?`;
-      const encodedMsg = encodeURIComponent(message);
-      window.open(`https://wa.me/${phoneClean}?text=${encodedMsg}`, '_blank');
+      try {
+        const res = await base44.functions.invoke('formatWhatsAppLink', { phone: comp.phone });
+        if (res.data.success) {
+          window.open(res.data.url, '_blank');
+        } else {
+          console.error('Erro ao formatar link:', res.data.error);
+          alert('Erro ao abrir WhatsApp. Telefone inválido.');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao processar WhatsApp');
+      }
     }
   };
 
