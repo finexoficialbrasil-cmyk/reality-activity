@@ -10,156 +10,258 @@ function getYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+// Load YouTube IFrame API once globally
+function loadYTApi() {
+  return new Promise((resolve) => {
+    if (window.YT && window.YT.Player) { resolve(); return; }
+    if (window._ytApiLoading) { window._ytApiCallbacks = window._ytApiCallbacks || []; window._ytApiCallbacks.push(resolve); return; }
+    window._ytApiLoading = true;
+    window._ytApiCallbacks = [resolve];
+    window.onYouTubeIframeAPIReady = () => {
+      (window._ytApiCallbacks || []).forEach(cb => cb());
+      window._ytApiCallbacks = [];
+    };
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  });
+}
+
 export default function VideoCard({ video, company, user, onPointsEarned }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+
   const videoRef = useRef(null);
+  const iframeRef = useRef(null);
   const intervalRef = useRef(null);
   const secondsRef = useRef(0);
   const pointsRef = useRef(0);
-  const iframeRef = useRef(null);
+  const playerRef = useRef(null);
+  const ytWrapperRef = useRef(null);
+  const mountedRef = useRef(true);
+  const isCounting = useRef(false);
 
-  // Auto-detect YouTube from URL even if type field is still 'mp4'
   const youtubeId = getYouTubeId(video.video_url);
   const type = youtubeId ? 'youtube' : (video.type || 'mp4');
-
-  const stopEarning = useCallback(async () => {
-    if (!intervalRef.current) return;
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-
-    if (secondsRef.current > 0 && user) {
-      const pts = pointsRef.current;
-      await base44.entities.PointsTransaction.create({
-        user_email: user.email,
-        user_name: user.full_name,
-        type: 'earned_watch',
-        points: pts,
-        video_id: video.id,
-        company_id: video.company_id,
-        description: `Assistiu "${video.title}" por ${secondsRef.current}s`,
-        watch_seconds: secondsRef.current
-      });
-
-      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-      if (existing.length > 0) {
-        await base44.entities.UserPoints.update(existing[0].id, {
-          balance: (existing[0].balance || 0) + pts,
-          total_earned: (existing[0].total_earned || 0) + pts,
-          videos_watched: (existing[0].videos_watched || 0) + 1,
-          last_activity: new Date().toISOString()
-        });
-      } else {
-        await base44.entities.UserPoints.create({
-          user_email: user.email,
-          user_name: user.full_name,
-          balance: pts,
-          total_earned: pts,
-          videos_watched: 1,
-          last_activity: new Date().toISOString()
-        });
-      }
-      if (onPointsEarned) onPointsEarned(pts);
-    }
-    secondsRef.current = 0;
-    pointsRef.current = 0;
-    setIsWatching(false);
-  }, [user, video]);
-
-  const startEarning = useCallback(() => {
-    if (!user) { setShowLoginPrompt(true); return; }
-    if (intervalRef.current) return;
-    setIsWatching(true);
-
-    intervalRef.current = setInterval(() => {
-      secondsRef.current += 1;
-      const pps = video.points_per_second || 1;
-      pointsRef.current += pps;
-      setPointsEarned(prev => prev + pps);
-
-      const duration = video.duration_seconds || 30;
-      if (secondsRef.current >= duration && !completed) {
-        setCompleted(true);
-        pointsRef.current += (video.bonus_points || 50);
-        setPointsEarned(prev => prev + (video.bonus_points || 50));
-        stopEarning();
-      }
-    }, 1000);
-  }, [user, video, completed, stopEarning]);
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    if (videoRef.current) videoRef.current.play().catch(() => {});
-    startEarning();
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    if (videoRef.current) videoRef.current.pause();
-    stopEarning();
-  };
-
-  useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, []);
 
   const pps = video.points_per_second || 1;
   const bonus = video.bonus_points || 50;
   const maxPts = ((video.duration_seconds || 30) * pps) + bonus;
+
+  // --- Points saving logic ---
+  const savePoints = useCallback(async (pts, secs) => {
+    if (pts <= 0 || !user) return;
+    await base44.entities.PointsTransaction.create({
+      user_email: user.email,
+      user_name: user.full_name,
+      type: 'earned_watch',
+      points: pts,
+      video_id: video.id,
+      company_id: video.company_id,
+      description: `Assistiu "${video.title}" por ${secs}s`,
+      watch_seconds: secs
+    });
+    const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
+    if (existing.length > 0) {
+      await base44.entities.UserPoints.update(existing[0].id, {
+        balance: (existing[0].balance || 0) + pts,
+        total_earned: (existing[0].total_earned || 0) + pts,
+        videos_watched: (existing[0].videos_watched || 0) + 1,
+        last_activity: new Date().toISOString()
+      });
+    } else {
+      await base44.entities.UserPoints.create({
+        user_email: user.email,
+        user_name: user.full_name,
+        balance: pts,
+        total_earned: pts,
+        videos_watched: 1,
+        last_activity: new Date().toISOString()
+      });
+    }
+    if (onPointsEarned) onPointsEarned(pts);
+  }, [user, video, onPointsEarned]);
+
+  // --- Stop counting ---
+  const stopCounting = useCallback(() => {
+    if (!isCounting.current) return;
+    isCounting.current = false;
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    const secs = secondsRef.current;
+    const pts = pointsRef.current;
+    secondsRef.current = 0;
+    pointsRef.current = 0;
+    if (mountedRef.current) setIsWatching(false);
+    if (secs > 0) savePoints(pts, secs);
+  }, [savePoints]);
+
+  // --- Start counting ---
+  const startCounting = useCallback(() => {
+    if (!user) { setShowLoginPrompt(true); return; }
+    if (isCounting.current) return;
+    isCounting.current = true;
+    if (mountedRef.current) setIsWatching(true);
+
+    intervalRef.current = setInterval(() => {
+      secondsRef.current += 1;
+      pointsRef.current += pps;
+      if (mountedRef.current) setPointsEarned(prev => prev + pps);
+
+      const duration = video.duration_seconds || 30;
+      if (secondsRef.current >= duration && !completed) {
+        setCompleted(true);
+        pointsRef.current += bonus;
+        if (mountedRef.current) setPointsEarned(prev => prev + bonus);
+        stopCounting();
+      }
+    }, 1000);
+  }, [user, pps, bonus, video.duration_seconds, completed, stopCounting]);
+
+  // --- MP4 mouse handlers ---
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (videoRef.current) videoRef.current.play().catch(() => {});
+    startCounting();
+  };
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    if (videoRef.current) videoRef.current.pause();
+    stopCounting();
+  };
+
+  // --- YouTube IFrame API setup ---
+  useEffect(() => {
+    if (type !== 'youtube' || !youtubeId || !ytWrapperRef.current) return;
+    mountedRef.current = true;
+
+    const ytDiv = document.createElement('div');
+    ytWrapperRef.current.appendChild(ytDiv);
+    let destroyed = false;
+
+    loadYTApi().then(() => {
+      if (destroyed || !ytDiv.isConnected) return;
+      playerRef.current = new window.YT.Player(ytDiv, {
+        videoId: youtubeId,
+        width: '100%',
+        height: '100%',
+        playerVars: { controls: 1, modestbranding: 1, rel: 0, mute: 0, playsinline: 1 },
+        events: {
+          onReady: () => {
+            if (mountedRef.current) setPlayerReady(true);
+          },
+          onStateChange: (e) => {
+            if (!mountedRef.current) return;
+            if (e.data === window.YT.PlayerState.PLAYING) {
+              startCounting();
+            } else {
+              stopCounting();
+            }
+          }
+        }
+      });
+    });
+
+    return () => {
+      destroyed = true;
+      mountedRef.current = false;
+      clearInterval(intervalRef.current);
+      const secs = secondsRef.current;
+      const pts = pointsRef.current;
+      if (secs > 0) savePoints(pts, secs);
+      try { playerRef.current?.destroy(); } catch {}
+      playerRef.current = null;
+    };
+  }, [type, youtubeId]); // eslint-disable-line
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  // --- YouTube mouse handlers ---
+  const handleYTEnter = () => {
+    setIsHovered(true);
+    if (playerReady) {
+      try { playerRef.current?.playVideo(); } catch {}
+    }
+  };
+  const handleYTLeave = () => {
+    setIsHovered(false);
+    if (playerReady) {
+      try { playerRef.current?.pauseVideo(); } catch {}
+    }
+  };
+
+  // Shared overlays
+  const PointsBadge = () => (
+    <AnimatePresence>
+      {isWatching && (
+        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+          className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold z-10">
+          <Star className="w-3.5 h-3.5 text-background animate-spin" />
+          <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  const CompletedBadge = () => completed ? (
+    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5 z-10">
+      <CheckCircle className="w-3.5 h-3.5 text-white" />
+      <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
+    </div>
+  ) : null;
+
+  const LoginPrompt = () => showLoginPrompt ? (
+    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-20">
+      <div className="text-center p-4">
+        <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
+        <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
+        <button onClick={() => base44.auth.redirectToLogin()}
+          className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
+          Fazer Login
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const PointsBar = () => (
+    <div className="flex items-center gap-3 pt-2 border-t border-border mt-2">
+      <Star className="w-3.5 h-3.5 text-gold" />
+      <span className="text-xs font-medium text-gold">{pps} pt/s</span>
+      <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
+      <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
+    </div>
+  );
 
   // --- BANNER type ---
   if (type === 'banner') {
     return (
       <motion.div
         className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.01 }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+        onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
         onClick={() => video.banner_link && window.open(video.banner_link, '_blank')}
       >
         <div className="relative aspect-video bg-muted overflow-hidden">
-          {video.banner_url ? (
-            <img src={video.banner_url} alt={video.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground text-sm">Banner</div>
-          )}
+          {video.banner_url
+            ? <img src={video.banner_url} alt={video.title} className="w-full h-full object-cover" />
+            : <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground text-sm">Banner</div>
+          }
           {video.banner_link && (
             <div className="absolute top-2 right-2 bg-background/70 rounded-full p-1">
               <ExternalLink className="w-3.5 h-3.5 text-foreground" />
             </div>
           )}
-          <AnimatePresence>
-            {isWatching && (
-              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
-                <Star className="w-3.5 h-3.5 text-background animate-spin" />
-                <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {completed && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-white" />
-              <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
-            </div>
-          )}
-          {showLoginPrompt && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-              <div className="text-center p-4">
-                <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
-                <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
-                <button onClick={() => base44.auth.redirectToLogin()}
-                  className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
-                  Fazer Login
-                </button>
-              </div>
-            </div>
-          )}
+          <PointsBadge /><CompletedBadge /><LoginPrompt />
         </div>
         <div className="p-3">
           <h3 className="font-semibold text-sm text-foreground line-clamp-1">{video.title}</h3>
@@ -169,11 +271,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
-          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
-            <Star className="w-3 h-3 text-gold" /><span className="text-gold font-medium">{pps} pt/s</span>
-            <span>+{bonus} bônus</span>
-            <span className="ml-auto font-semibold text-foreground">até {maxPts} pts</span>
-          </div>
+          <PointsBar />
         </div>
       </motion.div>
     );
@@ -182,44 +280,16 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   // --- YOUTUBE type ---
   if (type === 'youtube' && youtubeId) {
     const thumbnail = video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-    // URL sem autoplay (idle) e com autoplay (playing)
-    const ytSrcIdle = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&mute=1&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`;
-    const ytSrcPlay = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=1&mute=1&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`;
-
-    const handleYTEnter = () => {
-      setIsHovered(true);
-      // Trocar src para versão com autoplay=1 — dispara play após interação do usuário
-      if (iframeRef.current) iframeRef.current.src = ytSrcPlay;
-      startEarning();
-    };
-
-    const handleYTLeave = () => {
-      setIsHovered(false);
-      // Resetar src para parar o vídeo
-      if (iframeRef.current) iframeRef.current.src = ytSrcIdle;
-      stopEarning();
-    };
-
     return (
       <motion.div
         className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.01 }}
-        onMouseEnter={handleYTEnter}
-        onMouseLeave={handleYTLeave}
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+        onMouseEnter={handleYTEnter} onMouseLeave={handleYTLeave}
       >
         <div className="relative aspect-video bg-muted overflow-hidden">
-          {/* iframe sempre presente */}
-          <iframe
-            ref={iframeRef}
-            className="w-full h-full"
-            src={ytSrcIdle}
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-            style={{ position: 'absolute', inset: 0, opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s' }}
-          />
-          {/* Thumbnail enquanto não está em hover */}
+          {/* YouTube IFrame API container */}
+          <div ref={ytWrapperRef} className="absolute inset-0 w-full h-full" style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s' }} />
+          {/* Thumbnail shown before hover */}
           {!isHovered && (
             <div className="absolute inset-0">
               <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
@@ -230,33 +300,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               </div>
             </div>
           )}
-          <AnimatePresence>
-            {isWatching && (
-              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold z-10">
-                <Star className="w-3.5 h-3.5 text-background animate-spin" />
-                <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {completed && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5 z-10">
-              <CheckCircle className="w-3.5 h-3.5 text-white" />
-              <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
-            </div>
-          )}
-          {showLoginPrompt && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-20">
-              <div className="text-center p-4">
-                <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
-                <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
-                <button onClick={() => base44.auth.redirectToLogin()}
-                  className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
-                  Fazer Login
-                </button>
-              </div>
-            </div>
-          )}
+          <PointsBadge /><CompletedBadge /><LoginPrompt />
         </div>
         <div className="p-4">
           <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
@@ -266,11 +310,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
-          <div className="flex items-center gap-3 pt-2 border-t border-border mt-2">
-            <Star className="w-3.5 h-3.5 text-gold" /><span className="text-xs font-medium text-gold">{pps} pt/s</span>
-            <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
-            <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
-          </div>
+          <PointsBar />
         </div>
       </motion.div>
     );
@@ -280,23 +320,16 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   return (
     <motion.div
       className="relative rounded-2xl overflow-hidden bg-card border border-border group cursor-pointer"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01 }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+      onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
     >
       <div className="relative aspect-video bg-muted overflow-hidden">
-        {video.video_url ? (
-          <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover"
-            muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
-        ) : video.thumbnail_url ? (
-          <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-secondary">
-            <Play className="w-12 h-12 text-muted-foreground" />
-          </div>
-        )}
+        {video.video_url
+          ? <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover" muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
+          : video.thumbnail_url
+            ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+            : <div className="w-full h-full flex items-center justify-center bg-secondary"><Play className="w-12 h-12 text-muted-foreground" /></div>
+        }
         <div className={`absolute inset-0 transition-all duration-300 ${isHovered ? 'bg-background/20' : 'bg-background/50'}`} />
         {!isHovered && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -305,51 +338,17 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             </div>
           </div>
         )}
-        <AnimatePresence>
-          {isWatching && (
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
-              <Star className="w-3.5 h-3.5 text-background animate-spin" />
-              <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {completed && (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-white" />
-            <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
-          </div>
-        )}
-        {showLoginPrompt && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="text-center p-4">
-              <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
-              <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
-              <button onClick={() => base44.auth.redirectToLogin()}
-                className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
-                Fazer Login
-              </button>
-            </div>
-          </div>
-        )}
+        <PointsBadge /><CompletedBadge /><LoginPrompt />
       </div>
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div>
-            <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
-            {company && (
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
-                {company.name}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-3 pt-2 border-t border-border">
-          <Star className="w-3.5 h-3.5 text-gold" /><span className="text-xs font-medium text-gold">{pps} pt/s</span>
-          <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
-          <span className="ml-auto text-xs font-semibold text-foreground">até {maxPts} pts</span>
-        </div>
+        <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
+        {company && (
+          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
+            {company.name}
+          </p>
+        )}
+        <PointsBar />
         {!isHovered && (
           <p className="text-xs text-muted-foreground mt-2 text-center">
             {user ? '🖱️ Passe o mouse para ganhar pontos' : '🔒 Entre para ganhar pontos'}
