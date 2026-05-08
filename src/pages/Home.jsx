@@ -9,6 +9,7 @@ import StatsCounter from '@/components/home/StatsCounter';
 import CompaniesCarousel from '@/components/home/CompaniesCarousel';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
 import BannerCarousel from '@/components/home/BannerCarousel';
+import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
@@ -85,8 +86,8 @@ export default function Home() {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple/20 rounded-full blur-3xl animate-pulse" />
         </div>
-        <div className="max-w-7xl mx-auto flex flex-col gap-6 relative z-10">
-          <div>
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 relative z-10 items-start">
+          <div className="flex-1">
             <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-4 neon-glow"
               animate={{ boxShadow: ['0 0 20px hsl(45 100% 55% / 0.3)', '0 0 40px hsl(45 100% 55% / 0.6)', '0 0 20px hsl(45 100% 55% / 0.3)'] }}
               transition={{ duration: 3, repeat: Infinity }}>
@@ -100,7 +101,11 @@ export default function Home() {
               Assista conteúdo, acumule pontos e resgate recompensas incríveis!
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="hidden lg:block flex-1">
+            {companies.length > 0 && <CompanyOrbitView company={companies[0]} otherCompanies={companies.slice(1, 8)} />}
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
             {user ? (
               <Link to="/dashboard"
                 className="inline-flex items-center gap-2 bg-gold text-background font-bold px-8 py-3 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap">
@@ -121,7 +126,6 @@ export default function Home() {
               Ver Empresas <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
       </section>
 
       {/* Hero Section with Banner Carousel - Premium Experience */}
