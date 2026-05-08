@@ -76,45 +76,45 @@ export default function Home() {
       <Navbar />
 
       {/* Hero — compacto */}
-      <section className="pt-20 pb-4 px-4 relative overflow-hidden">
+      <section className="pt-20 pb-12 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple/20 rounded-full blur-3xl animate-pulse" />
         </div>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-col gap-6 relative z-10">
           <div>
-            <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-2 neon-glow"
+            <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-4 neon-glow"
               animate={{ boxShadow: ['0 0 20px hsl(45 100% 55% / 0.3)', '0 0 40px hsl(45 100% 55% / 0.6)', '0 0 20px hsl(45 100% 55% / 0.3)'] }}
               transition={{ duration: 3, repeat: Infinity }}>
               <Zap className="w-3.5 h-3.5 text-gold animate-pulse" />
               <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
             </motion.div>
-            <h1 className="font-grotesk font-bold text-2xl md:text-3xl leading-tight">
-              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="neon-glow-purple">pontos</span>
+            <h1 className="font-grotesk font-bold text-3xl md:text-5xl leading-tight max-w-2xl">
+              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="text-purple">pontos</span>
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-lg">
               Passe o mouse nos vídeos, acumule pontos e resgate prêmios exclusivos.
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-wrap">
             {user ? (
               <Link to="/dashboard"
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap">
+                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-8 py-3 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap">
                 <Star className="w-4 h-4" />
                 {userPoints?.balance?.toLocaleString() ?? 0} pts
               </Link>
             ) : (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap"
+                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-8 py-3 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap text-base"
               >
                 <Zap className="w-4 h-4" />
                 Começar Grátis
               </button>
             )}
             <Link to="/vitrine"
-              className="inline-flex items-center gap-2 border border-border text-foreground font-semibold px-5 py-2.5 rounded-full hover:bg-secondary transition-all whitespace-nowrap text-sm">
-              Ver Empresas <ArrowRight className="w-3.5 h-3.5" />
+              className="inline-flex items-center gap-2 border border-border text-foreground font-semibold px-6 py-3 rounded-full hover:bg-secondary transition-all whitespace-nowrap">
+              Ver Empresas <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
@@ -134,37 +134,11 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* CTA para não logados */}
-          {!loading && !user && videos.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 rounded-2xl border-2 border-gold/40 bg-gradient-to-r from-gold/15 via-card to-purple/15 p-5 flex flex-col sm:flex-row items-center gap-4 neon-glow"
-            >
-              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gold/20 flex items-center justify-center">
-                <Zap className="w-7 h-7 text-gold" />
-              </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="font-grotesk font-bold text-lg text-foreground">
-                  Você está perdendo pontos! 🎯
-                </h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Crie sua conta grátis e comece a ganhar pontos assistindo esses vídeos. Troque por prêmios exclusivos!
-                </p>
-              </div>
-              <button
-                onClick={() => base44.auth.redirectToLogin()}
-                className="flex-shrink-0 inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap"
-              >
-                <Star className="w-4 h-4" />
-                Criar conta grátis
-              </button>
-            </motion.div>
-          )}
+          {/* CTA para não logados - REMOVIDO para evitar redundância */}
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array(4).fill(0).map((_, i) => (
+              {Array(8).fill(0).map((_, i) => (
                 <div key={i} className="rounded-2xl bg-card border border-border animate-pulse">
                   <div className="aspect-video bg-secondary/50 rounded-t-2xl" />
                   <div className="p-4 space-y-2">
