@@ -72,7 +72,7 @@ export default function Vitrine() {
         <div className="max-w-7xl mx-auto">
           {/* Featured Banner Carousel */}
           {videos.filter(v => v.type === 'banner').length > 0 && (
-            <div className="mb-14">
+            <div className="mb-10">
               <BannerCarousel 
                 banners={videos.filter(v => v.type === 'banner').slice(0, 5)} 
                 companies={companiesMap}
@@ -82,7 +82,7 @@ export default function Vitrine() {
           )}
 
           {/* Search */}
-          <div className="relative max-w-md mx-auto mb-10">
+          <div className="relative max-w-md mx-auto mb-8">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               value={search}

@@ -30,7 +30,7 @@ export default function CompanyBanner({ company, isSelected, onClick }) {
         style={{ borderRadius: 16 }}
       >
         {/* Cover image */}
-        <div className="relative h-40 md:h-48 overflow-hidden bg-secondary">
+        <div className="relative h-32 md:h-40 overflow-hidden bg-secondary">
           {company.cover_image_url ? (
             <motion.img
               src={company.cover_image_url}
