@@ -31,10 +31,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   return (
     <div className="relative w-full max-w-2xl mx-auto mb-16">
       {/* Orbit container */}
-      <div className="relative h-96 flex items-center justify-center bg-gradient-to-br from-background via-purple/5 to-background rounded-3xl overflow-hidden">
-        {/* Gradient accent layers */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -z-10" />
+      <div className="relative h-96 flex items-center justify-center">
         {/* Orbital circles */}
         <motion.svg
           className="absolute inset-0 w-full h-full pointer-events-none"
