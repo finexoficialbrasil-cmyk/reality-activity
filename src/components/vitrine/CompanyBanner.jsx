@@ -11,14 +11,8 @@ export default function CompanyBanner({ company, isSelected, onClick }) {
     if (company.website) {
       window.open(company.website, '_blank');
     } else if (company.phone) {
-      try {
-        const res = await base44.functions.invoke('formatWhatsAppLink', { phone: company.phone });
-        if (res.data.success) {
-          window.open(res.data.url, '_blank');
-        }
-      } catch (error) {
-        console.error('Erro:', error);
-      }
+      const res = await base44.functions.invoke('formatWhatsAppLink', { phone: company.phone });
+      window.open(res.data.url, '_blank');
     }
   };
 
