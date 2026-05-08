@@ -30,8 +30,10 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     if (comp.website) {
       window.open(comp.website, '_blank');
     } else if (comp.phone) {
-      const res = await base44.functions.invoke('formatWhatsAppLink', { phone: comp.phone });
-      window.open(res.data.url, '_blank');
+      const message = `Olá! Tenho interesse em conhecer mais sobre os seus produtos e serviços.`;
+      const phone = comp.phone.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
     }
   };
 

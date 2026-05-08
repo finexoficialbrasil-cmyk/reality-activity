@@ -294,7 +294,12 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     e.stopPropagation();
     if (!company) return;
     if (company.website) window.open(company.website, '_blank');
-    else if (company.phone) window.open(`https://wa.me/${company.phone.replace(/\D/g, '')}`, '_blank');
+    else if (company.phone) {
+      const message = `Olá! Tenho interesse em conhecer mais sobre os seus produtos e serviços.`;
+      const phone = company.phone.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   const PointsBar = () => (
