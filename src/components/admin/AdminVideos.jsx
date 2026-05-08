@@ -52,8 +52,12 @@ export default function AdminVideos() {
   // Extrai YouTube ID de URL ou ID direto
   const extractYoutubeId = (input) => {
     if (!input) return '';
-    const match = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))?([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : input;
+    // Tenta padrões específicos primeiro
+    let id = input.match(/[?&]v=([a-zA-Z0-9_-]{11})/)?.[1]; // watch?v=ID
+    if (!id) id = input.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)?.[1]; // youtu.be/ID
+    if (!id) id = input.match(/\/shorts\/([a-zA-Z0-9_-]{11})/)?.[1]; // shorts/ID
+    if (!id) id = input.match(/^([a-zA-Z0-9_-]{11})$/)?.[0]; // ID direto
+    return id || '';
   };
 
   const handleYoutubeInput = (value) => {
