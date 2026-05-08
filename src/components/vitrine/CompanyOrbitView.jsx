@@ -40,17 +40,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     <div className="relative w-full max-w-2xl mx-auto mb-16">
       {/* Orbit container */}
       <div className="relative h-96 flex items-center justify-center">
-        {/* Orbital circles */}
-        <motion.svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 500 500"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
-          transition={{ duration: 0.8 }}
-        >
-          <circle cx="250" cy="250" r="200" fill="none" stroke="hsl(45 100% 55%)" strokeWidth="1" opacity="0.2" />
-          <circle cx="250" cy="250" r="220" fill="none" stroke="hsl(270 80% 65%)" strokeWidth="1" opacity="0.15" />
-        </motion.svg>
+
 
         {/* Logo no centro - Viva e brilhante */}
         <motion.div
@@ -59,22 +49,22 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          {/* Glow background animated - roxo elegante */}
+          {/* Glow background subtle - apenas ouro */}
           <motion.div
             animate={{ 
               boxShadow: [
-                '0 0 50px hsl(270 80% 65% / 0.5), 0 0 100px hsl(270 80% 65% / 0.25)',
-                '0 0 80px hsl(270 80% 65% / 0.7), 0 0 150px hsl(270 80% 65% / 0.35)',
-                '0 0 50px hsl(270 80% 65% / 0.5), 0 0 100px hsl(270 80% 65% / 0.25)',
+                '0 0 30px hsl(45 100% 55% / 0.3), 0 0 60px hsl(45 100% 55% / 0.15)',
+                '0 0 50px hsl(45 100% 55% / 0.5), 0 0 100px hsl(45 100% 55% / 0.25)',
+                '0 0 30px hsl(45 100% 55% / 0.3), 0 0 60px hsl(45 100% 55% / 0.15)',
               ]
             }}
             transition={{ duration: 3, repeat: Infinity }}
             className="absolute inset-0 w-56 h-56 rounded-full -z-10"
           />
           
-          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-purple/20 via-card to-purple/20 border-2 border-purple/60 flex items-center justify-center overflow-hidden"
+          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/10 via-card to-gold/10 border-2 border-gold/40 flex items-center justify-center overflow-hidden"
             style={{
-              boxShadow: '0 0 40px hsl(270 80% 65% / 0.6), inset 0 0 30px hsl(270 80% 65% / 0.15)'
+              boxShadow: '0 0 30px hsl(45 100% 55% / 0.4), inset 0 0 20px hsl(45 100% 55% / 0.08)'
             }}>
             <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/22326e603_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
