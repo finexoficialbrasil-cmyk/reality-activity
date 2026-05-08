@@ -8,6 +8,7 @@ import VideoCardWithBadges from '@/components/video/VideoCardWithBadges';
 import StatsCounter from '@/components/home/StatsCounter';
 import CompaniesCarousel from '@/components/home/CompaniesCarousel';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
+import BannerCarousel from '@/components/home/BannerCarousel';
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
@@ -122,6 +123,15 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Banner Carousel */}
+      {videos.length > 0 && (
+        <section className="px-4 pb-16">
+          <div className="max-w-7xl mx-auto">
+            <BannerCarousel banners={videos.filter(v => v.type === 'banner').slice(0, 5)} interval={6000} />
+          </div>
+        </section>
+      )}
 
       {/* Videos Feed — PRIMEIRO, logo abaixo do hero */}
       <section className="px-4 pb-16">
