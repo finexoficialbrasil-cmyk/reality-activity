@@ -196,15 +196,16 @@ export default function Catalog() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {redemptions.map(red => {
                   const prod = products.find(p => p.id === red.product_id);
-                  const hasFile = prod?.digital_content && (prod.digital_content.startsWith('http') || prod.digital_content.includes('.'));
+                  const hasFile = prod?.digital_content && (prod.digital_content.startsWith('http'));
+                  const isPdf = prod?.digital_content?.toLowerCase().includes('pdf');
                   return (
-                    <div key={red.id} className="bg-secondary rounded-lg p-4 border border-border">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
+                    <div key={red.id} className="bg-secondary rounded-xl p-4 border border-border hover:border-gold/50 transition-all">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
                           <h3 className="font-semibold text-sm">{red.product_name}</h3>
                           <p className="text-xs text-muted-foreground">{red.company_name}</p>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold whitespace-nowrap ml-2 ${
                           red.status === 'delivered' ? 'bg-green-500/20 text-green-400' :
                           red.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
                           'bg-yellow-500/20 text-yellow-400'
@@ -213,17 +214,21 @@ export default function Catalog() {
                         </span>
                       </div>
                       {hasFile && red.status === 'delivered' && prod?.digital_content && (
-                        <a
-                          href={prod.digital_content}
-                          download
-                          className="inline-flex items-center gap-2 text-xs bg-gold text-background hover:bg-gold-dark px-3 py-1.5 rounded-lg font-semibold transition-all"
-                        >
-                          <Download className="w-3 h-3" />
-                          Baixar Arquivo
-                        </a>
+                        <div className="mb-3 p-3 rounded-lg bg-gold/5 border border-gold/20">
+                          <a
+                            href={prod.digital_content}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full bg-gold hover:bg-gold-dark text-background py-2 px-3 rounded-lg font-semibold transition-all text-sm"
+                          >
+                            {isPdf ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                            {isPdf ? 'Abrir PDF' : 'Baixar Arquivo'}
+                          </a>
+                        </div>
                       )}
                       {red.delivery_info && (
-                        <p className="text-xs text-muted-foreground mt-2 italic">📬 {red.delivery_info}</p>
+                        <p className="text-xs text-muted-foreground italic border-t border-border/50 pt-3">📬 {red.delivery_info}</p>
                       )}
                     </div>
                   );
