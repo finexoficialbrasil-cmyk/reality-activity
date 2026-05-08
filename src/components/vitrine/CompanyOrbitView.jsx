@@ -13,14 +13,22 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   // Todas as empresas orbitam (incluindo a primeira)
   const allCompanies = company ? [company, ...otherCompanies] : otherCompanies;
 
-  // Calcula posição orbital em círculo completo
-  const getOrbitPosition = (index, total) => {
-    const angle = (index / total) * Math.PI * 2;
-    const radius = 200;
-    return {
-      x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius,
-    };
+  // Gera padrão único de movimento para cada empresa
+  const getMovementPath = (index, total) => {
+    const baseRadius = 150;
+    const offset = (index / total) * Math.PI * 2;
+    
+    // Cria caminho com múltiplos pontos para efeito de ricochete
+    const points = [];
+    for (let i = 0; i < 8; i++) {
+      const angle = offset + (i / 8) * Math.PI * 2;
+      const radius = baseRadius + Math.sin(angle * 2) * 50; // Varia o raio
+      points.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+      });
+    }
+    return points;
   };
 
   const handleCompanyClick = (comp) => {
@@ -80,30 +88,32 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
 
         {/* Orbiting companies */}
         {allCompanies.slice(0, 8).map((comp, idx) => {
-          const position = getOrbitPosition(idx, Math.min(allCompanies.length, 8));
+          const pathPoints = getMovementPath(idx, Math.min(allCompanies.length, 8));
           const isHovered = hoveredCompany === comp.id;
+          
+          // Cria variantes de movimento para cada empresa
+          const variants = {
+            initial: { opacity: 0, scale: 0, x: 0, y: 0 },
+            animate: {
+              opacity: 1,
+              scale: 1,
+              x: pathPoints.map(p => p.x),
+              y: pathPoints.map(p => p.y),
+            }
+          };
 
           return (
             <motion.div
               key={comp.id}
               className="absolute"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={initialized ? {
-                opacity: 1,
-                scale: 1,
-                x: position.x,
-                y: position.y,
-              } : {
-                opacity: 0,
-                scale: 0,
-                x: 0,
-                y: 0,
-              }}
+              initial="initial"
+              animate={initialized ? "animate" : "initial"}
+              variants={variants}
               transition={initialized ? {
                 opacity: { duration: 0.5, delay: idx * 0.1 },
                 scale: { duration: 0.8, delay: idx * 0.1 },
-                x: { duration: 20, delay: 1.5, repeat: Infinity, ease: 'linear' },
-                y: { duration: 20, delay: 1.5, repeat: Infinity, ease: 'linear' },
+                x: { duration: 12 + idx * 0.5, delay: 1.5, repeat: Infinity, ease: 'easeInOut' },
+                y: { duration: 12 + idx * 0.5, delay: 1.5, repeat: Infinity, ease: 'easeInOut' },
               } : {
                 duration: 0.3,
               }}
