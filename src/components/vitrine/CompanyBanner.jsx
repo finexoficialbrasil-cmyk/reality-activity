@@ -1,14 +1,25 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, ExternalLink, Building2, ChevronDown } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function CompanyBanner({ company, isSelected, onClick }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleExternalLink = (e) => {
+  const handleExternalLink = async (e) => {
     e.stopPropagation();
-    if (company.website) window.open(company.website, '_blank');
-    else if (company.phone) window.open(`https://wa.me/${company.phone.replace(/\D/g, '')}`, '_blank');
+    if (company.website) {
+      window.open(company.website, '_blank');
+    } else if (company.phone) {
+      try {
+        const res = await base44.functions.invoke('formatWhatsAppLink', { phone: company.phone });
+        if (res.data.success) {
+          window.open(res.data.url, '_blank');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      }
+    }
   };
 
   return (
