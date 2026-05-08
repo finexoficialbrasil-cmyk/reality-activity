@@ -182,23 +182,21 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   // --- YOUTUBE type ---
   if (type === 'youtube' && youtubeId) {
     const thumbnail = video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-
-    const sendYTCommand = (cmd) => {
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: 'command', func: cmd, args: [] }),
-        '*'
-      );
-    };
+    // URL sem autoplay (idle) e com autoplay (playing)
+    const ytSrcIdle = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&mute=1&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`;
+    const ytSrcPlay = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=1&mute=1&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`;
 
     const handleYTEnter = () => {
       setIsHovered(true);
-      sendYTCommand('playVideo');
+      // Trocar src para versão com autoplay=1 — dispara play após interação do usuário
+      if (iframeRef.current) iframeRef.current.src = ytSrcPlay;
       startEarning();
     };
 
     const handleYTLeave = () => {
       setIsHovered(false);
-      sendYTCommand('pauseVideo');
+      // Resetar src para parar o vídeo
+      if (iframeRef.current) iframeRef.current.src = ytSrcIdle;
       stopEarning();
     };
 
@@ -212,26 +210,26 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         onMouseLeave={handleYTLeave}
       >
         <div className="relative aspect-video bg-muted overflow-hidden">
-          {/* iframe sempre carregado, só aparece no hover */}
+          {/* iframe sempre presente */}
           <iframe
             ref={iframeRef}
             className="w-full h-full"
-            src={`https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`}
+            src={ytSrcIdle}
             allow="autoplay; encrypted-media"
             allowFullScreen
-            style={{ opacity: isHovered ? 1 : 0, position: 'absolute', inset: 0 }}
+            style={{ position: 'absolute', inset: 0, opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s' }}
           />
-          {/* Thumbnail shown when not hovered */}
-          <div style={{ opacity: isHovered ? 0 : 1 }} className="absolute inset-0 transition-opacity duration-300">
-            <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
-                <Play className="w-6 h-6 text-white ml-1" />
+          {/* Thumbnail enquanto não está em hover */}
+          {!isHovered && (
+            <div className="absolute inset-0">
+              <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                  <Play className="w-6 h-6 text-white ml-1" />
+                </div>
               </div>
             </div>
-          </div>
-          {/* Overlay to capture mouse events over iframe */}
-          <div className="absolute inset-0" style={{ pointerEvents: isHovered ? 'none' : 'auto' }} />
+          )}
           <AnimatePresence>
             {isWatching && (
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
