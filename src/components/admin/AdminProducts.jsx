@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Plus, Pencil, Trash2, Gift } from 'lucide-react';
+import { Plus, Pencil, Trash2, Gift, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AdminProducts() {
@@ -10,6 +10,7 @@ export default function AdminProducts() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -25,7 +26,8 @@ export default function AdminProducts() {
 
   const defaultForm = () => ({
     name: '', company_id: companies[0]?.id || '', description: '', image_url: '',
-    points_cost: 100, original_price: 0, category: '', stock: 999, is_active: true
+    points_cost: 100, original_price: 0, category: '', stock: 999, is_active: true,
+    type: 'physical', digital_content: ''
   });
 
   const openNew = () => { setEditing(null); setForm(defaultForm()); setShowForm(true); };
@@ -46,6 +48,20 @@ export default function AdminProducts() {
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const companiesMap = companies.reduce((a, c) => { a[c.id] = c; return a; }, {});
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await base44.functions.invoke('uploadProductFile', { file });
+      set('digital_content', res.data.file_url);
+    } catch (err) {
+      alert('Erro ao fazer upload: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -92,6 +108,36 @@ export default function AdminProducts() {
               <input type="number" value={form.stock || 999} onChange={e => set('stock', Number(e.target.value))}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
             </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Tipo de Produto *</label>
+              <select value={form.type || 'physical'} onChange={e => set('type', e.target.value)}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm">
+                <option value="physical">Físico</option>
+                <option value="digital">Digital</option>
+              </select>
+            </div>
+            {form.type === 'digital' && (
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground mb-2 block">Arquivo/Código Digital *</label>
+                <div className="flex gap-2">
+                  <label className="flex-1 flex items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-gold/50 transition-all">
+                    <input type="file" onChange={handleFileUpload} disabled={uploading} className="hidden" />
+                    <div className="text-center">
+                      <Upload className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{uploading ? 'Enviando...' : 'Clique para fazer upload'}</span>
+                    </div>
+                  </label>
+                </div>
+                {form.digital_content && (
+                  <div className="mt-2 p-2 bg-green-500/10 border border-green-500/30 rounded text-xs text-green-400 break-all">
+                    ✓ Arquivo carregado
+                  </div>
+                )}
+                <textarea value={form.digital_content || ''} onChange={e => set('digital_content', e.target.value)}
+                  placeholder="Ou cole um link, código, chave de licença, etc..." rows={2}
+                  className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-gold/50 mt-2" />
+              </div>
+            )}
             <div className="md:col-span-2">
               <label className="text-xs text-muted-foreground mb-1 block">Descrição</label>
               <textarea value={form.description || ''} onChange={e => set('description', e.target.value)}
@@ -124,7 +170,12 @@ export default function AdminProducts() {
               )}
             </div>
             <div className="p-3">
-              <h3 className="font-medium text-sm line-clamp-1">{p.name}</h3>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h3 className="font-medium text-sm line-clamp-1">{p.name}</h3>
+                <span className="text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap bg-gold/10 text-gold">
+                  {p.type === 'digital' ? '📦 Digital' : '🚚 Físico'}
+                </span>
+              </div>
               <p className="text-xs text-muted-foreground">{companiesMap[p.company_id]?.name}</p>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-sm font-bold text-gold">{p.points_cost.toLocaleString()} pts</span>
