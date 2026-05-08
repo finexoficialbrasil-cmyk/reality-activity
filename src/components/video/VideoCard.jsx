@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Play, Star, CheckCircle, Lock, ExternalLink } from 'lucide-react';
+import { Play, Star, CheckCircle, Lock, ExternalLink, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Extract YouTube video ID from various URL formats
@@ -102,7 +102,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
 
   // --- Start counting ---
   const startCounting = useCallback(() => {
-    if (!user) { setShowLoginPrompt(true); return; }
+    if (!user) return; // no points for unauthenticated, video still plays visually
     if (isCounting.current) return;
     isCounting.current = true;
     if (mountedRef.current) setIsWatching(true);
@@ -126,12 +126,14 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const handleMouseEnter = () => {
     setIsHovered(true);
     if (videoRef.current) videoRef.current.play().catch(() => {});
-    startCounting();
+    if (user) startCounting();
+    else setShowLoginPrompt(true);
   };
   const handleMouseLeave = () => {
     setIsHovered(false);
     if (videoRef.current) videoRef.current.pause();
     stopCounting();
+    setShowLoginPrompt(false);
   };
 
   // --- YouTube IFrame API setup ---
@@ -192,12 +194,14 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     if (playerReady) {
       try { playerRef.current?.playVideo(); } catch {}
     }
+    if (!user) setShowLoginPrompt(true);
   };
   const handleYTLeave = () => {
     setIsHovered(false);
     if (playerReady) {
       try { playerRef.current?.pauseVideo(); } catch {}
     }
+    setShowLoginPrompt(false);
   };
 
   // Shared overlays
@@ -221,13 +225,15 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   ) : null;
 
   const LoginPrompt = () => showLoginPrompt ? (
-    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-20">
-      <div className="text-center p-4">
-        <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
-        <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
+    <div className="absolute bottom-3 left-3 right-3 z-20">
+      <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm border border-gold/40 rounded-xl px-3 py-2">
+        <Zap className="w-4 h-4 text-gold flex-shrink-0" />
+        <p className="text-xs font-medium text-foreground flex-1">
+          <span className="text-gold font-bold">Entre grátis</span> e ganhe esses pontos!
+        </p>
         <button onClick={() => base44.auth.redirectToLogin()}
-          className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
-          Fazer Login
+          className="bg-gold text-background text-xs font-bold px-3 py-1 rounded-full hover:bg-gold-dark transition-all whitespace-nowrap">
+          Entrar
         </button>
       </div>
     </div>
@@ -367,9 +373,14 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           </p>
         )}
         <PointsBar />
-        {!isHovered && (
+        {!isHovered && !user && (
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            {user ? '🖱️ Passe o mouse para ganhar pontos' : '🔒 Entre para ganhar pontos'}
+            🖱️ Passe o mouse para ver o vídeo
+          </p>
+        )}
+        {!isHovered && user && (
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            🖱️ Passe o mouse para ganhar pontos
           </p>
         )}
       </div>

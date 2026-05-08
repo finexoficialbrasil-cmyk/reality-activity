@@ -1,6 +1,12 @@
 {
   "name": "Video",
   "type": "object",
+  "rls": {
+    "create": false,
+    "read": true,
+    "update": false,
+    "delete": false
+  },
   "properties": {
     "title": {
       "type": "string",
