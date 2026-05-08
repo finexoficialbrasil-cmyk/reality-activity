@@ -39,18 +39,36 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           <circle cx="250" cy="250" r="220" fill="none" stroke="hsl(270 80% 65%)" strokeWidth="1" opacity="0.15" />
         </motion.svg>
 
-        {/* Logo no centro */}
+        {/* Logo no centro - Viva e brilhante */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gold/30 to-purple/30 border-2 border-gold/50 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
-            <img 
+          {/* Glow background animated */}
+          <motion.div
+            animate={{ 
+              boxShadow: [
+                '0 0 40px hsl(45 100% 55% / 0.4), 0 0 80px hsl(270 80% 65% / 0.3)',
+                '0 0 60px hsl(45 100% 55% / 0.6), 0 0 120px hsl(270 80% 65% / 0.4)',
+                '0 0 40px hsl(45 100% 55% / 0.4), 0 0 80px hsl(270 80% 65% / 0.3)',
+              ]
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 w-56 h-56 rounded-full -z-10"
+          />
+          
+          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/40 via-purple/30 to-gold/40 border-3 border-gold flex items-center justify-center overflow-hidden shadow-2xl"
+            style={{
+              boxShadow: '0 0 60px hsl(45 100% 55% / 0.8), 0 0 100px hsl(270 80% 65% / 0.5), inset 0 0 40px hsl(45 100% 55% / 0.3)'
+            }}>
+            <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/22326e603_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
-              className="w-full h-full object-contain p-2" 
+              className="w-full h-full object-contain p-6 brightness-125"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}
             />
           </div>
         </motion.div>
