@@ -52,9 +52,19 @@ export default function AdminProducts() {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    const allowedTypes = ['application/pdf', 'application/x-rar-compressed', 'application/x-rar'];
+    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.rar') && !file.name.endsWith('.pdf')) {
+      alert('Apenas arquivos PDF e RAR são permitidos');
+      return;
+    }
+
     setUploading(true);
     try {
-      const res = await base44.functions.invoke('uploadProductFile', { file });
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await base44.functions.invoke('uploadProductFile', formData);
       set('digital_content', res.data.file_url);
     } catch (err) {
       alert('Erro ao fazer upload: ' + err.message);
