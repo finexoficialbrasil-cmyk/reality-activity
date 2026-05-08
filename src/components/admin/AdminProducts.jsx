@@ -15,13 +15,18 @@ export default function AdminProducts() {
   useEffect(() => { load(); }, []);
 
   const load = async () => {
-    const [prods, comps] = await Promise.all([
-      base44.entities.Product.list('points_cost'),
-      base44.entities.Company.list('order')
-    ]);
-    setProducts(prods);
-    setCompanies(comps);
-    setLoading(false);
+    try {
+      const comps = await base44.entities.Company.list();
+      const prods = await base44.entities.Product.list();
+      setCompanies(comps || []);
+      setProducts(prods || []);
+    } catch (err) {
+      console.error('Erro ao carregar:', err);
+      setCompanies([]);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const defaultForm = () => ({
