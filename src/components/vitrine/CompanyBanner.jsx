@@ -87,7 +87,7 @@ export default function CompanyBanner({ company, isSelected, onClick }) {
         <div className="p-4 md:p-5">
           {/* Header with logo */}
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
               {company.logo_url ? (
                 <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
               ) : (
