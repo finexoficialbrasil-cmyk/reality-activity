@@ -151,25 +151,31 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
 
     loadYTApi().then(() => {
       if (destroyed || !ytDiv.isConnected) return;
-      playerRef.current = new window.YT.Player(ytDiv, {
-        videoId: youtubeId,
-        width: '100%',
-        height: '100%',
-        playerVars: { controls: 1, modestbranding: 1, rel: 0, mute: 0, playsinline: 1 },
-        events: {
-          onReady: () => {
-            if (mountedRef.current) setPlayerReady(true);
-          },
-          onStateChange: (e) => {
-            if (!mountedRef.current) return;
-            if (e.data === window.YT.PlayerState.PLAYING) {
-              startCounting();
-            } else {
-              stopCounting();
+      try {
+        playerRef.current = new window.YT.Player(ytDiv, {
+          videoId: youtubeId,
+          width: '100%',
+          height: '100%',
+          playerVars: { controls: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 1 },
+          events: {
+            onReady: () => {
+              if (mountedRef.current) setPlayerReady(true);
+            },
+            onStateChange: (e) => {
+              if (!mountedRef.current) return;
+              if (e.data === window.YT.PlayerState.PLAYING) {
+                startCounting();
+              } else {
+                stopCounting();
+              }
             }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error('Erro ao criar YouTube Player:', err);
+      }
+    }).catch(err => {
+      console.error('Erro ao carregar API YouTube:', err);
     });
 
     return () => {
