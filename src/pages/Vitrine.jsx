@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Search, Building2, Star, ExternalLink } from 'lucide-react';
+import { Search, Building2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCard from '@/components/video/VideoCard';
+import CompanyBanner from '@/components/vitrine/CompanyBanner';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
@@ -92,67 +93,19 @@ export default function Vitrine() {
           </div>
 
           {/* Companies Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
             {loading ? (
-              Array(8).fill(0).map((_, i) => (
-                <div key={i} className="h-48 bg-card rounded-2xl animate-pulse" />
+              Array(6).fill(0).map((_, i) => (
+                <div key={i} className="h-64 bg-card rounded-2xl animate-pulse" />
               ))
             ) : filteredCompanies.map((company, i) => (
-              <motion.div
-                key={company.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                onClick={() => setSelectedCompany(selectedCompany === company.id ? 'all' : company.id)}
-                className={`bg-card border rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.02] ${
-                  selectedCompany === company.id
-                    ? 'border-gold glow-gold'
-                    : 'border-border hover:border-gold/40'
-                }`}
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {company.logo_url ? (
-                      <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Building2 className="w-6 h-6 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`font-semibold text-sm truncate ${(company.website || company.phone) ? 'cursor-pointer hover:text-gold transition-colors' : ''}`}
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (company.website) window.open(company.website, '_blank');
-                        else if (company.phone) window.open(`https://wa.me/${company.phone.replace(/\D/g, '')}`, '_blank');
-                      }}
-                    >{company.name}</h3>
-                    <p className="text-xs text-muted-foreground">{company.category}</p>
-                  </div>
-                </div>
-                {company.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{company.description}</p>
-                )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {company.is_partner && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30">Parceiro</span>
-                    )}
-                    {company.points_accepted && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/20 flex items-center gap-1">
-                        <Star className="w-2.5 h-2.5" /> Aceita pontos
-                      </span>
-                    )}
-                  </div>
-                  {company.website && (
-                    <a href={company.website} target="_blank" rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="text-muted-foreground hover:text-foreground">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              </motion.div>
+              <div key={company.id} style={{ animationDelay: `${i * 0.04}s` }}>
+                <CompanyBanner
+                  company={company}
+                  isSelected={selectedCompany === company.id}
+                  onClick={() => setSelectedCompany(selectedCompany === company.id ? 'all' : company.id)}
+                />
+              </div>
             ))}
           </div>
 
