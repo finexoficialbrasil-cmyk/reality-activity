@@ -265,10 +265,10 @@ export default function Catalog() {
                         )}
 
                         {/* Delivery info */}
-                        {red.delivery_info && (
+                        {red.delivery_info && !red.delivery_info.startsWith('http') && (
                           <div className="pt-3 border-t border-border/30">
                             <p className="text-xs text-muted-foreground">
-                              <span className="block font-semibold mb-1">Informações de Entrega:</span>
+                              <span className="block font-semibold text-foreground mb-1">📬 Informações:</span>
                               {red.delivery_info}
                             </p>
                           </div>
