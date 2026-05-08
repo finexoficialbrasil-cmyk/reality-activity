@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Gift, Search, Building2, CheckCircle, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
+import DynamicSearchBar from '@/components/catalog/DynamicSearchBar';
 
 export default function Catalog() {
   const [products, setProducts] = useState([]);
@@ -87,10 +88,11 @@ export default function Catalog() {
 
   const companiesMap = companies.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
 
+  // Filter by search and category (for DynamicSearchBar)
   const filtered = products.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchComp = selectedCompany === 'all' || p.company_id === selectedCompany;
-    return matchSearch && matchComp;
+    const matchCategory = selectedCompany === 'all' || p.company_id === selectedCompany;
+    return matchSearch && matchCategory;
   });
 
   return (
@@ -133,38 +135,16 @@ export default function Catalog() {
             )}
           </AnimatePresence>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar produtos..."
-                className="w-full bg-card border border-border rounded-full pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-gold/50"
-              />
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setSelectedCompany('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedCompany === 'all' ? 'bg-gold text-background' : 'bg-card border border-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Todos
-              </button>
-              {companies.filter(c => products.some(p => p.company_id === c.id)).map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedCompany(selectedCompany === c.id ? 'all' : c.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedCompany === c.id ? 'bg-gold text-background' : 'bg-card border border-border text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
+          {/* Dynamic Search */}
+          <div className="mb-8">
+            <DynamicSearchBar 
+              products={products}
+              companies={companies}
+              onSearchChange={setSearch}
+              onCategoryChange={setSelectedCompany}
+              searchValue={search}
+              selectedCategory={selectedCompany}
+            />
           </div>
 
           {/* Products Grid */}
