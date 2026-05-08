@@ -128,7 +128,11 @@ export default function Home() {
       {videos.length > 0 && (
         <section className="px-4 pb-16">
           <div className="max-w-7xl mx-auto">
-            <BannerCarousel banners={videos.filter(v => v.type === 'banner').slice(0, 5)} interval={6000} />
+            <BannerCarousel 
+              banners={videos.filter(v => v.type === 'banner').slice(0, 5)} 
+              companies={companiesMap}
+              interval={6000} 
+            />
           </div>
         </section>
       )}
