@@ -45,9 +45,11 @@ export default function Navbar() {
             <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
               <Zap className="w-5 h-5 text-background" />
             </div>
-            <span className="font-grotesk font-bold text-lg text-foreground">
-              Points<span className="text-gold">Play</span>
-            </span>
+            <img 
+              src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
+              alt="Reality Activity"
+              className="h-8"
+            />
           </Link>
 
           {/* Desktop Nav */}

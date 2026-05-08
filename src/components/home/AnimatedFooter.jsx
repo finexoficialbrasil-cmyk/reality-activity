@@ -24,12 +24,14 @@ export default function AnimatedFooter() {
           {/* Brand */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
-                <Zap className="w-5 h-5 text-background" />
-              </div>
-              <span className="font-grotesk font-bold text-lg">Points<span className="text-gold">Play</span></span>
+              <img 
+                src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp"
+                alt="Reality Activity"
+                className="h-8"
+              />
+              <span className="font-grotesk font-bold text-lg">Reality Activity</span>
             </div>
-            <p className="text-sm text-muted-foreground">Ganhe pontos assistindo vídeos e resgate prêmios incríveis!</p>
+            <p className="text-sm text-muted-foreground">Assista conteúdo, acumule pontos e resgate recompensas com Reality Activity!</p>
           </motion.div>
 
           {/* Links */}
@@ -48,8 +50,8 @@ export default function AnimatedFooter() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <h4 className="font-semibold text-sm mb-4 text-foreground">Contato</h4>
             <div className="space-y-3">
-              <a href="mailto:contato@pointsplay.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">
-                <Mail className="w-4 h-4" /> contato@pointsplay.com
+              <a href="mailto:contato@realityactivity.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">
+                <Mail className="w-4 h-4" /> contato@realityactivity.com
               </a>
               <a href="tel:+5511999999999" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">
                 <Phone className="w-4 h-4" /> +55 (11) 99999-9999
@@ -76,7 +78,7 @@ export default function AnimatedFooter() {
         </div>
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">© {currentYear} PointsPlay. Todos os direitos reservados.</p>
+          <p className="text-xs text-muted-foreground">© {currentYear} Reality Activity. Todos os direitos reservados.</p>
           <div className="flex gap-4 text-xs text-muted-foreground">
             <a href="#" className="hover:text-gold transition-colors">Privacidade</a>
             <a href="#" className="hover:text-gold transition-colors">Termos</a>

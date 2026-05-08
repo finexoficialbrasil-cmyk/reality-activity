@@ -94,10 +94,10 @@ export default function Home() {
               <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
             </motion.div>
             <h1 className="font-grotesk font-bold text-3xl md:text-5xl leading-tight max-w-2xl">
-              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="text-purple">pontos</span>
+              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="text-purple">recompensas</span>
             </h1>
             <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-lg">
-              Passe o mouse nos vídeos, acumule pontos e resgate prêmios exclusivos.
+              Assista conteúdo, acumule pontos e resgate recompensas incríveis!
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">

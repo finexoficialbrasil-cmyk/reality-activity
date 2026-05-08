@@ -39,7 +39,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
       let phoneClean = comp.phone.replace(/\D/g, '');
       // Se não tem código de país, adiciona +55 (Brasil)
       if (!phoneClean.startsWith('55')) phoneClean = '55' + phoneClean;
-      const message = `Olá! 👋 Venho através do PointsPlay e gostaria de conhecer melhor sua empresa e produtos. Pode me ajudar? 😊`;
+      const message = `Olá! 👋 Venho através do Reality Activity e gostaria de conhecer melhor sua empresa e produtos. Pode me ajudar? 😊`;
       const encodedMsg = encodeURIComponent(message);
       window.open(`https://wa.me/${phoneClean}?text=${encodedMsg}`, '_blank');
     }
@@ -60,7 +60,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
         >
           <div className="w-48 h-48 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/20 flex items-center justify-center overflow-hidden shadow-2xl" style={{ boxShadow: '0 0 60px hsl(45 100% 55% / 0.15), inset 0 0 40px hsl(45 100% 55% / 0.05)' }}>
             <motion.img 
-              src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/22326e603_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
+              src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
               className="w-full h-full object-contain p-6"
               animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
