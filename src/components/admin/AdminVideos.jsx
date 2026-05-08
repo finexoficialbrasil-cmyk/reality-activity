@@ -82,6 +82,22 @@ export default function AdminVideos() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none">
                 {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              {form.company_id && (() => {
+                const c = companies.find(x => x.id === form.company_id);
+                return c ? (
+                  <div className="mt-1.5 text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+                    {c.website
+                      ? <span>🌐 <a href={c.website} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">{c.website}</a></span>
+                      : <span className="text-yellow-500/70">⚠️ Sem site</span>
+                    }
+                    {c.phone
+                      ? <span>📱 <a href={`https://wa.me/${c.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">{c.phone}</a></span>
+                      : <span className="text-yellow-500/70">⚠️ Sem WhatsApp</span>
+                    }
+                    <span className="text-muted-foreground/50">— cadastre em Empresas</span>
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             {/* Campos condicionais por tipo */}
