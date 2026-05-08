@@ -1,0 +1,46 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "points_cost": {
+      "type": "number",
+      "description": "Pontos necess\u00e1rios para resgatar"
+    },
+    "original_price": {
+      "type": "number",
+      "description": "Pre\u00e7o original em R$"
+    },
+    "category": {
+      "type": "string"
+    },
+    "stock": {
+      "type": "number",
+      "default": 999
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "redemptions_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "company_id",
+    "points_cost"
+  ]
+}

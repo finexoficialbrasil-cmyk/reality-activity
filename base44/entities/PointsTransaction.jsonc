@@ -1,0 +1,47 @@
+{
+  "name": "PointsTransaction",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "earned_watch",
+        "earned_bonus",
+        "spent_redemption",
+        "manual_adjust"
+      ],
+      "description": "Tipo de transa\u00e7\u00e3o"
+    },
+    "points": {
+      "type": "number",
+      "description": "Pontos (positivo = ganhou, negativo = gastou)"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "watch_seconds": {
+      "type": "number",
+      "description": "Segundos assistidos nessa sess\u00e3o"
+    }
+  },
+  "required": [
+    "user_email",
+    "type",
+    "points"
+  ]
+}
