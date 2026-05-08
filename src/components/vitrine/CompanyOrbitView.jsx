@@ -33,8 +33,14 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   };
 
   const handleCompanyClick = (comp) => {
-    if (comp.website) window.open(comp.website, '_blank');
-    else if (comp.phone) window.open(`https://wa.me/${comp.phone.replace(/\D/g, '')}`, '_blank');
+    if (comp.website) {
+      window.open(comp.website, '_blank');
+    } else if (comp.phone) {
+      const phoneClean = comp.phone.replace(/\D/g, '');
+      const message = `Olá! 👋 Venho através do PointsPlay e gostaria de conhecer melhor sua empresa e produtos. Pode me ajudar? 😊`;
+      const encodedMsg = encodeURIComponent(message);
+      window.open(`https://wa.me/${phoneClean}?text=${encodedMsg}`, '_blank');
+    }
   };
 
   return (
