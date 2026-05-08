@@ -43,9 +43,9 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto mb-16">
+    <div className="relative w-full mx-auto mb-8 md:mb-16">
       {/* Orbit container */}
-      <div className="relative h-96 flex items-center justify-center">
+      <div className="relative h-64 sm:h-80 md:h-96 flex items-center justify-center">
 
 
         {/* Logo no centro - Viva e brilhante */}
@@ -55,7 +55,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/20 flex items-center justify-center overflow-hidden shadow-2xl" style={{ boxShadow: '0 0 60px hsl(45 100% 55% / 0.15), inset 0 0 40px hsl(45 100% 55% / 0.05)' }}>
+          <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/20 flex items-center justify-center overflow-hidden shadow-2xl" style={{ boxShadow: '0 0 60px hsl(45 100% 55% / 0.15), inset 0 0 40px hsl(45 100% 55% / 0.05)' }}>
             <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
@@ -103,7 +103,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
             >
               <motion.button
                 onClick={() => handleCompanyClick(comp)}
-                className="relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer shadow-lg"
+                className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer shadow-lg"
                 animate={{
                   scale: isHovered ? 1.25 : 1,
                   borderColor: isHovered ? 'hsl(45 100% 55%)' : 'hsl(220 15% 15%)',
@@ -130,7 +130,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
                 <motion.div
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-gold text-center w-24"
+                  className="absolute -bottom-6 sm:-bottom-7 md:-bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-gold text-center w-20 sm:w-24"
                 >
                   {comp.name}
                 </motion.div>
