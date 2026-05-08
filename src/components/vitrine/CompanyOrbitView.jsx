@@ -37,18 +37,8 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     if (comp.website) {
       window.open(comp.website, '_blank');
     } else if (comp.phone) {
-      try {
-        const res = await base44.functions.invoke('formatWhatsAppLink', { phone: comp.phone });
-        if (res.data.success) {
-          window.open(res.data.url, '_blank');
-        } else {
-          console.error('Erro ao formatar link:', res.data.error);
-          alert('Erro ao abrir WhatsApp. Telefone inválido.');
-        }
-      } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao processar WhatsApp');
-      }
+      const res = await base44.functions.invoke('formatWhatsAppLink', { phone: comp.phone });
+      window.open(res.data.url, '_blank');
     }
   };
 
