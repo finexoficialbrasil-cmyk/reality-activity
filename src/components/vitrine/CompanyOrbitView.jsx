@@ -67,13 +67,14 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
             <motion.div
               key={comp.id}
               className="absolute"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0, x: position.x, y: position.y }}
+              animate={{ opacity: 1, scale: 1, x: position.x, y: position.y }}
               transition={{ duration: 0.4, delay: idx * 0.05 }}
               style={{
                 left: '50%',
                 top: '50%',
-                transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
+                marginLeft: '-24px',
+                marginTop: '-24px',
                 zIndex: isHovered ? 50 : 10,
               }}
               onMouseEnter={() => setHoveredCompany(comp.id)}
