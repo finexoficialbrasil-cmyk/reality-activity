@@ -218,8 +218,11 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const PointsBadge = () => (
     <AnimatePresence>
       {isWatching && (
-        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-          className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold z-10">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: -10 }} 
+          animate={{ opacity: 1, scale: 1, y: 0 }} 
+          exit={{ opacity: 0, scale: 0.8, y: -10 }}
+          className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 neon-glow z-10">
           <Star className="w-3.5 h-3.5 text-background animate-spin" />
           <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
         </motion.div>
@@ -269,8 +272,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   if (type === 'banner') {
     return (
       <motion.div
-        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer transition-all duration-300"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+        whileHover={{ scale: 1.02, y: -4 }}
         onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
         onClick={() => video.banner_link && window.open(video.banner_link, '_blank')}
       >
@@ -305,8 +309,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     const thumbnail = video.thumbnail_url || (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null);
     return (
       <motion.div
-        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer transition-all duration-300 hover:neon-border"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+        whileHover={{ scale: 1.02, y: -4 }}
         onMouseEnter={handleYTEnter} onMouseLeave={handleYTLeave}
       >
         <div className="relative aspect-video bg-muted overflow-hidden">
@@ -351,8 +356,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   // --- MP4 (default) ---
   return (
     <motion.div
-      className="relative rounded-2xl overflow-hidden bg-card border border-border group cursor-pointer"
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}
+      className="relative rounded-2xl overflow-hidden bg-card border border-border group cursor-pointer transition-all duration-300 hover:neon-border"
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+      whileHover={{ scale: 1.02, y: -4 }}
       onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
     >
       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -367,9 +373,10 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         <div className={`absolute inset-0 transition-all duration-300 ${isHovered ? 'bg-background/20' : 'bg-background/50'}`} />
         {!isHovered && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center glow-gold">
+            <motion.div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center glow-gold"
+              animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
               <Play className="w-6 h-6 text-background ml-1" />
-            </div>
+            </motion.div>
           </div>
         )}
         <PointsBadge /><CompletedBadge /><LoginPrompt />

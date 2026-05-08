@@ -76,15 +76,21 @@ export default function Home() {
       <Navbar />
 
       {/* Hero — compacto */}
-      <section className="pt-20 pb-4 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <section className="pt-20 pb-4 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple/20 rounded-full blur-3xl animate-pulse" />
+        </div>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-2">
-              <Zap className="w-3.5 h-3.5 text-gold" />
+            <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-2 neon-glow"
+              animate={{ boxShadow: ['0 0 20px hsl(45 100% 55% / 0.3)', '0 0 40px hsl(45 100% 55% / 0.6)', '0 0 20px hsl(45 100% 55% / 0.3)'] }}
+              transition={{ duration: 3, repeat: Infinity }}>
+              <Zap className="w-3.5 h-3.5 text-gold animate-pulse" />
               <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
-            </div>
+            </motion.div>
             <h1 className="font-grotesk font-bold text-2xl md:text-3xl leading-tight">
-              Cada segundo que você <span className="text-gold">assiste</span> vale <span className="text-gold">pontos</span>
+              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="neon-glow-purple">pontos</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               Passe o mouse nos vídeos, acumule pontos e resgate prêmios exclusivos.
@@ -116,11 +122,12 @@ export default function Home() {
 
       {/* Videos Feed — PRIMEIRO, logo abaixo do hero */}
       <section className="px-4 pb-16">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto relative">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/10 rounded-full blur-3xl opacity-30 pointer-events-none" />
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Vídeos em Destaque</h2>
-              <p className="text-muted-foreground text-sm mt-1">Passe o mouse para ganhar pontos</p>
+              <p className="text-muted-foreground text-sm mt-1">✨ Passe o mouse para ganhar pontos</p>
             </div>
             <Link to="/vitrine" className="text-sm text-gold hover:underline flex items-center gap-1">
               Ver todos <ArrowRight className="w-4 h-4" />
@@ -132,7 +139,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8 rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/10 via-card to-purple/10 p-5 flex flex-col sm:flex-row items-center gap-4"
+              className="mb-8 rounded-2xl border-2 border-gold/40 bg-gradient-to-r from-gold/15 via-card to-purple/15 p-5 flex flex-col sm:flex-row items-center gap-4 neon-glow"
             >
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gold/20 flex items-center justify-center">
                 <Zap className="w-7 h-7 text-gold" />
@@ -189,15 +196,19 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className="px-4 pb-12">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="px-4 pb-12 relative">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-1/2 left-0 w-72 h-72 bg-gold rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
           {stats.map((s, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * i }}
-              className="bg-card border border-border rounded-2xl p-4 text-center"
+              whileHover={{ scale: 1.05, boxShadow: '0 0 30px hsl(45 100% 55% / 0.3)' }}
+              className="bg-card border border-border rounded-2xl p-4 text-center cursor-pointer transition-all hover:border-gold/50"
             >
               <s.icon className="w-6 h-6 text-gold mx-auto mb-2" />
               <div className="font-grotesk font-bold text-2xl text-gold">{s.value}</div>
@@ -208,11 +219,14 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="px-4 pb-16">
-        <div className="max-w-5xl mx-auto">
+      <section className="px-4 pb-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-10">
             <h2 className="font-grotesk font-bold text-2xl md:text-3xl mb-2">Como funciona</h2>
-            <p className="text-muted-foreground">Simples, rápido e recompensador</p>
+            <p className="text-muted-foreground">Simples, rápido e recompensador ⚡</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -225,7 +239,8 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
-                className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden transition-all hover:border-gold/40 hover:neon-glow"
               >
                 <div className="absolute top-4 right-4 font-grotesk font-bold text-4xl text-gold/10">{item.step}</div>
                 <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mb-4">
