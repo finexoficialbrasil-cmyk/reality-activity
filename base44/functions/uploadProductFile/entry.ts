@@ -16,9 +16,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Arquivo não fornecido' }, { status: 400 });
     }
 
-    // Converte arquivo para base64
+    // Converte arquivo para base64 em chunks para evitar stack overflow
     const buffer = await file.arrayBuffer();
-    const base64Str = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    const uint8 = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 65536;
+    
+    for (let i = 0; i < uint8.length; i += chunkSize) {
+      const chunk = uint8.slice(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    
+    const base64Str = btoa(binary);
     
     // Faz upload do arquivo
     const res = await base44.integrations.Core.UploadFile({
