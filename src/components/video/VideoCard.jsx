@@ -6,8 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Extract YouTube video ID from various URL formats
 function getYouTubeId(url) {
   if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/);
-  return match ? match[1] : null;
+  // Tenta padrões específicos primeiro
+  let id = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/)?.[1]; // watch?v=ID
+  if (!id) id = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)?.[1]; // youtu.be/ID
+  if (!id) id = url.match(/\/shorts\/([a-zA-Z0-9_-]{11})/)?.[1]; // shorts/ID
+  if (!id) id = url.match(/^([a-zA-Z0-9_-]{11})$/)?.[0]; // ID direto
+  return id || null;
 }
 
 // Load YouTube IFrame API once globally
