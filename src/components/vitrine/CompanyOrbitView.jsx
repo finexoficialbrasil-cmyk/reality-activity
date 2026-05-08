@@ -49,7 +49,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="absolute z-20 cursor-pointer"
-          onClick={playMoneySound}
+          onMouseEnter={playMoneySound}
           whileHover={{ scale: 1.05 }}
         >
           <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/30 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
