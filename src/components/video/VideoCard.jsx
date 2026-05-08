@@ -45,8 +45,8 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const mountedRef = useRef(true);
   const isCounting = useRef(false);
 
-  const youtubeId = getYouTubeId(video.video_url);
-  const type = youtubeId ? 'youtube' : (video.type || 'mp4');
+  const youtubeId = getYouTubeId(video.video_url) || getYouTubeId(video.thumbnail_url);
+  const type = (video.type === 'youtube' || youtubeId) ? 'youtube' : (video.type || 'mp4');
 
   const pps = video.points_per_second || 1;
   const bonus = video.bonus_points || 50;
@@ -285,8 +285,8 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   }
 
   // --- YOUTUBE type ---
-  if (type === 'youtube' && youtubeId) {
-    const thumbnail = video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+  if (type === 'youtube') {
+    const thumbnail = video.thumbnail_url || (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null);
     return (
       <motion.div
         className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
@@ -299,8 +299,13 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           {/* Thumbnail shown before hover */}
           {!isHovered && (
             <div className="absolute inset-0">
-              <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+              {thumbnail
+                ? <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+                    <Play className="w-12 h-12 text-muted-foreground opacity-40" />
+                  </div>
+              }
+              <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
                 <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
                   <Play className="w-6 h-6 text-white ml-1" />
                 </div>
@@ -335,7 +340,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           ? <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover" muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
           : video.thumbnail_url
             ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center bg-secondary"><Play className="w-12 h-12 text-muted-foreground" /></div>
+            : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+                <Play className="w-12 h-12 text-muted-foreground opacity-40" />
+              </div>
         }
         <div className={`absolute inset-0 transition-all duration-300 ${isHovered ? 'bg-background/20' : 'bg-background/50'}`} />
         {!isHovered && (
