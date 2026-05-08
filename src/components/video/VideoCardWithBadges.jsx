@@ -45,6 +45,7 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
   const ytWrapperRef = useRef(null);
   const mountedRef = useRef(true);
   const isCounting = useRef(false);
+  const savedRef = useRef(false);
 
   const youtubeId = getYouTubeId(video.video_url) || getYouTubeId(video.thumbnail_url);
   const type = (video.type === 'youtube' || youtubeId) ? 'youtube' : (video.type || 'mp4');
@@ -59,49 +60,63 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
   const isTrending = video.total_points_awarded > 5000;
 
   const savePoints = useCallback(async (pts, secs) => {
-    if (pts <= 0 || !user) return;
-    await base44.entities.PointsTransaction.create({
-      user_email: user.email,
-      user_name: user.full_name,
-      type: 'earned_watch',
-      points: pts,
-      video_id: video.id,
-      company_id: video.company_id,
-      description: `Assistiu "${video.title}" por ${secs}s`,
-      watch_seconds: secs
-    });
-    const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-    if (existing.length > 0) {
-      await base44.entities.UserPoints.update(existing[0].id, {
-        balance: (existing[0].balance || 0) + pts,
-        total_earned: (existing[0].total_earned || 0) + pts,
-        videos_watched: (existing[0].videos_watched || 0) + 1,
-        last_activity: new Date().toISOString()
-      });
-    } else {
-      await base44.entities.UserPoints.create({
+    if (pts <= 0 || !user || savedRef.current) return;
+    savedRef.current = true;
+    
+    try {
+      await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,
-        balance: pts,
-        total_earned: pts,
-        videos_watched: 1,
-        last_activity: new Date().toISOString()
+        type: 'earned_watch',
+        points: pts,
+        video_id: video.id,
+        company_id: video.company_id,
+        description: `Assistiu "${video.title}" por ${secs}s`,
+        watch_seconds: secs
       });
+      
+      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
+      if (existing.length > 0) {
+        await base44.entities.UserPoints.update(existing[0].id, {
+          balance: (existing[0].balance || 0) + pts,
+          total_earned: (existing[0].total_earned || 0) + pts,
+          videos_watched: (existing[0].videos_watched || 0) + 1,
+          last_activity: new Date().toISOString()
+        });
+      } else {
+        await base44.entities.UserPoints.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          balance: pts,
+          total_earned: pts,
+          videos_watched: 1,
+          last_activity: new Date().toISOString()
+        });
+      }
+      if (onPointsEarned) onPointsEarned(pts);
+    } catch (err) {
+      console.error('Erro ao salvar pontos:', err);
+      savedRef.current = false;
     }
-    if (onPointsEarned) onPointsEarned(pts);
   }, [user, video, onPointsEarned]);
 
-  const stopCounting = useCallback(() => {
+  const stopCounting = useCallback(async () => {
     if (!isCounting.current) return;
     isCounting.current = false;
     clearInterval(intervalRef.current);
     intervalRef.current = null;
-    const secs = secondsRef.current;
-    const pts = pointsRef.current;
+    
+    const secs = Math.floor(secondsRef.current);
+    const pts = Math.floor(pointsRef.current);
+    
+    if (mountedRef.current) setIsWatching(false);
+    
+    if (secs > 0 && pts > 0 && !savedRef.current) {
+      await savePoints(pts, secs);
+    }
+    
     secondsRef.current = 0;
     pointsRef.current = 0;
-    if (mountedRef.current) setIsWatching(false);
-    if (secs > 0) savePoints(pts, secs);
   }, [savePoints]);
 
   const startCounting = useCallback(() => {
@@ -132,11 +147,18 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
     else setShowLoginPrompt(true);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = async () => {
     setIsHovered(false);
     if (videoRef.current) videoRef.current.pause();
-    stopCounting();
+    await stopCounting();
     setShowLoginPrompt(false);
+  };
+  
+  const handleVideoPlay = () => {
+    if (user && !isCounting.current) startCounting();
+  };
+  const handleVideoPause = async () => {
+    if (isCounting.current) await stopCounting();
   };
 
   useEffect(() => {
@@ -161,11 +183,7 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
             },
             onStateChange: (e) => {
               if (!mountedRef.current) return;
-              if (e.data === window.YT.PlayerState.PLAYING) {
-                startCounting();
-              } else {
-                stopCounting();
-              }
+              handleYTStateChange(e.data);
             }
           }
         });
@@ -180,21 +198,35 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
       destroyed = true;
       mountedRef.current = false;
       clearInterval(intervalRef.current);
-      const secs = secondsRef.current;
-      const pts = pointsRef.current;
-      if (secs > 0) savePoints(pts, secs);
+      isCounting.current = false;
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
+      
       try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
     };
-  }, [type, youtubeId]); // eslint-disable-line
+  }, [type, youtubeId, savePoints]); // eslint-disable-line
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      isCounting.current = false;
       if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
     };
-  }, []);
+  }, [savePoints]);
 
   const handleYTEnter = () => {
     setIsHovered(true);
@@ -204,12 +236,18 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
     if (!user) setShowLoginPrompt(true);
   };
 
-  const handleYTLeave = () => {
+  const handleYTLeave = async () => {
     setIsHovered(false);
     if (playerReady) {
       try { playerRef.current?.pauseVideo(); } catch {}
     }
+    await stopCounting();
     setShowLoginPrompt(false);
+  };
+  
+  const handleYTStateChange = (state) => {
+    if (state === 1 && user && !isCounting.current) startCounting();
+    if (state !== 1 && isCounting.current) stopCounting();
   };
 
   const PointsBadge = () => (
@@ -276,8 +314,10 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
     if (company.website) {
       window.open(company.website, '_blank');
     } else if (company.phone) {
-      const res = await base44.functions.invoke('formatWhatsAppLink', { phone: company.phone });
-      window.open(res.data.url, '_blank');
+      const message = `Olá! Tenho interesse em conhecer mais sobre os seus produtos e serviços.`;
+      const phone = company.phone.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
     }
   };
 
@@ -393,7 +433,18 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
     >
       <div className="relative aspect-video bg-muted overflow-hidden">
         {video.video_url
-          ? <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover" muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
+          ? <video 
+              ref={videoRef} 
+              src={video.video_url} 
+              className="w-full h-full object-cover" 
+              muted 
+              loop 
+              playsInline 
+              preload="metadata" 
+              poster={video.thumbnail_url}
+              onPlay={handleVideoPlay}
+              onPause={handleVideoPause}
+            />
           : video.thumbnail_url
             ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
             : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
