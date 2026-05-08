@@ -21,8 +21,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const secondsRef = useRef(0);
   const pointsRef = useRef(0);
 
-  const type = video.type || 'mp4';
-  const youtubeId = type === 'youtube' ? getYouTubeId(video.video_url) : null;
+  // Auto-detect YouTube from URL even if type field is still 'mp4'
+  const youtubeId = getYouTubeId(video.video_url);
+  const type = youtubeId ? 'youtube' : (video.type || 'mp4');
 
   const stopEarning = useCallback(async () => {
     if (!intervalRef.current) return;
@@ -190,12 +191,16 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
       >
         <div className="relative aspect-video bg-muted overflow-hidden">
           {isHovered ? (
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}`}
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            />
+            <>
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}`}
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+              {/* Transparent overlay to keep mouse events on the card */}
+              <div className="absolute inset-0" style={{ pointerEvents: 'none' }} />
+            </>
           ) : (
             <>
               <img
