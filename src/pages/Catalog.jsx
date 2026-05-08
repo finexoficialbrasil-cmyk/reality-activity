@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Gift, Search, Building2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Star, Gift, Search, Building2, CheckCircle, AlertCircle, Download, FileText } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import DynamicSearchBar from '@/components/catalog/DynamicSearchBar';
 
@@ -16,6 +16,7 @@ export default function Catalog() {
   const [redeeming, setRedeeming] = useState(null);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+  const [redemptions, setRedemptions] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -40,8 +41,12 @@ export default function Catalog() {
       try {
         const me = await base44.auth.me();
         setUser(me);
-        const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
+        const [pts, reds] = await Promise.all([
+          base44.entities.UserPoints.filter({ user_email: me.email }),
+          base44.entities.Redemption.filter({ user_email: me.email }, '-created_date')
+        ]);
         if (pts.length > 0) setUserPoints(pts[0]);
+        setRedemptions(reds || []);
       } catch (err) {
         console.error('Erro ao carregar dados do usuário:', err);
       }
@@ -183,6 +188,49 @@ export default function Catalog() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Redemptions Section */}
+          {user && redemptions.length > 0 && (
+            <div className="mb-8 p-6 bg-card border border-gold/20 rounded-2xl">
+              <h2 className="font-grotesk font-bold text-xl mb-4 text-gold">Seus Resgates</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {redemptions.map(red => {
+                  const prod = products.find(p => p.id === red.product_id);
+                  const hasFile = prod?.digital_content && (prod.digital_content.startsWith('http') || prod.digital_content.includes('.'));
+                  return (
+                    <div key={red.id} className="bg-secondary rounded-lg p-4 border border-border">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-sm">{red.product_name}</h3>
+                          <p className="text-xs text-muted-foreground">{red.company_name}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                          red.status === 'delivered' ? 'bg-green-500/20 text-green-400' :
+                          red.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {red.status === 'delivered' ? '✓ Entregue' : red.status === 'approved' ? '⚡ Aprovado' : '⏳ Pendente'}
+                        </span>
+                      </div>
+                      {hasFile && red.status === 'delivered' && prod?.digital_content && (
+                        <a
+                          href={prod.digital_content}
+                          download
+                          className="inline-flex items-center gap-2 text-xs bg-gold text-background hover:bg-gold-dark px-3 py-1.5 rounded-lg font-semibold transition-all"
+                        >
+                          <Download className="w-3 h-3" />
+                          Baixar Arquivo
+                        </a>
+                      )}
+                      {red.delivery_info && (
+                        <p className="text-xs text-muted-foreground mt-2 italic">📬 {red.delivery_info}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Dynamic Search */}
           <div className="mb-8">
