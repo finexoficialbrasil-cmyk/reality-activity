@@ -108,8 +108,14 @@ export default function Home() {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array(8).fill(0).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-card border border-border aspect-video animate-pulse" />
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="rounded-2xl bg-card border border-border animate-pulse">
+                  <div className="aspect-video bg-secondary/50 rounded-t-2xl" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-3 bg-secondary rounded w-3/4" />
+                    <div className="h-3 bg-secondary rounded w-1/2" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : videos.length === 0 ? (

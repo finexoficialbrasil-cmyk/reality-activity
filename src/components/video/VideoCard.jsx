@@ -300,11 +300,15 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           {!isHovered && (
             <div className="absolute inset-0">
               {thumbnail
-                ? <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
-                : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                    <Play className="w-12 h-12 text-muted-foreground opacity-40" />
-                  </div>
+                ? <img src={thumbnail} alt={video.title} className="w-full h-full object-cover"
+                    onError={e => { e.target.style.display='none'; e.target.nextSibling?.style && (e.target.nextSibling.style.display='flex'); }}
+                  />
+                : null
               }
+              <div className="w-full h-full bg-gradient-to-br from-secondary to-muted items-center justify-center"
+                style={{ display: thumbnail ? 'none' : 'flex' }}>
+                <Play className="w-12 h-12 text-muted-foreground opacity-40" />
+              </div>
               <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
                 <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
                   <Play className="w-6 h-6 text-white ml-1" />
