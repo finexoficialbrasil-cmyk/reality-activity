@@ -115,6 +115,34 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* CTA para não logados */}
+          {!loading && !user && videos.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/10 via-card to-purple/10 p-5 flex flex-col sm:flex-row items-center gap-4"
+            >
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gold/20 flex items-center justify-center">
+                <Zap className="w-7 h-7 text-gold" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="font-grotesk font-bold text-lg text-foreground">
+                  Você está perdendo pontos! 🎯
+                </h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Crie sua conta grátis e comece a ganhar pontos assistindo esses vídeos. Troque por prêmios exclusivos!
+                </p>
+              </div>
+              <button
+                onClick={() => base44.auth.redirectToLogin()}
+                className="flex-shrink-0 inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap"
+              >
+                <Star className="w-4 h-4" />
+                Criar conta grátis
+              </button>
+            </motion.div>
+          )}
+
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array(4).fill(0).map((_, i) => (
