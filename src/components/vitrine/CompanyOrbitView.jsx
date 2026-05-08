@@ -7,7 +7,7 @@ import useGameSound from '@/hooks/useGameSound';
 export default function CompanyOrbitView({ company, otherCompanies }) {
   const [hoveredCompany, setHoveredCompany] = useState(null);
   const [initialized, setInitialized] = useState(false);
-  const { playHoverSound, playClickSound } = useGameSound();
+  const { playHoverSound, playClickSound, playMoneySound } = useGameSound();
 
   useEffect(() => {
     setInitialized(true);
@@ -48,7 +48,9 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="absolute z-20"
+          className="absolute z-20 cursor-pointer"
+          onClick={playMoneySound}
+          whileHover={{ scale: 1.05 }}
         >
           <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/30 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
             <motion.img 

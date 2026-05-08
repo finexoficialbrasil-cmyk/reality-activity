@@ -39,5 +39,11 @@ export default function useGameSound() {
     setTimeout(() => playSound(900, 80, 'square'), 60);
   };
 
-  return { playHoverSound, playClickSound };
+  const playMoneySound = () => {
+    playSound(1500, 120, 'sine');
+    setTimeout(() => playSound(1800, 100, 'sine'), 80);
+    setTimeout(() => playSound(2100, 80, 'sine'), 140);
+  };
+
+  return { playHoverSound, playClickSound, playMoneySound };
 }
