@@ -20,6 +20,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const intervalRef = useRef(null);
   const secondsRef = useRef(0);
   const pointsRef = useRef(0);
+  const iframeRef = useRef(null);
 
   // Auto-detect YouTube from URL even if type field is still 'mp4'
   const youtubeId = getYouTubeId(video.video_url);
@@ -181,46 +182,73 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   // --- YOUTUBE type ---
   if (type === 'youtube' && youtubeId) {
     const thumbnail = video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+
+    const sendYTCommand = (cmd) => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: [] }),
+        '*'
+      );
+    };
+
+    const handleYTEnter = () => {
+      setIsHovered(true);
+      sendYTCommand('playVideo');
+      startEarning();
+    };
+
+    const handleYTLeave = () => {
+      setIsHovered(false);
+      sendYTCommand('pauseVideo');
+      stopEarning();
+    };
+
     return (
       <motion.div
         className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ scale: 1.01 }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleYTEnter}
+        onMouseLeave={handleYTLeave}
       >
-        <div className="relative aspect-video bg-muted overflow-hidden"
-          onClick={() => window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank')}>
-          <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
-          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isHovered ? 'bg-background/30' : 'bg-background/50'}`}>
-            <div className={`w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
-              <Play className="w-6 h-6 text-white ml-1" />
+        <div className="relative aspect-video bg-muted overflow-hidden">
+          {/* iframe sempre carregado, só aparece no hover */}
+          <iframe
+            ref={iframeRef}
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&mute=1&controls=0&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0`}
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            style={{ opacity: isHovered ? 1 : 0, position: 'absolute', inset: 0 }}
+          />
+          {/* Thumbnail shown when not hovered */}
+          <div style={{ opacity: isHovered ? 0 : 1 }} className="absolute inset-0 transition-opacity duration-300">
+            <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                <Play className="w-6 h-6 text-white ml-1" />
+              </div>
             </div>
           </div>
-          {isHovered && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 text-xs px-3 py-1 rounded-full text-foreground whitespace-nowrap">
-              Clique para assistir no YouTube
-            </div>
-          )}
+          {/* Overlay to capture mouse events over iframe */}
+          <div className="absolute inset-0" style={{ pointerEvents: isHovered ? 'none' : 'auto' }} />
           <AnimatePresence>
             {isWatching && (
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
+                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold z-10">
                 <Star className="w-3.5 h-3.5 text-background animate-spin" />
                 <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
               </motion.div>
             )}
           </AnimatePresence>
           {completed && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5 z-10">
               <CheckCircle className="w-3.5 h-3.5 text-white" />
               <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
             </div>
           )}
           {showLoginPrompt && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-              onClick={e => e.stopPropagation()}>
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-20">
               <div className="text-center p-4">
                 <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
                 <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
