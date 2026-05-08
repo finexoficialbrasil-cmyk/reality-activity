@@ -260,11 +260,29 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   };
 
   const PointsBar = () => (
-    <div className="flex items-center gap-3 pt-2 border-t border-border mt-2">
-      <Star className="w-3.5 h-3.5 text-gold" />
-      <span className="text-xs font-medium text-gold">{pps} pt/s</span>
-      <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
-      <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
+    <div className="pt-2 border-t border-border mt-2">
+      <div className="flex items-center gap-3 mb-2">
+        <Star className="w-3.5 h-3.5 text-gold" />
+        <span className="text-xs font-medium text-gold">{pps} pt/s</span>
+        <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
+        <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
+      </div>
+      {user && isWatching && (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Progresso: {secondsRef.current}s / {video.duration_seconds || 30}s</span>
+            <span className="text-xs font-bold text-gold">+{Math.floor(pointsEarned)} pts</span>
+          </div>
+          <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-gold to-gold-dark"
+              initial={{ width: '0%' }}
+              animate={{ width: `${Math.min((secondsRef.current / (video.duration_seconds || 30)) * 100, 100)}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 
