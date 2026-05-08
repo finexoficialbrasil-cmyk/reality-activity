@@ -18,17 +18,18 @@ export default function Home() {
   }, []);
 
   const loadData = async () => {
+    // Carrega dados públicos via backend (funciona sem login)
     try {
-      const [vids, comps] = await Promise.all([
-        base44.entities.Video.filter({ is_active: true }, '-order', 12),
-        base44.entities.Company.filter({ is_active: true }, 'order', 20)
-      ]);
-      setVideos(vids);
-      setCompanies(comps);
+      const res = await base44.functions.invoke('getPublicData', {});
+      setVideos(res.data.videos || []);
+      setCompanies(res.data.companies || []);
     } catch (e) {
-      console.error('Erro ao carregar vídeos/empresas:', e);
+      console.error('Erro ao carregar dados públicos:', e);
+    } finally {
+      setLoading(false);
     }
 
+    // Carrega dados do usuário logado em paralelo (não bloqueia o loading)
     try {
       const auth = await base44.auth.isAuthenticated();
       if (auth) {
@@ -38,10 +39,8 @@ export default function Home() {
         if (pts.length > 0) setUserPoints(pts[0]);
       }
     } catch (e) {
-      console.error('Erro ao carregar usuário:', e);
+      // não logado, ignora
     }
-
-    setLoading(false);
   };
 
   const handlePointsEarned = async () => {

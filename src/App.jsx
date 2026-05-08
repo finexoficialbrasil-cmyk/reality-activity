@@ -26,8 +26,8 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     }
-    // auth_required or other errors: still render the app publicly
-    // individual pages/components handle login redirect when needed
+    // Para auth_required ou outros erros: continua renderizando normalmente
+    // As páginas públicas ainda funcionam pois Video e Company têm rls read: true
   }
 
   return (
