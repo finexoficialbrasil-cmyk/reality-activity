@@ -48,6 +48,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const ytWrapperRef = useRef(null);
   const mountedRef = useRef(true);
   const isCounting = useRef(false);
+  const savedRef = useRef(false);
 
   const youtubeId = getYouTubeId(video.video_url) || getYouTubeId(video.thumbnail_url);
   const type = (video.type === 'youtube' || youtubeId) ? 'youtube' : (video.type || 'mp4');
@@ -58,36 +59,44 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
 
   // --- Points saving logic ---
   const savePoints = useCallback(async (pts, secs) => {
-    if (pts <= 0 || !user) return;
-    await base44.entities.PointsTransaction.create({
-      user_email: user.email,
-      user_name: user.full_name,
-      type: 'earned_watch',
-      points: pts,
-      video_id: video.id,
-      company_id: video.company_id,
-      description: `Assistiu "${video.title}" por ${secs}s`,
-      watch_seconds: secs
-    });
-    const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-    if (existing.length > 0) {
-      await base44.entities.UserPoints.update(existing[0].id, {
-        balance: (existing[0].balance || 0) + pts,
-        total_earned: (existing[0].total_earned || 0) + pts,
-        videos_watched: (existing[0].videos_watched || 0) + 1,
-        last_activity: new Date().toISOString()
-      });
-    } else {
-      await base44.entities.UserPoints.create({
+    if (pts <= 0 || !user || savedRef.current) return;
+    savedRef.current = true;
+    
+    try {
+      await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,
-        balance: pts,
-        total_earned: pts,
-        videos_watched: 1,
-        last_activity: new Date().toISOString()
+        type: 'earned_watch',
+        points: pts,
+        video_id: video.id,
+        company_id: video.company_id,
+        description: `Assistiu "${video.title}" por ${secs}s`,
+        watch_seconds: secs
       });
+      
+      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
+      if (existing.length > 0) {
+        await base44.entities.UserPoints.update(existing[0].id, {
+          balance: (existing[0].balance || 0) + pts,
+          total_earned: (existing[0].total_earned || 0) + pts,
+          videos_watched: (existing[0].videos_watched || 0) + 1,
+          last_activity: new Date().toISOString()
+        });
+      } else {
+        await base44.entities.UserPoints.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          balance: pts,
+          total_earned: pts,
+          videos_watched: 1,
+          last_activity: new Date().toISOString()
+        });
+      }
+      if (onPointsEarned) onPointsEarned(pts);
+    } catch (err) {
+      console.error('Erro ao salvar pontos:', err);
+      savedRef.current = false;
     }
-    if (onPointsEarned) onPointsEarned(pts);
   }, [user, video, onPointsEarned]);
 
   // --- Stop counting ---
@@ -96,12 +105,18 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     isCounting.current = false;
     clearInterval(intervalRef.current);
     intervalRef.current = null;
-    const secs = secondsRef.current;
-    const pts = pointsRef.current;
+    
+    const secs = Math.floor(secondsRef.current);
+    const pts = Math.floor(pointsRef.current);
+    
+    if (mountedRef.current) setIsWatching(false);
+    
+    if (secs > 0 && pts > 0 && !savedRef.current) {
+      await savePoints(pts, secs);
+    }
+    
     secondsRef.current = 0;
     pointsRef.current = 0;
-    if (mountedRef.current) setIsWatching(false);
-    if (secs > 0) await savePoints(pts, secs);
   }, [savePoints]);
 
   // --- Start counting ---
@@ -182,21 +197,35 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
       destroyed = true;
       mountedRef.current = false;
       clearInterval(intervalRef.current);
-      const secs = secondsRef.current;
-      const pts = pointsRef.current;
-      if (secs > 0) savePoints(pts, secs);
+      isCounting.current = false;
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
+      
       try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
     };
-  }, [type, youtubeId]); // eslint-disable-line
+  }, [type, youtubeId, savePoints]); // eslint-disable-line
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      isCounting.current = false;
       if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
     };
-  }, []);
+  }, [savePoints]);
 
   // --- YouTube mouse handlers ---
   const handleYTEnter = () => {
