@@ -121,6 +121,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Videos Feed — PRIMEIRO, logo abaixo do hero */}
+      <section className="px-4 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Vídeos em Destaque</h2>
+              <p className="text-muted-foreground text-sm mt-1">Passe o mouse para ganhar pontos</p>
+            </div>
+            <Link to="/vitrine" className="text-sm text-gold hover:underline flex items-center gap-1">
+              Ver todos <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array(8).fill(0).map((_, i) => (
+                <div key={i} className="rounded-2xl bg-card border border-border aspect-video animate-pulse" />
+              ))}
+            </div>
+          ) : videos.length === 0 ? (
+            <div className="text-center py-20 text-muted-foreground">
+              <Play className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p>Nenhum vídeo disponível ainda</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {videos.map((video) => (
+                <VideoCard
+                  key={video.id}
+                  video={video}
+                  company={companiesMap[video.company_id]}
+                  user={user}
+                  onPointsEarned={handlePointsEarned}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Stats */}
       <section className="px-4 pb-12">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -169,46 +209,6 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Videos Feed */}
-      <section className="px-4 pb-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Vídeos em Destaque</h2>
-              <p className="text-muted-foreground text-sm mt-1">Passe o mouse para ganhar pontos</p>
-            </div>
-            <Link to="/vitrine" className="text-sm text-gold hover:underline flex items-center gap-1">
-              Ver todos <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array(8).fill(0).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-card border border-border aspect-video animate-pulse" />
-              ))}
-            </div>
-          ) : videos.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground">
-              <Play className="w-12 h-12 mx-auto mb-4 opacity-30" />
-              <p>Nenhum vídeo disponível ainda</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {videos.map((video) => (
-                <VideoCard
-                  key={video.id}
-                  video={video}
-                  company={companiesMap[video.company_id]}
-                  user={user}
-                  onPointsEarned={handlePointsEarned}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
