@@ -73,10 +73,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
               style={{
                 left: '50%',
                 top: '50%',
-                x: position.x,
-                y: position.y,
-                marginLeft: '-50%',
-                marginTop: '-50%',
+                transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
                 zIndex: isHovered ? 50 : 10,
               }}
               onMouseEnter={() => setHoveredCompany(comp.id)}
