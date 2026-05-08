@@ -50,7 +50,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          <div className="w-48 h-48 rounded-full bg-card border border-border flex items-center justify-center overflow-hidden">
+          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/20 flex items-center justify-center overflow-hidden shadow-2xl" style={{ boxShadow: '0 0 60px hsl(45 100% 55% / 0.15), inset 0 0 40px hsl(45 100% 55% / 0.05)' }}>
             <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/22326e603_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
