@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, ExternalLink } from 'lucide-react';
 
 export default function CompanyOrbitView({ company, otherCompanies }) {
   const [hoveredCompany, setHoveredCompany] = useState(null);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    setInitialized(true);
+  }, []);
 
   // Todas as empresas orbitam (incluindo a primeira)
   const allCompanies = company ? [company, ...otherCompanies] : otherCompanies;
@@ -82,14 +87,25 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
             <motion.div
               key={comp.id}
               className="absolute"
-              animate={{
+              initial={{ opacity: 0, scale: 0 }}
+              animate={initialized ? {
+                opacity: 1,
+                scale: 1,
                 x: position.x,
                 y: position.y,
+              } : {
+                opacity: 0,
+                scale: 0,
+                x: 0,
+                y: 0,
               }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: 'linear',
+              transition={initialized ? {
+                opacity: { duration: 0.5, delay: idx * 0.1 },
+                scale: { duration: 0.8, delay: idx * 0.1 },
+                x: { duration: 20, delay: 1.5, repeat: Infinity, ease: 'linear' },
+                y: { duration: 20, delay: 1.5, repeat: Infinity, ease: 'linear' },
+              } : {
+                duration: 0.3,
               }}
               onMouseEnter={() => setHoveredCompany(comp.id)}
               onMouseLeave={() => setHoveredCompany(null)}
