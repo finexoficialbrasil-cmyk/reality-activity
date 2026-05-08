@@ -39,7 +39,7 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
       let phoneClean = comp.phone.replace(/\D/g, '');
       // Se não tem código de país, adiciona +55 (Brasil)
       if (!phoneClean.startsWith('55')) phoneClean = '55' + phoneClean;
-      const message = `Olá! 👋 Venho através do Reality Activity e gostaria de conhecer melhor sua empresa e produtos. Pode me ajudar? 😊`;
+      const message = `Olá! Conheci seu trabalho pelo grupo Reality Activity e tenho interesse nos seus produtos e sistemas. Pode me enviar mais detalhes?`;
       const encodedMsg = encodeURIComponent(message);
       window.open(`https://wa.me/${phoneClean}?text=${encodedMsg}`, '_blank');
     }
