@@ -70,9 +70,6 @@ export default function Vitrine() {
       <Navbar />
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Hero Banner */}
-          <VitrineHero />
-
           {/* Search */}
           <div className="relative max-w-md mx-auto mb-10">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
