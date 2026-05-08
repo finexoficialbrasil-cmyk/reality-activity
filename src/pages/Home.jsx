@@ -127,23 +127,7 @@ export default function Home() {
       {/* Hero Section with Banner Carousel - Premium Experience */}
       {videos.length > 0 && (
         <section className="px-4 pb-16 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-3xl animate-pulse" />
-          </div>
           <div className="max-w-7xl mx-auto relative z-10">
-            {/* Hero Content */}
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/40 mb-4">
-                <span className="text-sm font-semibold text-gold">🎯 Objetivo</span>
-              </div>
-              <h2 className="font-grotesk font-bold text-3xl md:text-4xl mb-4">
-                Conheça nossos <span className="text-gold">Parceiros</span> Incríveis
-              </h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
-                Explore um ecossistema diverso de empresas e serviços. Ganhe pontos assistindo vídeos e resgate prêmios exclusivos.
-              </p>
-            </div>
-
             {/* Banner Carousel */}
             <BannerCarousel 
               banners={videos.filter(v => v.type === 'banner').slice(0, 5)} 
