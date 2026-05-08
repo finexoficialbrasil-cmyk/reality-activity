@@ -141,7 +141,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     }, 1000);
   }, [user, pps, bonus, video.duration_seconds, completed, stopCounting]);
 
-  // --- MP4 mouse handlers ---
+  // --- MP4 handlers (mouse + touch) ---
   const handleMouseEnter = () => {
     setIsHovered(true);
     if (videoRef.current) videoRef.current.play().catch(() => {});
@@ -153,6 +153,13 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     if (videoRef.current) videoRef.current.pause();
     await stopCounting();
     setShowLoginPrompt(false);
+  };
+  
+  const handleVideoPlay = () => {
+    if (user && !isCounting.current) startCounting();
+  };
+  const handleVideoPause = async () => {
+    if (isCounting.current) await stopCounting();
   };
 
   // --- YouTube IFrame API setup ---
@@ -178,11 +185,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             },
             onStateChange: (e) => {
               if (!mountedRef.current) return;
-              if (e.data === window.YT.PlayerState.PLAYING) {
-                startCounting();
-              } else {
-                stopCounting();
-              }
+              handleYTStateChange(e.data);
             }
           }
         });
@@ -227,7 +230,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     };
   }, [savePoints]);
 
-  // --- YouTube mouse handlers ---
+  // --- YouTube handlers (mouse + state) ---
   const handleYTEnter = () => {
     setIsHovered(true);
     if (playerReady) {
@@ -242,6 +245,11 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     }
     await stopCounting();
     setShowLoginPrompt(false);
+  };
+  
+  const handleYTStateChange = (state) => {
+    if (state === 1 && user && !isCounting.current) startCounting();
+    if (state !== 1 && isCounting.current) stopCounting();
   };
 
   // Shared overlays
@@ -411,7 +419,18 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     >
       <div className="relative aspect-video bg-muted overflow-hidden">
         {video.video_url
-          ? <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover" muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
+          ? <video 
+              ref={videoRef} 
+              src={video.video_url} 
+              className="w-full h-full object-cover" 
+              muted 
+              loop 
+              playsInline 
+              preload="metadata" 
+              poster={video.thumbnail_url}
+              onPlay={handleVideoPlay}
+              onPause={handleVideoPause}
+            />
           : video.thumbnail_url
             ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
             : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
