@@ -86,22 +86,27 @@ export default function Home() {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple/20 rounded-full blur-3xl animate-pulse" />
         </div>
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 relative z-10 items-start">
-          <div className="flex-1">
-            <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-4 neon-glow"
-              animate={{ boxShadow: ['0 0 20px hsl(45 100% 55% / 0.3)', '0 0 40px hsl(45 100% 55% / 0.6)', '0 0 20px hsl(45 100% 55% / 0.3)'] }}
-              transition={{ duration: 3, repeat: Infinity }}>
-              <Zap className="w-3.5 h-3.5 text-gold animate-pulse" />
-              <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
-            </motion.div>
-            <h1 className="font-grotesk font-bold text-3xl md:text-5xl leading-tight max-w-2xl">
-              Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="text-purple">recompensas</span>
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-lg">
-              Assista conteúdo, acumule pontos e resgate recompensas incríveis!
-            </p>
+        <div className="max-w-7xl mx-auto flex flex-col gap-6 relative z-10">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex-1">
+              <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-4 neon-glow"
+                animate={{ boxShadow: ['0 0 20px hsl(45 100% 55% / 0.3)', '0 0 40px hsl(45 100% 55% / 0.6)', '0 0 20px hsl(45 100% 55% / 0.3)'] }}
+                transition={{ duration: 3, repeat: Infinity }}>
+                <Zap className="w-3.5 h-3.5 text-gold animate-pulse" />
+                <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
+              </motion.div>
+              <h1 className="font-grotesk font-bold text-3xl md:text-5xl leading-tight max-w-2xl">
+                Cada segundo que você <span className="text-gold animate-pulse">assiste</span> vale <span className="text-purple">recompensas</span>
+              </h1>
+              <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-lg">
+                Assista conteúdo, acumule pontos e resgate recompensas incríveis!
+              </p>
+            </div>
+            <div className="hidden lg:block flex-1">
+              {companies.length > 0 && <CompanyOrbitView company={companies[0]} otherCompanies={companies.slice(1, 8)} />}
+            </div>
           </div>
-          <div className="hidden lg:block flex-1">
+          <div className="lg:hidden w-full">
             {companies.length > 0 && <CompanyOrbitView company={companies[0]} otherCompanies={companies.slice(1, 8)} />}
           </div>
         </div>
