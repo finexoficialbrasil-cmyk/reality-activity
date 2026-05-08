@@ -180,6 +180,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
 
   // --- YOUTUBE type ---
   if (type === 'youtube' && youtubeId) {
+    const thumbnail = video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     return (
       <motion.div
         className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
@@ -189,31 +190,18 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="relative aspect-video bg-muted overflow-hidden">
-          {isHovered ? (
-            <>
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}`}
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-              {/* Transparent overlay to keep mouse events on the card */}
-              <div className="absolute inset-0" style={{ pointerEvents: 'none' }} />
-            </>
-          ) : (
-            <>
-              <img
-                src={video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
-                alt={video.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
-                  <Play className="w-6 h-6 text-white ml-1" />
-                </div>
-              </div>
-            </>
+        <div className="relative aspect-video bg-muted overflow-hidden"
+          onClick={() => window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank')}>
+          <img src={thumbnail} alt={video.title} className="w-full h-full object-cover" />
+          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isHovered ? 'bg-background/30' : 'bg-background/50'}`}>
+            <div className={`w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+              <Play className="w-6 h-6 text-white ml-1" />
+            </div>
+          </div>
+          {isHovered && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 text-xs px-3 py-1 rounded-full text-foreground whitespace-nowrap">
+              Clique para assistir no YouTube
+            </div>
           )}
           <AnimatePresence>
             {isWatching && (
@@ -231,7 +219,8 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             </div>
           )}
           {showLoginPrompt && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+              onClick={e => e.stopPropagation()}>
               <div className="text-center p-4">
                 <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
                 <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
