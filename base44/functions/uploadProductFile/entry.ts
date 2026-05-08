@@ -16,18 +16,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Arquivo não fornecido' }, { status: 400 });
     }
 
-    // Converte para base64 usando método nativo do Deno
+    // Converte arquivo para base64
     const buffer = await file.arrayBuffer();
-    const uint8 = new Uint8Array(buffer);
-    const chunks = [];
-    for (let i = 0; i < uint8.length; i += 0x8000) {
-      chunks.push(String.fromCharCode.apply(null, uint8.slice(i, i + 0x8000)));
-    }
-    const base64 = btoa(chunks.join(''));
+    const base64Str = btoa(String.fromCharCode(...new Uint8Array(buffer)));
     
     // Faz upload do arquivo
     const res = await base44.integrations.Core.UploadFile({
-      file: base64
+      file: base64Str
     });
 
     return Response.json({
@@ -35,6 +30,7 @@ Deno.serve(async (req) => {
       file_url: res.file_url
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Erro no upload:', error);
+    return Response.json({ error: `Erro ao fazer upload: ${error.message}` }, { status: 500 });
   }
 });
