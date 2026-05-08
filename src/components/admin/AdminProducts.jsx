@@ -17,7 +17,7 @@ export default function AdminProducts() {
   const load = async () => {
     const [prods, comps] = await Promise.all([
       base44.entities.Product.list('points_cost'),
-      base44.entities.Company.filter({ is_active: true }, 'order')
+      base44.entities.Company.list('order')
     ]);
     setProducts(prods);
     setCompanies(comps);
