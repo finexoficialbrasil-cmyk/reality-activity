@@ -54,70 +54,42 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative pt-24 pb-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-96 h-96 rounded-full bg-gold/5 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-purple/5 blur-3xl" />
-        </div>
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/30 mb-6"
-          >
-            <Zap className="w-4 h-4 text-gold" />
-            <span className="text-sm font-medium text-gold">Assista. Ganhe. Resgate.</span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-grotesk font-bold text-4xl md:text-6xl lg:text-7xl mb-6 leading-tight"
-          >
-            Cada segundo que você{' '}
-            <span className="text-gold">assiste</span>{' '}
-            vale <span className="text-gold">pontos</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto"
-          >
-            Passe o mouse sobre os vídeos para acumular pontos em tempo real. 
-            Use seus pontos para resgatar produtos exclusivos das nossas empresas parceiras.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
+      {/* Hero — compacto */}
+      <section className="pt-20 pb-4 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-2">
+              <Zap className="w-3.5 h-3.5 text-gold" />
+              <span className="text-xs font-medium text-gold">Assista. Ganhe. Resgate.</span>
+            </div>
+            <h1 className="font-grotesk font-bold text-2xl md:text-3xl leading-tight">
+              Cada segundo que você <span className="text-gold">assiste</span> vale <span className="text-gold">pontos</span>
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Passe o mouse nos vídeos, acumule pontos e resgate prêmios exclusivos.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
             {user ? (
               <Link to="/dashboard"
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-8 py-3.5 rounded-full hover:bg-gold-dark transition-all glow-gold">
-                <Star className="w-5 h-5" />
-                Meus Pontos: {userPoints?.balance?.toLocaleString() ?? 0}
+                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap">
+                <Star className="w-4 h-4" />
+                {userPoints?.balance?.toLocaleString() ?? 0} pts
               </Link>
             ) : (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-8 py-3.5 rounded-full hover:bg-gold-dark transition-all glow-gold"
+                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold whitespace-nowrap"
               >
-                <Zap className="w-5 h-5" />
-                Começar a Ganhar Pontos
+                <Zap className="w-4 h-4" />
+                Começar Grátis
               </button>
             )}
             <Link to="/vitrine"
-              className="inline-flex items-center gap-2 border border-border text-foreground font-semibold px-8 py-3.5 rounded-full hover:bg-secondary transition-all">
-              Ver Empresas <ArrowRight className="w-4 h-4" />
+              className="inline-flex items-center gap-2 border border-border text-foreground font-semibold px-5 py-2.5 rounded-full hover:bg-secondary transition-all whitespace-nowrap text-sm">
+              Ver Empresas <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
