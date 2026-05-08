@@ -15,14 +15,15 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
 
   // Gera padrão único de movimento para cada empresa
   const getMovementPath = (index, total) => {
-    const baseRadius = 150;
+    const baseRadius = 180;
     const offset = (index / total) * Math.PI * 2;
     
-    // Cria caminho com múltiplos pontos para efeito de ricochete
+    // Cria caminho circular mantendo distância entre empresas
     const points = [];
     for (let i = 0; i < 8; i++) {
       const angle = offset + (i / 8) * Math.PI * 2;
-      const radius = baseRadius + Math.sin(angle * 2) * 50; // Varia o raio
+      // Mantém raio constante evita sobreposição
+      const radius = baseRadius + Math.sin(angle * 1.5) * 30;
       points.push({
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
@@ -86,11 +87,12 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
               transition={initialized ? {
                 opacity: { duration: 0.5, delay: idx * 0.1 },
                 scale: { duration: 0.8, delay: idx * 0.1 },
-                x: { duration: 12 + idx * 0.5, delay: 1.5, repeat: Infinity, ease: 'easeInOut' },
-                y: { duration: 12 + idx * 0.5, delay: 1.5, repeat: Infinity, ease: 'easeInOut' },
+                x: { duration: 14, delay: 1.5, repeat: Infinity, ease: 'linear' },
+                y: { duration: 14, delay: 1.5, repeat: Infinity, ease: 'linear' },
               } : {
                 duration: 0.3,
               }}
+              style={{ zIndex: isHovered ? 50 : 10 }}
               onMouseEnter={() => setHoveredCompany(comp.id)}
               onMouseLeave={() => setHoveredCompany(null)}
             >
@@ -98,9 +100,9 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
                 onClick={() => handleCompanyClick(comp)}
                 className="relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer shadow-lg"
                 animate={{
-                  scale: isHovered ? 1.3 : 1,
-                  borderColor: isHovered ? 'hsl(270 80% 65%)' : 'hsl(220 15% 15%)',
-                  boxShadow: isHovered ? '0 0 50px hsl(270 80% 65% / 1), 0 0 30px hsl(45 100% 55% / 0.6), inset 0 0 20px hsl(270 80% 65% / 0.3)' : '0 0 15px hsl(270 80% 65% / 0.4), 0 0 8px hsl(45 100% 55% / 0.2)',
+                  scale: isHovered ? 1.25 : 1,
+                  borderColor: isHovered ? 'hsl(45 100% 55%)' : 'hsl(220 15% 15%)',
+                  boxShadow: isHovered ? '0 0 40px hsl(45 100% 55% / 0.8), inset 0 0 15px hsl(45 100% 55% / 0.2)' : '0 0 12px hsl(45 100% 55% / 0.3)',
                 }}
                 whileHover={{ y: -6 }}
               >
