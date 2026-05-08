@@ -18,15 +18,24 @@ export default function Vitrine() {
   }, []);
 
   const loadData = async () => {
-    const [comps, vids] = await Promise.all([
-      base44.entities.Company.filter({ is_active: true }, 'order'),
-      base44.entities.Video.filter({ is_active: true }, '-order')
-    ]);
-    setCompanies(comps);
-    setVideos(vids);
+    try {
+      const [comps, vids] = await Promise.all([
+        base44.entities.Company.filter({ is_active: true }, 'order'),
+        base44.entities.Video.filter({ is_active: true }, '-order')
+      ]);
+      setCompanies(comps);
+      setVideos(vids);
+    } catch (e) {
+      console.error('Erro ao carregar dados:', e);
+    }
 
-    const auth = await base44.auth.isAuthenticated();
-    if (auth) setUser(await base44.auth.me());
+    try {
+      const auth = await base44.auth.isAuthenticated();
+      if (auth) setUser(await base44.auth.me());
+    } catch (e) {
+      console.error('Erro ao carregar usuário:', e);
+    }
+
     setLoading(false);
   };
 

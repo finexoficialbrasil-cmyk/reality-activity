@@ -18,20 +18,29 @@ export default function Home() {
   }, []);
 
   const loadData = async () => {
-    const [vids, comps] = await Promise.all([
-      base44.entities.Video.filter({ is_active: true }, '-order', 12),
-      base44.entities.Company.filter({ is_active: true }, 'order', 20)
-    ]);
-    setVideos(vids);
-    setCompanies(comps);
-
-    const auth = await base44.auth.isAuthenticated();
-    if (auth) {
-      const me = await base44.auth.me();
-      setUser(me);
-      const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
-      if (pts.length > 0) setUserPoints(pts[0]);
+    try {
+      const [vids, comps] = await Promise.all([
+        base44.entities.Video.filter({ is_active: true }, '-order', 12),
+        base44.entities.Company.filter({ is_active: true }, 'order', 20)
+      ]);
+      setVideos(vids);
+      setCompanies(comps);
+    } catch (e) {
+      console.error('Erro ao carregar vídeos/empresas:', e);
     }
+
+    try {
+      const auth = await base44.auth.isAuthenticated();
+      if (auth) {
+        const me = await base44.auth.me();
+        setUser(me);
+        const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
+        if (pts.length > 0) setUserPoints(pts[0]);
+      }
+    } catch (e) {
+      console.error('Erro ao carregar usuário:', e);
+    }
+
     setLoading(false);
   };
 
