@@ -24,7 +24,8 @@ export default function AdminVideos() {
   };
 
   const defaultForm = () => ({
-    title: '', company_id: companies[0]?.id || '', video_url: '', thumbnail_url: '',
+    title: '', type: 'mp4', company_id: companies[0]?.id || '',
+    video_url: '', banner_url: '', banner_link: '', thumbnail_url: '',
     description: '', points_per_second: 1, bonus_points: 50, duration_seconds: 30,
     is_active: true, order: 0
   });
@@ -67,20 +68,51 @@ export default function AdminVideos() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
             </div>
             <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Tipo *</label>
+              <select value={form.type || 'mp4'} onChange={e => set('type', e.target.value)}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                <option value="mp4">🎬 Vídeo MP4</option>
+                <option value="youtube">▶️ YouTube</option>
+                <option value="banner">🖼️ Banner (imagem)</option>
+              </select>
+            </div>
+            <div>
               <label className="text-xs text-muted-foreground mb-1 block">Empresa *</label>
               <select value={form.company_id || ''} onChange={e => set('company_id', e.target.value)}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none">
                 {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div className="md:col-span-2">
-              <label className="text-xs text-muted-foreground mb-1 block">URL do Vídeo (mp4) *</label>
-              <input value={form.video_url || ''} onChange={e => set('video_url', e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
-            </div>
+
+            {/* Campos condicionais por tipo */}
+            {(form.type === 'mp4' || form.type === 'youtube') && (
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  {form.type === 'youtube' ? '▶️ Link do YouTube (ex: https://youtu.be/abc ou https://youtube.com/watch?v=abc)' : '🎬 URL do Vídeo MP4'}
+                </label>
+                <input value={form.video_url || ''} onChange={e => set('video_url', e.target.value)}
+                  placeholder={form.type === 'youtube' ? 'https://youtu.be/...' : 'https://...video.mp4'}
+                  className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
+              </div>
+            )}
+
+            {form.type === 'banner' && (<>
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">🖼️ URL da Imagem do Banner (Imgur, etc)</label>
+                <input value={form.banner_url || ''} onChange={e => set('banner_url', e.target.value)}
+                  placeholder="https://i.imgur.com/exemplo.jpg"
+                  className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">🔗 Link ao clicar no banner (opcional)</label>
+                <input value={form.banner_link || ''} onChange={e => set('banner_link', e.target.value)}
+                  placeholder="https://site-da-empresa.com"
+                  className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
+              </div>
+            </>)}
+
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">URL da Thumbnail</label>
+              <label className="text-xs text-muted-foreground mb-1 block">URL da Thumbnail (para lista)</label>
               <input value={form.thumbnail_url || ''} onChange={e => set('thumbnail_url', e.target.value)}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
             </div>

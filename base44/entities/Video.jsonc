@@ -4,7 +4,17 @@
   "properties": {
     "title": {
       "type": "string",
-      "description": "T\u00edtulo do v\u00eddeo"
+      "description": "T\u00edtulo do v\u00eddeo / banner"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "mp4",
+        "youtube",
+        "banner"
+      ],
+      "default": "mp4",
+      "description": "Tipo de conte\u00fado"
     },
     "company_id": {
       "type": "string",
@@ -12,7 +22,15 @@
     },
     "video_url": {
       "type": "string",
-      "description": "URL do v\u00eddeo (mp4 ou embed)"
+      "description": "URL do v\u00eddeo mp4 ou link YouTube (https://youtu.be/... ou https://youtube.com/watch?v=...)"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "URL da imagem do banner (imgur, etc)"
+    },
+    "banner_link": {
+      "type": "string",
+      "description": "URL de destino ao clicar no banner"
     },
     "thumbnail_url": {
       "type": "string",
@@ -24,7 +42,7 @@
     "points_per_second": {
       "type": "number",
       "default": 1,
-      "description": "Pontos por segundo assistido"
+      "description": "Pontos por segundo assistido / visualizado"
     },
     "bonus_points": {
       "type": "number",
@@ -54,7 +72,6 @@
   },
   "required": [
     "title",
-    "company_id",
-    "video_url"
+    "company_id"
   ]
 }

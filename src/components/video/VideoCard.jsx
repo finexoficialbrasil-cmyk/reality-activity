@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Play, Star, CheckCircle, Lock } from 'lucide-react';
+import { Play, Star, CheckCircle, Lock, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Extract YouTube video ID from various URL formats
+function getYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
 
 export default function VideoCard({ video, company, user, onPointsEarned }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -13,6 +20,9 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const intervalRef = useRef(null);
   const secondsRef = useRef(0);
   const pointsRef = useRef(0);
+
+  const type = video.type || 'mp4';
+  const youtubeId = type === 'youtube' ? getYouTubeId(video.video_url) : null;
 
   const stopEarning = useCallback(async () => {
     if (!intervalRef.current) return;
@@ -32,7 +42,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         watch_seconds: secondsRef.current
       });
 
-      // Update UserPoints balance
       const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
       if (existing.length > 0) {
         await base44.entities.UserPoints.update(existing[0].id, {
@@ -51,7 +60,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           last_activity: new Date().toISOString()
         });
       }
-
       if (onPointsEarned) onPointsEarned(pts);
     }
     secondsRef.current = 0;
@@ -92,10 +100,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     stopEarning();
   };
 
-  // Mobile touch support
-  const handleTouchStart = () => handleMouseEnter();
-  const handleTouchEnd = () => handleMouseLeave();
-
   useEffect(() => {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
@@ -104,6 +108,155 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const bonus = video.bonus_points || 50;
   const maxPts = ((video.duration_seconds || 30) * pps) + bonus;
 
+  // --- BANNER type ---
+  if (type === 'banner') {
+    return (
+      <motion.div
+        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.01 }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => video.banner_link && window.open(video.banner_link, '_blank')}
+      >
+        <div className="relative aspect-video bg-muted overflow-hidden">
+          {video.banner_url ? (
+            <img src={video.banner_url} alt={video.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground text-sm">Banner</div>
+          )}
+          {video.banner_link && (
+            <div className="absolute top-2 right-2 bg-background/70 rounded-full p-1">
+              <ExternalLink className="w-3.5 h-3.5 text-foreground" />
+            </div>
+          )}
+          <AnimatePresence>
+            {isWatching && (
+              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
+                <Star className="w-3.5 h-3.5 text-background animate-spin" />
+                <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {completed && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-white" />
+              <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
+            </div>
+          )}
+          {showLoginPrompt && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+              <div className="text-center p-4">
+                <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
+                <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
+                <button onClick={() => base44.auth.redirectToLogin()}
+                  className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
+                  Fazer Login
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <h3 className="font-semibold text-sm text-foreground line-clamp-1">{video.title}</h3>
+          {company && (
+            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+              {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
+              {company.name}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
+            <Star className="w-3 h-3 text-gold" /><span className="text-gold font-medium">{pps} pt/s</span>
+            <span>+{bonus} bônus</span>
+            <span className="ml-auto font-semibold text-foreground">até {maxPts} pts</span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // --- YOUTUBE type ---
+  if (type === 'youtube' && youtubeId) {
+    return (
+      <motion.div
+        className="relative rounded-2xl overflow-hidden bg-card border border-border cursor-pointer"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.01 }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="relative aspect-video bg-muted overflow-hidden">
+          {isHovered ? (
+            <iframe
+              className="w-full h-full"
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}`}
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          ) : (
+            <>
+              <img
+                src={video.thumbnail_url || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
+                alt={video.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                  <Play className="w-6 h-6 text-white ml-1" />
+                </div>
+              </div>
+            </>
+          )}
+          <AnimatePresence>
+            {isWatching && (
+              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
+                <Star className="w-3.5 h-3.5 text-background animate-spin" />
+                <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {completed && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-white" />
+              <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
+            </div>
+          )}
+          {showLoginPrompt && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+              <div className="text-center p-4">
+                <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
+                <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
+                <button onClick={() => base44.auth.redirectToLogin()}
+                  className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
+                  Fazer Login
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="p-4">
+          <h3 className="font-semibold text-sm text-foreground line-clamp-2">{video.title}</h3>
+          {company && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              {company.logo_url && <img src={company.logo_url} alt={company.name} className="w-3.5 h-3.5 rounded-full object-cover" />}
+              {company.name}
+            </p>
+          )}
+          <div className="flex items-center gap-3 pt-2 border-t border-border mt-2">
+            <Star className="w-3.5 h-3.5 text-gold" /><span className="text-xs font-medium text-gold">{pps} pt/s</span>
+            <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
+            <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // --- MP4 (default) ---
   return (
     <motion.div
       className="relative rounded-2xl overflow-hidden bg-card border border-border group cursor-pointer"
@@ -112,22 +265,11 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
       whileHover={{ scale: 1.01 }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
     >
-      {/* Video / Thumbnail */}
       <div className="relative aspect-video bg-muted overflow-hidden">
         {video.video_url ? (
-          <video
-            ref={videoRef}
-            src={video.video_url}
-            className="w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster={video.thumbnail_url}
-          />
+          <video ref={videoRef} src={video.video_url} className="w-full h-full object-cover"
+            muted loop playsInline preload="metadata" poster={video.thumbnail_url} />
         ) : video.thumbnail_url ? (
           <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
         ) : (
@@ -135,11 +277,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             <Play className="w-12 h-12 text-muted-foreground" />
           </div>
         )}
-
-        {/* Overlay */}
         <div className={`absolute inset-0 transition-all duration-300 ${isHovered ? 'bg-background/20' : 'bg-background/50'}`} />
-
-        {/* Play hint */}
         {!isHovered && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center glow-gold">
@@ -147,48 +285,34 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             </div>
           </div>
         )}
-
-        {/* Live points counter */}
         <AnimatePresence>
           {isWatching && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute top-3 right-3 flex items-center gap-1.5 bg-gold/95 rounded-full px-3 py-1.5 glow-gold">
               <Star className="w-3.5 h-3.5 text-background animate-spin" />
               <span className="text-xs font-bold text-background">+{pointsEarned} pts</span>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Completed badge */}
         {completed && (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 rounded-full px-3 py-1.5">
             <CheckCircle className="w-3.5 h-3.5 text-white" />
             <span className="text-xs font-bold text-white">+{bonus} Bônus!</span>
           </div>
         )}
-
-        {/* Login prompt overlay */}
         {showLoginPrompt && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
             <div className="text-center p-4">
               <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
               <p className="text-sm font-medium mb-3">Entre para ganhar pontos!</p>
-              <button
-                onClick={() => base44.auth.redirectToLogin()}
-                className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all"
-              >
+              <button onClick={() => base44.auth.redirectToLogin()}
+                className="bg-gold text-background text-sm font-bold px-4 py-2 rounded-full hover:bg-gold-dark transition-all">
                 Fazer Login
               </button>
             </div>
           </div>
         )}
       </div>
-
-      {/* Info */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
@@ -201,21 +325,11 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-3 pt-2 border-t border-border">
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs font-medium text-gold">{pps} pt/s</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
-          </div>
-          <div className="ml-auto">
-            <span className="text-xs font-semibold text-foreground">até {maxPts} pts</span>
-          </div>
+          <Star className="w-3.5 h-3.5 text-gold" /><span className="text-xs font-medium text-gold">{pps} pt/s</span>
+          <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
+          <span className="ml-auto text-xs font-semibold text-foreground">até {maxPts} pts</span>
         </div>
-
-        {/* Hover hint */}
         {!isHovered && (
           <p className="text-xs text-muted-foreground mt-2 text-center">
             {user ? '🖱️ Passe o mouse para ganhar pontos' : '🔒 Entre para ganhar pontos'}
