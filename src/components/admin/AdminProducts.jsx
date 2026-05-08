@@ -61,25 +61,8 @@ export default function AdminProducts() {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const token = await base44.auth.getToken();
-      const res = await fetch('/api/functions/uploadProductFile', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Erro no upload');
-      }
-      
-      const data = await res.json();
-      set('digital_content', data.file_url);
+      const res = await base44.integrations.Core.UploadFile({ file });
+      set('digital_content', res.file_url);
     } catch (err) {
       alert('Erro ao fazer upload: ' + err.message);
     } finally {
