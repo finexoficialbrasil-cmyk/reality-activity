@@ -92,7 +92,12 @@ export default function AdminProducts() {
               <label className="text-xs text-muted-foreground mb-1 block">Empresa *</label>
               <select value={form.company_id || ''} onChange={e => set('company_id', e.target.value)}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm">
-                {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="">Selecione uma empresa</option>
+                {companies && companies.length > 0 ? (
+                  companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+                ) : (
+                  <option disabled>Carregando empresas...</option>
+                )}
               </select>
             </div>
             <div>
