@@ -24,7 +24,18 @@ export default function Vitrine() {
       setCompanies(res.data.companies || []);
       setVideos(res.data.videos || []);
     } catch (e) {
-      console.error('Erro ao carregar dados públicos:', e);
+      console.error('Erro ao carregar via função, tentando direto:', e);
+      // Fallback: carrega direto pelas entidades (RLS público)
+      try {
+        const [comps, vids] = await Promise.all([
+          base44.entities.Company.filter({ is_active: true }, 'order', 20),
+          base44.entities.Video.filter({ is_active: true }, '-order', 50)
+        ]);
+        setCompanies(comps);
+        setVideos(vids);
+      } catch (e2) {
+        console.error('Fallback também falhou:', e2);
+      }
     } finally {
       setLoading(false);
     }

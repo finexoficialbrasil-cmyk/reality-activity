@@ -21,10 +21,23 @@ export default function Home() {
     // Carrega dados públicos via backend (funciona sem login)
     try {
       const res = await base44.functions.invoke('getPublicData', {});
-      setVideos(res.data.videos || []);
-      setCompanies(res.data.companies || []);
+      const vids = res.data.videos || [];
+      const comps = res.data.companies || [];
+      setVideos(vids);
+      setCompanies(comps);
     } catch (e) {
-      console.error('Erro ao carregar dados públicos:', e);
+      console.error('Erro ao carregar via função, tentando direto:', e);
+      // Fallback: carrega direto pelas entidades (RLS público)
+      try {
+        const [vids, comps] = await Promise.all([
+          base44.entities.Video.filter({ is_active: true }, '-order', 20),
+          base44.entities.Company.filter({ is_active: true }, 'order', 20)
+        ]);
+        setVideos(vids);
+        setCompanies(comps);
+      } catch (e2) {
+        console.error('Fallback também falhou:', e2);
+      }
     } finally {
       setLoading(false);
     }
