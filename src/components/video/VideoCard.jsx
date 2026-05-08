@@ -91,7 +91,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   }, [user, video, onPointsEarned]);
 
   // --- Stop counting ---
-  const stopCounting = useCallback(() => {
+  const stopCounting = useCallback(async () => {
     if (!isCounting.current) return;
     isCounting.current = false;
     clearInterval(intervalRef.current);
@@ -101,7 +101,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     secondsRef.current = 0;
     pointsRef.current = 0;
     if (mountedRef.current) setIsWatching(false);
-    if (secs > 0) savePoints(pts, secs);
+    if (secs > 0) await savePoints(pts, secs);
   }, [savePoints]);
 
   // --- Start counting ---
@@ -111,7 +111,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     isCounting.current = true;
     if (mountedRef.current) setIsWatching(true);
 
-    intervalRef.current = setInterval(() => {
+    intervalRef.current = setInterval(async () => {
       secondsRef.current += 1;
       pointsRef.current += pps;
       if (mountedRef.current) setPointsEarned(prev => prev + pps);
@@ -121,7 +121,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         setCompleted(true);
         pointsRef.current += bonus;
         if (mountedRef.current) setPointsEarned(prev => prev + bonus);
-        stopCounting();
+        await stopCounting();
       }
     }, 1000);
   }, [user, pps, bonus, video.duration_seconds, completed, stopCounting]);
@@ -133,10 +133,10 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     if (user) startCounting();
     else setShowLoginPrompt(true);
   };
-  const handleMouseLeave = () => {
+  const handleMouseLeave = async () => {
     setIsHovered(false);
     if (videoRef.current) videoRef.current.pause();
-    stopCounting();
+    await stopCounting();
     setShowLoginPrompt(false);
   };
 
@@ -206,11 +206,12 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     }
     if (!user) setShowLoginPrompt(true);
   };
-  const handleYTLeave = () => {
+  const handleYTLeave = async () => {
     setIsHovered(false);
     if (playerReady) {
       try { playerRef.current?.pauseVideo(); } catch {}
     }
+    await stopCounting();
     setShowLoginPrompt(false);
   };
 

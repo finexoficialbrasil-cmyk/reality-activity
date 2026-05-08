@@ -11,6 +11,7 @@ export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
   const [videos, setVideos] = useState([]);
   const [user, setUser] = useState(null);
+  const [userPoints, setUserPoints] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,13 +44,28 @@ export default function Vitrine() {
     // Carrega usuário em paralelo
     try {
       const auth = await base44.auth.isAuthenticated();
-      if (auth) setUser(await base44.auth.me());
+      if (auth) {
+        const me = await base44.auth.me();
+        setUser(me);
+        const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
+        if (pts.length > 0) setUserPoints(pts[0]);
+      }
     } catch (e) {
       // não logado, ignora
     }
   };
 
-  const handlePointsEarned = () => {};
+  const handlePointsEarned = async () => {
+    // Recarrega pontos do usuário após ganhar
+    if (user) {
+      try {
+        const pts = await base44.entities.UserPoints.filter({ user_email: user.email });
+        if (pts.length > 0) setUserPoints(pts[0]);
+      } catch (e) {
+        console.error('Erro ao recarregar pontos:', e);
+      }
+    }
+  };
 
   const companiesMap = companies.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
 
