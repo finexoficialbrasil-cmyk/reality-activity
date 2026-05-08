@@ -11,26 +11,16 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     setInitialized(true);
   }, []);
 
-  // Todas as empresas orbitam (incluindo a primeira)
   const allCompanies = company ? [company, ...otherCompanies] : otherCompanies;
+  const numCompanies = Math.min(allCompanies.length, 8);
 
-  // Gera padrão único de movimento para cada empresa
-  const getMovementPath = (index, total) => {
-    const baseRadius = 180;
-    const offset = (index / total) * Math.PI * 2;
-    
-    // Cria caminho circular mantendo distância entre empresas
-    const points = [];
-    for (let i = 0; i < 8; i++) {
-      const angle = offset + (i / 8) * Math.PI * 2;
-      // Mantém raio constante evita sobreposição
-      const radius = baseRadius + Math.sin(angle * 1.5) * 30;
-      points.push({
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-      });
-    }
-    return points;
+  // Calcula órbita circular perfeita e equilibrada
+  const getOrbitPosition = (index, total) => {
+    const angle = (index / total) * Math.PI * 2;
+    const baseRadius = 160; // raio base consistente
+    const x = Math.cos(angle) * baseRadius;
+    const y = Math.sin(angle) * baseRadius;
+    return { x, y, angle };
   };
 
   const handleCompanyClick = async (comp) => {
@@ -43,84 +33,77 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   };
 
   return (
-    <div className="relative w-full mx-auto mb-8 md:mb-16">
-      {/* Orbit container */}
-      <div className="relative h-64 sm:h-80 md:h-96 flex items-center justify-center">
+    <div className="relative w-full mx-auto mb-8 md:mb-16 px-4">
+      {/* Orbit container - responsivo */}
+      <div className="relative mx-auto flex items-center justify-center" style={{ aspectRatio: '1 / 1', maxWidth: '600px' }}>
+        {/* Orbit ring visual (optional) */}
+        <div className="absolute inset-0 rounded-full border border-gold/10" />
+        <div className="absolute inset-8 rounded-full border border-gold/5" />
 
-
-        {/* Logo no centro - Viva e brilhante */}
+        {/* Center logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/20 flex items-center justify-center overflow-hidden shadow-2xl" style={{ boxShadow: '0 0 60px hsl(45 100% 55% / 0.15), inset 0 0 40px hsl(45 100% 55% / 0.05)' }}>
+          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/30 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
             <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
-              className="w-full h-full object-contain p-6"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+              className="w-4/5 h-4/5 object-contain"
+              animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 2.5, repeat: Infinity }}
             />
           </div>
         </motion.div>
 
-        {/* Orbiting companies */}
+        {/* Orbiting companies - circular layout */}
         {allCompanies.slice(0, 8).map((comp, idx) => {
-          const pathPoints = getMovementPath(idx, Math.min(allCompanies.length, 8));
+          const position = getOrbitPosition(idx, numCompanies);
           const isHovered = hoveredCompany === comp.id;
           
-          // Cria variantes de movimento para cada empresa
-          const variants = {
-            initial: { opacity: 0, scale: 0, x: 0, y: 0 },
-            animate: {
-              opacity: 1,
-              scale: 1,
-              x: pathPoints.map(p => p.x),
-              y: pathPoints.map(p => p.y),
-            }
-          };
-
           return (
             <motion.div
               key={comp.id}
               className="absolute"
-              initial="initial"
-              animate={initialized ? "animate" : "initial"}
-              variants={variants}
-              transition={initialized ? {
-                opacity: { duration: 0.5, delay: idx * 0.1 },
-                scale: { duration: 0.8, delay: idx * 0.1 },
-                x: { duration: 14, delay: 1.5, repeat: Infinity, ease: 'linear' },
-                y: { duration: 14, delay: 1.5, repeat: Infinity, ease: 'linear' },
-              } : {
-                duration: 0.3,
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: idx * 0.05 }}
+              style={{
+                left: '50%',
+                top: '50%',
+                x: position.x,
+                y: position.y,
+                marginLeft: '-50%',
+                marginTop: '-50%',
+                zIndex: isHovered ? 50 : 10,
               }}
-              style={{ zIndex: isHovered ? 50 : 10 }}
               onMouseEnter={() => setHoveredCompany(comp.id)}
               onMouseLeave={() => setHoveredCompany(null)}
             >
               <motion.button
                 onClick={() => handleCompanyClick(comp)}
-                className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all cursor-pointer shadow-lg"
+                className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-border cursor-pointer shadow-md"
                 animate={{
-                  scale: isHovered ? 1.25 : 1,
+                  scale: isHovered ? 1.2 : 1,
                   borderColor: isHovered ? 'hsl(45 100% 55%)' : 'hsl(220 15% 15%)',
-                  boxShadow: isHovered ? '0 0 40px hsl(45 100% 55% / 0.8), inset 0 0 15px hsl(45 100% 55% / 0.2)' : '0 0 12px hsl(45 100% 55% / 0.3)',
+                  boxShadow: isHovered 
+                    ? '0 0 30px hsl(45 100% 55% / 0.7), inset 0 0 12px hsl(45 100% 55% / 0.15)' 
+                    : '0 0 10px hsl(45 100% 55% / 0.2)',
                 }}
-                whileHover={{ y: -6 }}
+                whileHover={{ scale: 1.2 }}
               >
                 {comp.logo_url ? (
-                  <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover brightness-125 contrast-125 group-hover:saturate-150" />
+                  <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-muted-foreground" />
+                    <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
                   </div>
                 )}
                 {isHovered && (
-                  <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
-                    <ExternalLink className="w-5 h-5 text-gold" />
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                    <ExternalLink className="w-4 h-4 text-gold" />
                   </div>
                 )}
               </motion.button>
@@ -128,9 +111,9 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
               {/* Label on hover */}
               {isHovered && (
                 <motion.div
-                  initial={{ opacity: 0, y: 5 }}
+                  initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute -bottom-6 sm:-bottom-7 md:-bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-gold text-center w-20 sm:w-24"
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-gold text-center w-24 truncate"
                 >
                   {comp.name}
                 </motion.div>
