@@ -191,45 +191,89 @@ export default function Catalog() {
 
           {/* Redemptions Section */}
           {user && redemptions.length > 0 && (
-            <div className="mb-8 p-6 bg-card border border-gold/20 rounded-2xl">
-              <h2 className="font-grotesk font-bold text-xl mb-4 text-gold">Seus Resgates</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-1 w-12 bg-gradient-to-r from-gold to-purple rounded-full"></div>
+                <h2 className="font-grotesk font-bold text-2xl">Seus Resgates</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {redemptions.map(red => {
                   const prod = products.find(p => p.id === red.product_id);
                   const hasFile = prod?.digital_content && (prod.digital_content.startsWith('http'));
                   const isPdf = prod?.digital_content?.toLowerCase().includes('pdf');
+                  const statusConfig = {
+                    delivered: { color: 'from-green-600 to-emerald-600', label: '✓ Entregue', lightBg: 'bg-green-500/10' },
+                    approved: { color: 'from-blue-600 to-cyan-600', label: '⚡ Aprovado', lightBg: 'bg-blue-500/10' },
+                    pending: { color: 'from-amber-600 to-orange-600', label: '⏳ Pendente', lightBg: 'bg-amber-500/10' }
+                  }[red.status] || { color: 'from-muted to-muted', label: 'Status', lightBg: 'bg-muted/10' };
+
                   return (
-                    <div key={red.id} className="bg-secondary rounded-xl p-4 border border-border hover:border-gold/50 transition-all">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-sm">{red.product_name}</h3>
-                          <p className="text-xs text-muted-foreground">{red.company_name}</p>
+                    <div key={red.id} className="group relative bg-gradient-to-br from-secondary to-card rounded-2xl border border-border/50 hover:border-gold/40 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-gold/10">
+                      {/* Status gradient top */}
+                      <div className={`h-1 w-full bg-gradient-to-r ${statusConfig.color}`}></div>
+
+                      <div className="p-5">
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-grotesk font-semibold text-base mb-1 line-clamp-2">{red.product_name}</h3>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Building2 className="w-3 h-3 flex-shrink-0" />
+                              {red.company_name}
+                            </p>
+                          </div>
+                          <span className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap ${statusConfig.lightBg}`}>
+                            {statusConfig.label}
+                          </span>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold whitespace-nowrap ml-2 ${
-                          red.status === 'delivered' ? 'bg-green-500/20 text-green-400' :
-                          red.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
-                          'bg-yellow-500/20 text-yellow-400'
-                        }`}>
-                          {red.status === 'delivered' ? '✓ Entregue' : red.status === 'approved' ? '⚡ Aprovado' : '⏳ Pendente'}
-                        </span>
+
+                        {/* File section */}
+                        {hasFile && red.status === 'delivered' && prod?.digital_content && (
+                          <div className="mb-4">
+                            <div className={`p-4 rounded-xl border-2 border-dashed border-gold/30 ${statusConfig.lightBg} group-hover:border-gold/60 transition-all duration-300`}>
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  {isPdf ? (
+                                    <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                                      <FileText className="w-5 h-5 text-red-400" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
+                                      <Download className="w-5 h-5 text-gold" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="text-xs font-semibold text-muted-foreground">
+                                      {isPdf ? 'Arquivo PDF' : 'Download'}
+                                    </p>
+                                    <p className="text-xs text-gold font-semibold">Pronto para acessar</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <a
+                                href={prod.digital_content}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gold to-gold-dark hover:from-gold-dark hover:to-gold text-background py-2.5 px-4 rounded-lg font-bold transition-all duration-300 text-sm shadow-lg hover:shadow-xl hover:shadow-gold/30"
+                              >
+                                {isPdf ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                                {isPdf ? 'Abrir PDF' : 'Baixar Arquivo'}
+                              </a>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Delivery info */}
+                        {red.delivery_info && (
+                          <div className="pt-3 border-t border-border/30">
+                            <p className="text-xs text-muted-foreground">
+                              <span className="block font-semibold mb-1">Informações de Entrega:</span>
+                              {red.delivery_info}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      {hasFile && red.status === 'delivered' && prod?.digital_content && (
-                        <div className="mb-3 p-3 rounded-lg bg-gold/5 border border-gold/20">
-                          <a
-                            href={prod.digital_content}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full bg-gold hover:bg-gold-dark text-background py-2 px-3 rounded-lg font-semibold transition-all text-sm"
-                          >
-                            {isPdf ? <FileText className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                            {isPdf ? 'Abrir PDF' : 'Baixar Arquivo'}
-                          </a>
-                        </div>
-                      )}
-                      {red.delivery_info && (
-                        <p className="text-xs text-muted-foreground italic border-t border-border/50 pt-3">📬 {red.delivery_info}</p>
-                      )}
                     </div>
                   );
                 })}
