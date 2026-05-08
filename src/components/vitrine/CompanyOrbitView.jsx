@@ -5,12 +5,21 @@ import { Building2, ExternalLink } from 'lucide-react';
 export default function CompanyOrbitView({ company, otherCompanies }) {
   const [hoveredCompany, setHoveredCompany] = useState(null);
 
-  // Calcula posição orbital para cada empresa
+  // Calcula posição orbital para cada empresa (lado direito e superior/inferior)
   const getOrbitPosition = (index, total) => {
-    const angle = (index / total) * Math.PI * 2;
-    const radius = 180;
+    const itemsPerSide = Math.ceil(total / 2);
+    const isTop = index < itemsPerSide;
+    const posInSide = isTop ? index : index - itemsPerSide;
+    const maxPos = Math.max(itemsPerSide - 1, 1);
+    
+    // Distribui em semicírculo no lado direito
+    const angle = isTop 
+      ? (Math.PI / 2) - (posInSide / maxPos) * (Math.PI / 2)
+      : -(Math.PI / 2) + (posInSide / maxPos) * (Math.PI / 2);
+    
+    const radius = 220;
     return {
-      x: Math.cos(angle) * radius,
+      x: Math.cos(angle) * radius + 150,
       y: Math.sin(angle) * radius,
     };
   };
@@ -21,37 +30,38 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto mb-16">
+    <div className="relative w-full max-w-4xl mx-auto mb-16">
       {/* Orbit container */}
-      <div className="relative h-96 flex items-center justify-center">
-        {/* Orbital circles */}
+      <div className="relative h-80 flex items-center justify-start pl-20">
+        {/* Orbital curves */}
         <motion.svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 500 500"
+          className="absolute -left-8 inset-y-0 w-full h-full pointer-events-none"
+          viewBox="0 0 600 400"
+          preserveAspectRatio="none"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
+          animate={{ opacity: 0.2 }}
           transition={{ duration: 0.8 }}
         >
-          <circle cx="250" cy="250" r="150" fill="none" stroke="hsl(45 100% 55%)" strokeWidth="1" opacity="0.2" />
-          <circle cx="250" cy="250" r="200" fill="none" stroke="hsl(270 80% 65%)" strokeWidth="1" opacity="0.15" />
+          <path d="M 150 200 Q 300 100 450 200" fill="none" stroke="hsl(45 100% 55%)" strokeWidth="1" opacity="0.4" />
+          <path d="M 150 200 Q 300 300 450 200" fill="none" stroke="hsl(270 80% 65%)" strokeWidth="1" opacity="0.3" />
         </motion.svg>
 
-        {/* Center company */}
+        {/* Center company - Left side */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="absolute z-10"
+          className="absolute left-0 z-10"
         >
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gold/30 to-purple/30 border-2 border-gold/50 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
+          <div className="w-40 h-40 rounded-full bg-gradient-to-br from-gold/30 to-purple/30 border-2 border-gold/50 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
             {company.logo_url ? (
               <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
             ) : (
-              <Building2 className="w-16 h-16 text-gold" />
+              <Building2 className="w-20 h-20 text-gold" />
             )}
           </div>
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-center whitespace-nowrap">
-            <h3 className="font-grotesk font-bold text-foreground">{company.name}</h3>
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-center whitespace-nowrap">
+            <h3 className="font-grotesk font-bold text-foreground text-lg">{company.name}</h3>
             {company.category && (
               <p className="text-xs text-gold font-semibold">{company.category}</p>
             )}
