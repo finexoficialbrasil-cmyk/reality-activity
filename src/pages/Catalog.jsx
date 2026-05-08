@@ -22,19 +22,29 @@ export default function Catalog() {
   }, []);
 
   const loadData = async () => {
-    const [prods, comps] = await Promise.all([
-      base44.entities.Product.filter({ is_active: true }, 'points_cost'),
-      base44.entities.Company.filter({ is_active: true }, 'order')
-    ]);
-    setProducts(prods);
-    setCompanies(comps);
+    try {
+      const [prods, comps] = await Promise.all([
+        base44.entities.Product.filter({ is_active: true }, 'points_cost'),
+        base44.entities.Company.filter({ is_active: true }, 'order')
+      ]);
+      setProducts(prods);
+      setCompanies(comps);
+    } catch (err) {
+      console.error('Erro ao carregar produtos/empresas:', err);
+      setProducts([]);
+      setCompanies([]);
+    }
 
     const auth = await base44.auth.isAuthenticated();
     if (auth) {
-      const me = await base44.auth.me();
-      setUser(me);
-      const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
-      if (pts.length > 0) setUserPoints(pts[0]);
+      try {
+        const me = await base44.auth.me();
+        setUser(me);
+        const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
+        if (pts.length > 0) setUserPoints(pts[0]);
+      } catch (err) {
+        console.error('Erro ao carregar dados do usuário:', err);
+      }
     }
     setLoading(false);
   };
