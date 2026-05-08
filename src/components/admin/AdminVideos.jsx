@@ -49,6 +49,18 @@ export default function AdminVideos() {
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const companiesMap = companies.reduce((a, c) => { a[c.id] = c; return a; }, {});
 
+  // Extrai YouTube ID de URL ou ID direto
+  const extractYoutubeId = (input) => {
+    if (!input) return '';
+    const match = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))?([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : input;
+  };
+
+  const handleYoutubeInput = (value) => {
+    const id = extractYoutubeId(value);
+    set('video_url', `https://youtu.be/${id}`);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -101,14 +113,22 @@ export default function AdminVideos() {
             </div>
 
             {/* Campos condicionais por tipo */}
-            {(form.type === 'mp4' || form.type === 'youtube') && (
+            {form.type === 'mp4' && (
               <div className="md:col-span-2">
-                <label className="text-xs text-muted-foreground mb-1 block">
-                  {form.type === 'youtube' ? '▶️ Link do YouTube (ex: https://youtu.be/abc ou https://youtube.com/watch?v=abc)' : '🎬 URL do Vídeo MP4'}
-                </label>
+                <label className="text-xs text-muted-foreground mb-1 block">🎬 URL do Vídeo MP4</label>
                 <input value={form.video_url || ''} onChange={e => set('video_url', e.target.value)}
-                  placeholder={form.type === 'youtube' ? 'https://youtu.be/...' : 'https://...video.mp4'}
+                  placeholder="https://...video.mp4"
                   className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
+              </div>
+            )}
+
+            {form.type === 'youtube' && (
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">▶️ YouTube ID *</label>
+                <input value={extractYoutubeId(form.video_url) || ''} onChange={e => handleYoutubeInput(e.target.value)}
+                  placeholder="CskMlpWaEKE ou https://youtu.be/CskMlpWaEKE ou https://youtube.com/shorts/CskMlpWaEKE"
+                  className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold/50" />
+                <p className="text-xs text-muted-foreground mt-1">Cole o ID de 11 caracteres ou qualquer URL do YouTube</p>
               </div>
             )}
 
