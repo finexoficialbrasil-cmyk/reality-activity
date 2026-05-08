@@ -59,6 +59,22 @@ export default function AdminStats() {
     redemptions.forEach(r => { if (statusCount[r.status] !== undefined) statusCount[r.status]++; });
     const redemptionStatus = Object.entries(statusCount).map(([k, v]) => ({ name: k, value: v }));
 
+    // Products redeemed by company
+    const redemptionsByCompany = {};
+    let totalPointsTraded = 0;
+    redemptions.forEach(r => {
+      if (r.company_id) {
+        redemptionsByCompany[r.company_id] = (redemptionsByCompany[r.company_id] || 0) + 1;
+      }
+      totalPointsTraded += r.points_spent || 0;
+    });
+    const companyRedemptions = Object.entries(redemptionsByCompany)
+      .sort(([, a], [, b]) => b - a)
+      .map(([id, count]) => {
+        const comp = companies.find(c => c.id === id);
+        return { name: comp?.name || 'Desconhecido', redeemed: count };
+      });
+
     setData({
       totalUsers: users.length,
       totalCompanies: companies.length,
@@ -72,6 +88,8 @@ export default function AdminStats() {
       last7,
       topCompanies,
       redemptionStatus,
+      companyRedemptions,
+      totalPointsTraded,
       topUsers: [...users].sort((a, b) => (b.balance || 0) - (a.balance || 0)).slice(0, 5),
     });
     setLoading(false);
@@ -112,47 +130,99 @@ export default function AdminStats() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        {/* Points Chart */}
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="font-semibold mb-4">Pontos Distribuídos (7 dias)</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data.last7}>
-              <XAxis dataKey="day" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
-              <YAxis tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: 'hsl(220 18% 9%)', border: '1px solid hsl(220 15% 15%)', borderRadius: 8 }} />
-              <Bar dataKey="pontos" fill="hsl(45,100%,55%)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+         {/* Points Chart */}
+         <div className="bg-card border border-border rounded-2xl p-5">
+           <h3 className="font-semibold mb-4">Pontos Distribuídos (7 dias)</h3>
+           <ResponsiveContainer width="100%" height={200}>
+             <BarChart data={data.last7}>
+               <XAxis dataKey="day" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
+               <YAxis tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} />
+               <Tooltip contentStyle={{ background: 'hsl(220 18% 9%)', border: '1px solid hsl(220 15% 15%)', borderRadius: 8 }} />
+               <Bar dataKey="pontos" fill="hsl(45,100%,55%)" radius={[4, 4, 0, 0]} />
+             </BarChart>
+           </ResponsiveContainer>
+         </div>
 
-        {/* Top Companies */}
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="font-semibold mb-4">Top Empresas por Pontos</h3>
-          {data.topCompanies.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-8">Nenhum dado ainda</p>
-          ) : (
-            <div className="space-y-3">
-              {data.topCompanies.map((c, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium">{c.name}</span>
-                      <span className="text-gold font-semibold">{c.value.toLocaleString()} pts</span>
-                    </div>
-                    <div className="h-1.5 bg-secondary rounded-full">
-                      <div
-                        className="h-full rounded-full bg-gold"
-                        style={{ width: `${(c.value / data.topCompanies[0].value) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+         {/* Top Companies */}
+         <div className="bg-card border border-border rounded-2xl p-5">
+           <h3 className="font-semibold mb-4">Top Empresas por Pontos</h3>
+           {data.topCompanies.length === 0 ? (
+             <p className="text-muted-foreground text-sm text-center py-8">Nenhum dado ainda</p>
+           ) : (
+             <div className="space-y-3">
+               {data.topCompanies.map((c, i) => (
+                 <div key={i} className="flex items-center gap-3">
+                   <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
+                   <div className="flex-1">
+                     <div className="flex justify-between text-sm mb-1">
+                       <span className="font-medium">{c.name}</span>
+                       <span className="text-gold font-semibold">{c.value.toLocaleString()} pts</span>
+                     </div>
+                     <div className="h-1.5 bg-secondary rounded-full">
+                       <div
+                         className="h-full rounded-full bg-gold"
+                         style={{ width: `${(c.value / data.topCompanies[0].value) * 100}%` }}
+                       />
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+         </div>
+       </div>
+
+       {/* Redemptions by Company */}
+       <div className="grid lg:grid-cols-2 gap-6 mb-6">
+         <div className="bg-card border border-border rounded-2xl p-5">
+           <h3 className="font-semibold mb-4">Produtos Resgatados por Empresa</h3>
+           {data.companyRedemptions.length === 0 ? (
+             <p className="text-muted-foreground text-sm text-center py-8">Nenhum resgate ainda</p>
+           ) : (
+             <div className="space-y-3">
+               {data.companyRedemptions.map((c, i) => (
+                 <div key={i} className="flex items-center gap-3">
+                   <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
+                   <div className="flex-1">
+                     <div className="flex justify-between text-sm mb-1">
+                       <span className="font-medium">{c.name}</span>
+                       <span className="text-accent font-semibold">{c.redeemed} produtos</span>
+                     </div>
+                     <div className="h-1.5 bg-secondary rounded-full">
+                       <div
+                         className="h-full rounded-full bg-accent"
+                         style={{ width: `${(c.redeemed / data.companyRedemptions[0].redeemed) * 100}%` }}
+                       />
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+         </div>
+
+         <div className="bg-card border border-border rounded-2xl p-5">
+           <h3 className="font-semibold mb-4">Resumo de Resgates</h3>
+           <div className="space-y-4">
+             <div className="flex justify-between items-center pb-3 border-b border-border">
+               <span className="text-muted-foreground">Total de Resgates</span>
+               <span className="font-bold text-lg text-gold">{data.totalRedemptions}</span>
+             </div>
+             <div className="flex justify-between items-center pb-3 border-b border-border">
+               <span className="text-muted-foreground">Pontos Trocados</span>
+               <span className="font-bold text-lg text-accent">{data.totalPointsTraded.toLocaleString()}</span>
+             </div>
+             <div className="flex justify-between items-center pb-3 border-b border-border">
+               <span className="text-muted-foreground">Resgates Pendentes</span>
+               <span className="font-bold text-lg text-yellow-400">{data.pendingRedemptions}</span>
+             </div>
+             <div className="flex justify-between items-center">
+               <span className="text-muted-foreground">Empresas com Resgates</span>
+               <span className="font-bold text-lg text-purple">{data.companyRedemptions.length}</span>
+             </div>
+           </div>
+         </div>
+       </div>
 
       {/* Top Users */}
       <div className="bg-card border border-border rounded-2xl p-5">
