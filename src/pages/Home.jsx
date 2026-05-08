@@ -4,7 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, Star, Play, ArrowRight, Users, Building2, Gift } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
-import VideoCard from '@/components/video/VideoCard';
+import VideoCardWithBadges from '@/components/video/VideoCardWithBadges';
+import StatsCounter from '@/components/home/StatsCounter';
+import CompaniesCarousel from '@/components/home/CompaniesCarousel';
+import AnimatedFooter from '@/components/home/AnimatedFooter';
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
@@ -156,7 +159,7 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {videos.map((video) => (
-                <VideoCard
+                <VideoCardWithBadges
                   key={video.id}
                   video={video}
                   company={companiesMap[video.company_id]}
@@ -176,18 +179,7 @@ export default function Home() {
         </div>
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
           {stats.map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * i }}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 30px hsl(45 100% 55% / 0.3)' }}
-              className="bg-card border border-border rounded-2xl p-4 text-center cursor-pointer transition-all hover:border-gold/50"
-            >
-              <s.icon className="w-6 h-6 text-gold mx-auto mb-2" />
-              <div className="font-grotesk font-bold text-2xl text-gold">{s.value}</div>
-              <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
-            </motion.div>
+            <StatsCounter key={i} icon={s.icon} value={s.value} label={s.label} />
           ))}
         </div>
       </section>
@@ -228,37 +220,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Companies strip */}
+      {/* Companies Carousel */}
       {companies.length > 0 && (
         <section className="px-4 pb-16">
           <div className="max-w-7xl mx-auto">
-            <h2 className="font-grotesk font-bold text-xl mb-6 text-center">Nossas Empresas & Parceiros</h2>
-            <div className="flex flex-wrap gap-4 justify-center">
-              {companies.map((c) => (
-                <Link key={c.id} to={`/vitrine`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border hover:border-gold/50 transition-all">
-                  {c.logo_url && <img src={c.logo_url} alt={c.name} className="w-5 h-5 rounded-full object-cover" />}
-                  <span className="text-sm font-medium">{c.name}</span>
-                  {c.is_partner && <span className="text-xs text-purple">Parceiro</span>}
-                </Link>
-              ))}
-            </div>
+            <CompaniesCarousel companies={companies} />
           </div>
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-border px-4 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-gold flex items-center justify-center">
-              <Zap className="w-4 h-4 text-background" />
-            </div>
-            <span className="font-grotesk font-bold text-sm">Points<span className="text-gold">Play</span></span>
-          </div>
-          <p className="text-xs text-muted-foreground">© 2026 PointsPlay. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+      {/* Animated Footer */}
+      <AnimatedFooter />
     </div>
   );
 }
