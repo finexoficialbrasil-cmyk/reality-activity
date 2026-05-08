@@ -5,6 +5,7 @@ import { Search, Building2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCard from '@/components/video/VideoCard';
 import CompanyBanner from '@/components/vitrine/CompanyBanner';
+import VitrineHero from '@/components/vitrine/VitrineHero';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
@@ -69,17 +70,8 @@ export default function Vitrine() {
       <Navbar />
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-grotesk font-bold text-3xl md:text-5xl mb-3"
-            >
-              Vitrine de <span className="text-gold">Empresas</span>
-            </motion.h1>
-            <p className="text-muted-foreground">Conheça nosso ecossistema de empresas e parceiros</p>
-          </div>
+          {/* Hero Banner */}
+          <VitrineHero />
 
           {/* Search */}
           <div className="relative max-w-md mx-auto mb-10">
