@@ -5,7 +5,6 @@ import { Search, Building2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCard from '@/components/video/VideoCard';
 import CompanyBanner from '@/components/vitrine/CompanyBanner';
-import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import BannerCarousel from '@/components/home/BannerCarousel';
 
 export default function Vitrine() {
@@ -109,16 +108,6 @@ export default function Vitrine() {
               </div>
             ))}
           </div>
-
-          {/* Orbit view when company selected */}
-          {selectedCompany !== 'all' && companies.find(c => c.id === selectedCompany) && (
-            <div className="mb-14">
-              <CompanyOrbitView 
-                company={companies.find(c => c.id === selectedCompany)}
-                otherCompanies={companies.filter(c => c.id !== selectedCompany)}
-              />
-            </div>
-          )}
 
           {/* Videos by company */}
           <div>
