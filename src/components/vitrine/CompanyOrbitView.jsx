@@ -49,29 +49,13 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           transition={{ duration: 0.6 }}
           className="absolute z-20"
         >
-          {/* Glow background subtle - apenas ouro */}
-          <motion.div
-            animate={{ 
-              boxShadow: [
-                '0 0 30px hsl(45 100% 55% / 0.3), 0 0 60px hsl(45 100% 55% / 0.15)',
-                '0 0 50px hsl(45 100% 55% / 0.5), 0 0 100px hsl(45 100% 55% / 0.25)',
-                '0 0 30px hsl(45 100% 55% / 0.3), 0 0 60px hsl(45 100% 55% / 0.15)',
-              ]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute inset-0 w-56 h-56 rounded-full -z-10"
-          />
-          
-          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-gold/10 via-card to-gold/10 border-2 border-gold/40 flex items-center justify-center overflow-hidden"
-            style={{
-              boxShadow: '0 0 30px hsl(45 100% 55% / 0.4), inset 0 0 20px hsl(45 100% 55% / 0.08)'
-            }}>
+          <div className="w-48 h-48 rounded-full bg-card border border-border flex items-center justify-center overflow-hidden">
             <motion.img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/22326e603_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Logo" 
               className="w-full h-full object-contain p-6"
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
+              animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
             />
           </div>
         </motion.div>
