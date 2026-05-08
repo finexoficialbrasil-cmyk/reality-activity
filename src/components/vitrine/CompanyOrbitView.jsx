@@ -58,18 +58,25 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           </div>
         </motion.div>
 
-        {/* Orbiting companies - circular layout */}
+        {/* Orbiting companies - circular layout com animação */}
         {allCompanies.slice(0, 8).map((comp, idx) => {
-          const position = getOrbitPosition(idx, numCompanies);
+          const angle = (idx / numCompanies) * Math.PI * 2;
+          const baseRadius = 160;
           const isHovered = hoveredCompany === comp.id;
           
           return (
             <motion.div
               key={comp.id}
               className="absolute"
-              initial={{ opacity: 0, scale: 0, x: position.x, y: position.y }}
-              animate={{ opacity: 1, scale: 1, x: position.x, y: position.y }}
-              transition={{ duration: 0.4, delay: idx * 0.05 }}
+              animate={{
+                x: [Math.cos(angle) * baseRadius, Math.cos(angle + 0.3) * baseRadius, Math.cos(angle) * baseRadius],
+                y: [Math.sin(angle) * baseRadius, Math.sin(angle + 0.3) * baseRadius + 8, Math.sin(angle) * baseRadius],
+              }}
+              transition={{
+                duration: 4 + idx * 0.3,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
               style={{
                 left: '50%',
                 top: '50%',
@@ -85,12 +92,17 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
                 className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-border cursor-pointer shadow-md"
                 animate={{
                   scale: isHovered ? 1.2 : 1,
+                  y: isHovered ? 0 : [-4, 4, -4],
                   borderColor: isHovered ? 'hsl(45 100% 55%)' : 'hsl(220 15% 15%)',
                   boxShadow: isHovered 
                     ? '0 0 30px hsl(45 100% 55% / 0.7), inset 0 0 12px hsl(45 100% 55% / 0.15)' 
-                    : '0 0 10px hsl(45 100% 55% / 0.2)',
+                    : '0 0 15px hsl(45 100% 55% / 0.4), 0 0 25px hsl(45 100% 55% / 0.2)',
                 }}
-                whileHover={{ scale: 1.2 }}
+                transition={{
+                  y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+                  scale: { duration: 0.3 },
+                }}
+                whileHover={{ scale: 1.2, y: 0 }}
               >
                 {comp.logo_url ? (
                   <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover" />
