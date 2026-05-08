@@ -61,7 +61,8 @@ export default function Catalog() {
     setRedeeming(product.id);
     const company = companies.find(c => c.id === product.company_id);
 
-    await base44.entities.Redemption.create({
+    // Cria o resgate
+    const redemption = await base44.entities.Redemption.create({
       user_email: user.email,
       user_name: user.full_name,
       product_id: product.id,
@@ -71,6 +72,24 @@ export default function Catalog() {
       points_spent: product.points_cost,
       status: 'pending'
     });
+
+    // Se for digital, processa a entrega automática
+    if (product.type === 'digital') {
+      try {
+        const res = await base44.functions.invoke('processProductRedemption', {
+          product_id: product.id,
+          redemption_id: redemption.id
+        });
+        if (res.data.success) {
+          // Armazena o conteúdo digital para mostrar depois
+          setSuccess({ name: product.name, digital: res.data.digital_content, message: res.data.message });
+        }
+      } catch (err) {
+        console.error('Erro ao processar produto digital:', err);
+      }
+    } else {
+      setSuccess({ name: product.name, message: 'Resgate solicitado! A empresa entrará em contato.' });
+    }
 
     await base44.entities.PointsTransaction.create({
       user_email: user.email,
@@ -92,8 +111,7 @@ export default function Catalog() {
 
     setUserPoints(prev => prev ? { ...prev, balance: newBalance } : null);
     setRedeeming(null);
-    setSuccess(product.name);
-    setTimeout(() => setSuccess(null), 4000);
+    setTimeout(() => setSuccess(null), 5000);
   };
 
   const companiesMap = companies.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
@@ -131,9 +149,30 @@ export default function Catalog() {
           <AnimatePresence>
             {success && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="mb-4 flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400">
-                <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm font-medium">Resgate de "{success}" solicitado! Aguarde aprovação.</span>
+                className="mb-4 flex flex-col gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm font-medium">
+                    {typeof success === 'string' ? `Resgate de "${success}" solicitado!` : success.message}
+                  </span>
+                </div>
+                {typeof success === 'object' && success.digital && (
+                  <div className="mt-2 p-3 bg-green-600/20 rounded-lg border border-green-500/50">
+                    <p className="text-xs font-semibold text-green-300 mb-2">Seu Produto Digital:</p>
+                    <div className="bg-background/50 p-2 rounded text-xs text-foreground break-all font-mono">
+                      {success.digital}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(success.digital);
+                        alert('Copiado para a área de transferência!');
+                      }}
+                      className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1.5 rounded transition-all"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
             {error && (

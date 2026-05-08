@@ -36,6 +36,19 @@
     "redemptions_count": {
       "type": "number",
       "default": 0
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital"
+      ],
+      "default": "physical",
+      "description": "Tipo de produto: f\u00edsico ou digital"
+    },
+    "digital_content": {
+      "type": "string",
+      "description": "Link de download ou c\u00f3digo/arquivo para produtos digitais"
     }
   },
   "required": [
