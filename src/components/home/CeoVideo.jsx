@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 
 // Substitua VIDEO_URL pela URL do YouTube ou MP4 do CEO
-const VIDEO_URL = ''; // ex: 'https://youtu.be/XXXXXXXXXXX'
+const VIDEO_URL = 'https://youtu.be/SmQlaIQcdHs';
 
 function getYouTubeId(url) {
   if (!url) return null;
