@@ -88,7 +88,7 @@ export default function Home() {
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple/20 rounded-full blur-3xl animate-pulse" />
         </div>
         <div className="max-w-7xl mx-auto flex flex-col gap-8 relative z-10">
-          <div className="flex flex-col lg:flex-row gap-8 items-center">
+          <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
             {/* Texto Hero */}
             <div className="flex-1">
               <motion.div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 mb-4 neon-glow"

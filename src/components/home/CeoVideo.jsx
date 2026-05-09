@@ -66,7 +66,7 @@ export default function CeoVideo() {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="w-full max-w-xl mx-auto lg:mx-0"
+      className="w-full max-w-xl mx-auto lg:mx-0 flex flex-col justify-center"
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
