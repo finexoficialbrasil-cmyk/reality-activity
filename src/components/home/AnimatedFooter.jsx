@@ -50,8 +50,8 @@ export default function AnimatedFooter() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <h4 className="font-semibold text-sm mb-4 text-foreground">Contato</h4>
             <div className="space-y-3">
-              <a href="mailto:contato@realityactivity.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">
-                <Mail className="w-4 h-4" /> contato@realityactivity.com
+              <a href="mailto:contato@realityactivity.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">realityactivity.com
+
               </a>
               <a href="tel:+5511999999999" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors">+55 65981297511
 
