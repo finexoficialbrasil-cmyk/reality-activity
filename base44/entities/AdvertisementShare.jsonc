@@ -1,0 +1,47 @@
+{
+  "name": "AdvertisementShare",
+  "type": "object",
+  "properties": {
+    "advertisement_id": {
+      "type": "string",
+      "description": "ID do an\u00fancio"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que compartilhou"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "facebook",
+        "youtube",
+        "whatsapp",
+        "tiktok",
+        "twitter",
+        "linkedin",
+        "outro"
+      ],
+      "description": "Plataforma de compartilhamento"
+    },
+    "points_earned": {
+      "type": "number",
+      "description": "Pontos ganhos neste compartilhamento"
+    },
+    "is_valid": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o compartilhamento foi validado"
+    }
+  },
+  "required": [
+    "advertisement_id",
+    "user_email",
+    "platform",
+    "points_earned"
+  ]
+}

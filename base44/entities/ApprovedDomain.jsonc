@@ -1,0 +1,40 @@
+{
+  "name": "ApprovedDomain",
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "Dom\u00ednio aprovado (ex: mercadolivre.com.br)"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome da empresa/parceiro"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "mercado_livre",
+        "shopee",
+        "tiktok_shop",
+        "amazon",
+        "produtos_digitais",
+        "servicos",
+        "outros"
+      ],
+      "description": "Categoria associada"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Dom\u00ednio ativo"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionais"
+    }
+  },
+  "required": [
+    "domain",
+    "company_name"
+  ]
+}
