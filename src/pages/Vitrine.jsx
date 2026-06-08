@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Building2 } from 'lucide-react';
+import { Building2, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCard from '@/components/video/VideoCard';
 import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import BannerCarousel from '@/components/home/BannerCarousel';
+import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [advertisements, setAdvertisements] = useState([]);
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,16 +29,18 @@ export default function Vitrine() {
     } catch (e) {
       console.error('Erro ao carregar via função, tentando direto:', e);
       // Fallback: carrega direto pelas entidades (RLS público)
-      try {
-        const [comps, vids] = await Promise.all([
-          base44.entities.Company.filter({ is_active: true }, 'order', 20),
-          base44.entities.Video.filter({ is_active: true }, '-order', 50)
-        ]);
-        setCompanies(comps);
-        setVideos(vids);
-      } catch (e2) {
-        console.error('Fallback também falhou:', e2);
-      }
+         try {
+           const [comps, vids, ads] = await Promise.all([
+             base44.entities.Company.filter({ is_active: true }, 'order', 20),
+             base44.entities.Video.filter({ is_active: true }, '-order', 50),
+             base44.entities.Advertisement.filter({ status: 'approved', is_active: true }, '-created_date', 20)
+           ]);
+           setCompanies(comps);
+           setVideos(vids);
+           setAdvertisements(ads);
+         } catch (e2) {
+           console.error('Fallback também falhou:', e2);
+         }
     } finally {
       setLoading(false);
     }
@@ -92,6 +96,25 @@ export default function Vitrine() {
                 company={companies[0]}
                 otherCompanies={companies.slice(1)}
               />
+            </div>
+          )}
+
+          {/* Advertisements Section */}
+          {advertisements.length > 0 && (
+            <div className="mb-16">
+              <h2 className="font-grotesk font-bold text-xl md:text-2xl mb-6 flex items-center gap-2">
+                <Megaphone className="w-6 h-6 text-gold" /> Anúncios Compartilháveis
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {advertisements.map((ad) => (
+                  <AdvertisementCard
+                    key={ad.id}
+                    ad={ad}
+                    user={user}
+                    onAdShared={handlePointsEarned}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
