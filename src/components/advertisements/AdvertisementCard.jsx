@@ -39,7 +39,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
       switch (platform) {
         case 'whatsapp':
-          url = `whatsapp://send?text=${encodeURIComponent(baseMessage)}`;
+          url = `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
           break;
         case 'twitter':
           messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
