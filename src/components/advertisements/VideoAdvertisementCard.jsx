@@ -121,7 +121,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           <iframe
             width="100%"
             height="100%"
-            src={`https://www.youtube.com/embed/${embedId}?controls=0`}
+            src={`https://www.youtube.com/embed/${embedId}?controls=1&autoplay=1&mute=1`}
             title={ad.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
