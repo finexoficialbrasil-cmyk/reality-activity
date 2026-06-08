@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Play, Star, CheckCircle, Lock, ExternalLink, Zap } from 'lucide-react';
+import { Play, Star, CheckCircle, Lock, ExternalLink, Zap, MessageCircle, Twitter, Facebook } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+
+const SHARE_PLATFORMS = [
+  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
+  { id: 'facebook', name: 'Facebook', Icon: Facebook },
+  { id: 'twitter', name: 'X', Icon: Twitter },
+];
 
 // Extract YouTube video ID from various URL formats
 function getYouTubeId(url) {
@@ -38,6 +45,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const [completed, setCompleted] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [sharedPlatform, setSharedPlatform] = useState(null);
 
   const videoRef = useRef(null);
   const iframeRef = useRef(null);
@@ -56,6 +64,55 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   const pps = video.points_per_second || 1;
   const bonus = video.bonus_points || 50;
   const maxPts = ((video.duration_seconds || 30) * pps) + bonus;
+
+  // Share handler
+  const handleShare = async (platform) => {
+    if (!user) {
+      base44.auth.redirectToLogin();
+      return;
+    }
+
+    try {
+      const siteUrl = window.location.origin;
+      let messageText = '';
+      let url = '';
+
+      const baseMessage = `Oii! 👋 Assisti esse vídeo incrível e ganhei pontos! 🎁\n\n✨ ${video.title}\n${siteUrl}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
+      const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      switch (platform) {
+        case 'whatsapp':
+          url = isMobile 
+            ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
+            : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
+          break;
+        case 'facebook':
+          if (isMobile) {
+            url = `fb://page/${siteUrl}`;
+          } else {
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent(video.title)}`;
+          }
+          break;
+        case 'twitter':
+          messageText = `Assisti "${video.title}" e ganhei pontos! 💰 ${siteUrl}\n#GanheComACommunity`;
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+          break;
+      }
+
+      if (url) {
+        window.open(url, '_blank');
+      }
+
+      setSharedPlatform(platform);
+      toast.success('Compartilhado!');
+      setTimeout(() => {
+        setSharedPlatform(null);
+      }, 1500);
+    } catch (err) {
+      toast.error('Erro ao compartilhar');
+    }
+  };
 
   // --- Points saving logic ---
   const savePoints = useCallback(async (pts, secs) => {
@@ -359,13 +416,31 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
+          {/* Share Buttons */}
+          <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
+            {SHARE_PLATFORMS.map((p) => (
+              <motion.button
+                key={p.id}
+                onClick={() => handleShare(p.id)}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+                title={p.name}
+              >
+                <p.Icon className="w-4 h-4" />
+                {sharedPlatform === p.id && (
+                  <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                )}
+              </motion.button>
+            ))}
+          </div>
           <PointsBar />
-        </div>
-      </motion.div>
-    );
-  }
+          </div>
+          </motion.div>
+          );
+          }
 
-  // --- YOUTUBE type ---
+          // --- YOUTUBE type ---
   if (type === 'youtube') {
     const thumbnail = video.thumbnail_url || (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null);
     return (
@@ -408,13 +483,31 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
+          {/* Share Buttons */}
+          <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
+           {SHARE_PLATFORMS.map((p) => (
+             <motion.button
+               key={p.id}
+               onClick={() => handleShare(p.id)}
+               whileHover={{ scale: 1.15 }}
+               whileTap={{ scale: 0.95 }}
+               className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+               title={p.name}
+             >
+               <p.Icon className="w-4 h-4" />
+               {sharedPlatform === p.id && (
+                 <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+               )}
+             </motion.button>
+           ))}
+          </div>
           <PointsBar />
-        </div>
-      </motion.div>
-    );
-  }
+          </div>
+          </motion.div>
+          );
+          }
 
-  // --- MP4 (default) ---
+          // --- MP4 (default) ---
   return (
     <motion.div
       className="relative rounded-2xl overflow-hidden bg-card border border-border group cursor-pointer transition-all duration-300 hover:neon-border"
@@ -472,6 +565,24 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             🖱️ Passe o mouse para ganhar pontos
           </p>
         )}
+        {/* Share Buttons */}
+        <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
+          {SHARE_PLATFORMS.map((p) => (
+            <motion.button
+              key={p.id}
+              onClick={() => handleShare(p.id)}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+              title={p.name}
+            >
+              <p.Icon className="w-4 h-4" />
+              {sharedPlatform === p.id && (
+                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+              )}
+            </motion.button>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
