@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook, Play, Star, Zap, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, CheckCircle, MessageCircle, Twitter, Facebook, Play, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
@@ -253,38 +253,24 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         break;
       case 'facebook':
         const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
-        if (isMobile) {
-          // Mobile: usa intent para abrir Facebook app ou web
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
-        } else {
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
-        }
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
         break;
       case 'twitter':
         messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
-        if (isMobile) {
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
-        } else {
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
-        }
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
         break;
     }
 
-    // Abre a URL imediatamente
-    if (url) {
-      window.open(url, '_blank');
-    }
-
+    if (url) window.open(url, '_blank');
+    
     setSharedPlatform(platform);
     setIsSharing(true);
 
-    // Processa em background sem bloquear a UI
     base44.functions.invoke('processAdvertisementShare', {
       advertisement_id: ad.id,
       platform
     }).then(res => {
-      const rewardPoints = res.data.pointsCost;
-      toast.success(`+${rewardPoints} pontos! 🎉`);
+      toast.success(`+${res.data.pointsCost} pontos! 🎉`);
       if (onPointsEarned) onPointsEarned();
     }).catch(err => {
       toast.error(err.message || 'Erro ao processar compartilhamento');
@@ -327,7 +313,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       <div className="relative aspect-video bg-muted overflow-hidden">
         {/* YouTube IFrame API container */}
         <div ref={ytWrapperRef} className="absolute inset-0 w-full h-full" style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s' }} />
-        
+
         {/* Thumbnail shown before hover */}
         {!isHovered && (
           <div className="absolute inset-0">
@@ -337,7 +323,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
                   <Play className="w-12 h-12 text-muted-foreground opacity-40" />
                 </div>
             }
-            <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/30 group-hover:bg-background/10 transition-all flex items-center justify-center">
               <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
                 <Play className="w-6 h-6 text-white ml-1" />
               </div>
@@ -359,7 +345,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
               disabled={isSharing}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.95 }}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
               title={p.name}
             >
               <p.Icon className="w-4 h-4" />
@@ -393,10 +379,10 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         </div>
 
         {/* Footer */}
-        <div className="space-y-3 pt-2 border-t border-border">
+        <div className="space-y-2 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gold" />
+              <Gift className="w-4 h-4 text-gold" />
               <div className="flex flex-col">
                 <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts/s</span>
                 <span className="text-xs text-muted-foreground">por segundo assistido</span>
@@ -411,33 +397,34 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
+          {/* Share Buttons */}
+          <div className="flex items-center gap-1 justify-center">
+            {SHARE_PLATFORMS.map((p) => (
+              <motion.button
+                key={p.id}
+                onClick={() => handleShare(p.id)}
+                disabled={isSharing}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+                title={p.name}
+              >
+                <p.Icon className="w-4 h-4" />
+                {sharedPlatform === p.id && (
+                  <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                )}
+              </motion.button>
+            ))}
+          </div>
+
           {/* Advertiser Info */}
           <div className="text-xs text-muted-foreground/70 pt-1 border-t border-border/40">
             Anunciado por: <span className="font-medium text-foreground">{ad.user_name}</span>
           </div>
 
-          {/* Progress Bar - Ganhos em tempo real */}
-          {isWatching && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gold">Ganho agora</span>
-                <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {ad.budget_remaining} pts</span>
-              </div>
-              <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden border border-gold/20">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((pointsEarned / ad.budget_remaining) * 100, 100)}%` }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Cooldown Message */}
           {isInCooldown && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-2 bg-orange-500/10 border border-orange-500/30 rounded text-xs text-orange-500 text-center">
-              ⏱️ Anúncio em cooldown. Volta em {Math.ceil((cooldownUntil - new Date()) / 1000 / 60)} min
+              ⏱️ Em cooldown por {Math.ceil((cooldownUntil - new Date()) / 1000 / 60)} min
             </motion.div>
           )}
         </div>
