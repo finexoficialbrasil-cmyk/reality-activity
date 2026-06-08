@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, Star, Play, ArrowRight, Users, Building2, Gift } from 'lucide-react';
+import { Zap, Star, Play, ArrowRight, Users, Building2, Gift, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import VideoCardWithBadges from '@/components/video/VideoCardWithBadges';
 import StatsCounter from '@/components/home/StatsCounter';
@@ -32,8 +32,10 @@ export default function Home() {
       const res = await base44.functions.invoke('getPublicData', {});
       const vids = res.data.videos || [];
       const comps = res.data.companies || [];
+      const ads = res.data.advertisements || [];
       setVideos(vids);
       setCompanies(comps);
+      setAdvertisements(ads.filter(a => a.status === 'approved' && a.is_active));
     } catch (e) {
       console.error('Erro ao carregar via função, tentando direto:', e);
       // Fallback: carrega direto pelas entidades (RLS público)
@@ -41,11 +43,12 @@ export default function Home() {
         const [vids, comps, ads] = await Promise.all([
           base44.entities.Video.filter({ is_active: true }, '-order', 20),
           base44.entities.Company.filter({ is_active: true }, 'order', 20),
-          base44.entities.Advertisement.filter({ status: 'approved', is_active: true }, '-created_date', 8)
+          base44.entities.Advertisement.list('-created_date', 20)
         ]);
+        const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active);
         setVideos(vids);
         setCompanies(comps);
-        setAdvertisements(ads);
+        setAdvertisements(approvedAds);
       } catch (e2) {
         console.error('Fallback também falhou:', e2);
       }
