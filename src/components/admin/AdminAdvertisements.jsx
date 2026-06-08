@@ -107,11 +107,16 @@ export default function AdminAdvertisements() {
 
   const handleEdit = (ad) => {
     setEditingAd(ad);
+    let linkValue = ad.link;
+    // Se for Mercado Livre, preserva o código completo
+    if (ad.category === 'mercado_livre' && !linkValue.startsWith('https://meli.la/')) {
+      linkValue = `https://meli.la/${linkValue}`;
+    }
     setFormData({
       title: ad.title,
       description: ad.description || '',
       image_url: ad.image_url || '',
-      link: ad.link,
+      link: linkValue,
       category: ad.category,
       cost_to_publish: ad.cost_to_publish || 100,
       reward_per_share: ad.reward_per_share || 10
@@ -176,11 +181,25 @@ export default function AdminAdvertisements() {
               value={formData.image_url}
               onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
             />
-            <Input
-              placeholder="Link do anúncio (Mercado Livre, Shopee, etc)"
-              value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-            />
+            {formData.category === 'mercado_livre' ? (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Código Mercado Livre</label>
+                <div className="flex gap-2 items-center">
+                  <span className="text-muted-foreground text-sm">https://meli.la/</span>
+                  <Input
+                    placeholder="1B6VAmR"
+                    value={formData.link.replace('https://meli.la/', '')}
+                    onChange={(e) => setFormData({ ...formData, link: `https://meli.la/${e.target.value}` })}
+                  />
+                </div>
+              </div>
+            ) : (
+              <Input
+                placeholder="Link do anúncio (Shopee, Amazon, etc)"
+                value={formData.link}
+                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              />
+            )}
             <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Categoria" />
