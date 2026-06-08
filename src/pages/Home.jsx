@@ -6,6 +6,7 @@ import { Zap, Star, ArrowRight, Search, Share2, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
+import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -198,12 +199,21 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAds.map((ad) => (
-                <AdvertisementCard
-                  key={ad.id}
-                  ad={ad}
-                  user={user}
-                  onPointsEarned={handlePointsEarned}
-                />
+                ad.type === 'video' ? (
+                  <VideoAdvertisementCard
+                    key={ad.id}
+                    ad={ad}
+                    user={user}
+                    onPointsEarned={handlePointsEarned}
+                  />
+                ) : (
+                  <AdvertisementCard
+                    key={ad.id}
+                    ad={ad}
+                    user={user}
+                    onPointsEarned={handlePointsEarned}
+                  />
+                )
               ))}
             </div>
           )}
