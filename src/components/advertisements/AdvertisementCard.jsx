@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2 } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Instagram, Facebook, Youtube, Music, Twitter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
-  { id: 'whatsapp', name: 'WhatsApp', icon: '💬' },
-  { id: 'instagram', name: 'Instagram', icon: '📸' },
-  { id: 'facebook', name: 'Facebook', icon: '👍' },
-  { id: 'youtube', name: 'YouTube', icon: '🎥' },
-  { id: 'tiktok', name: 'TikTok', icon: '🎵' },
-  { id: 'twitter', name: 'X/Twitter', icon: '𝕏' },
+  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, enabled: true },
+  { id: 'instagram', name: 'Instagram', Icon: Instagram, enabled: false },
+  { id: 'facebook', name: 'Facebook', Icon: Facebook, enabled: false },
+  { id: 'youtube', name: 'YouTube', Icon: Youtube, enabled: false },
+  { id: 'tiktok', name: 'TikTok', Icon: Music, enabled: false },
+  { id: 'twitter', name: 'X', Icon: Twitter, enabled: false },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -35,37 +35,9 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
       // Gera link compartilhável
       const shareText = `Confira: ${ad.title}\n${ad.link}`;
-      let url;
+      const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
 
-      switch (platform) {
-        case 'whatsapp':
-          url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-          break;
-        case 'instagram':
-          url = ad.link;
-          toast.info('Copiar link e compartilhar no Instagram');
-          navigator.clipboard.writeText(ad.link);
-          break;
-        case 'facebook':
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ad.link)}`;
-          break;
-        case 'youtube':
-          toast.info('Compartilhe o link nos comentários do YouTube');
-          navigator.clipboard.writeText(ad.link);
-          break;
-        case 'tiktok':
-          url = ad.link;
-          toast.info('Copiar link e compartilhar no TikTok');
-          navigator.clipboard.writeText(ad.link);
-          break;
-        case 'twitter':
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-          break;
-      }
-
-      if (url && !['instagram', 'youtube', 'tiktok'].includes(platform)) {
-        window.open(url, '_blank');
-      }
+      window.open(url, '_blank');
 
       setSharedPlatform(platform);
       toast.success(`+${res.data.pointsEarned} pontos! 🎉`);
@@ -161,13 +133,18 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             {SHARE_PLATFORMS.map((p) => (
               <motion.button
                 key={p.id}
-                onClick={() => handleShare(p.id)}
-                disabled={isSharing}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gold/10 transition-all disabled:opacity-50"
+                onClick={() => p.enabled && handleShare(p.id)}
+                disabled={isSharing || !p.enabled}
+                whileHover={p.enabled ? { scale: 1.1 } : {}}
+                whileTap={p.enabled ? { scale: 0.95 } : {}}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+                  p.enabled
+                    ? 'hover:bg-gold/10 cursor-pointer'
+                    : 'opacity-40 cursor-not-allowed'
+                }`}
+                title={!p.enabled ? 'Disponível em breve' : ''}
               >
-                <span className="text-2xl">{p.icon}</span>
+                <p.Icon className="w-6 h-6 text-foreground" />
                 <span className="text-xs font-semibold text-foreground">{p.name}</span>
                 {sharedPlatform === p.id && (
                   <CheckCircle className="w-4 h-4 text-green-500 absolute -top-1 -right-1" />
