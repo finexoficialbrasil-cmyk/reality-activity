@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Instagram, Facebook, Youtube, Music, Twitter } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
-  { id: 'facebook', name: 'Facebook', Icon: Facebook },
   { id: 'twitter', name: 'X', Icon: Twitter },
 ];
 
@@ -38,9 +37,6 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       switch (platform) {
         case 'whatsapp':
           url = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
-          break;
-        case 'facebook':
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
           break;
         case 'twitter':
           url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
