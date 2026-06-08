@@ -168,7 +168,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
         <div className="text-sm text-gold">
           <p className="font-semibold">💡 Como funciona</p>
-          <p className="mt-1 text-xs">Você investe {formData.budget_total} pontos para publicar este anúncio. Cada pessoa que compartilhar ganha {formData.reward_per_share} pontos — você paga, seus amigos ganham! 🚀</p>
+          <p className="mt-1 text-xs">Você investe os pontos que desejar para publicar este anúncio. Cada pessoa que compartilhar ganha os pontos que você definir — você paga, seus amigos ganham! 🚀</p>
         </div>
       </div>
 
