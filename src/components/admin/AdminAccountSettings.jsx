@@ -21,16 +21,6 @@ export default function AdminAccountSettings({ user }) {
   }, [user]);
 
   const loadAccountData = async () => {
-    if (!user?.pix_key_type) {
-      setAccountData({
-        admin_name: user?.full_name || '',
-        pix_key_type: '',
-        pix_key: '',
-        bank_name: '',
-      });
-      return;
-    }
-
     setAccountData({
       admin_name: user?.admin_name || user?.full_name || '',
       pix_key_type: user?.pix_key_type || '',
@@ -53,6 +43,18 @@ export default function AdminAccountSettings({ user }) {
         pix_key: accountData.pix_key,
         bank_name: accountData.bank_name,
       });
+      
+      // Recarrega dados do usuário para confirmar salvamento
+      const updatedUser = await base44.auth.me();
+      if (updatedUser) {
+        setAccountData({
+          admin_name: updatedUser?.admin_name || updatedUser?.full_name || '',
+          pix_key_type: updatedUser?.pix_key_type || '',
+          pix_key: updatedUser?.pix_key || '',
+          bank_name: updatedUser?.bank_name || '',
+        });
+      }
+      
       toast.success('Configurações salvas com sucesso!');
     } catch (err) {
       toast.error('Erro ao salvar: ' + (err.message || 'Tente novamente'));
