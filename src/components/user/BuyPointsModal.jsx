@@ -306,8 +306,6 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                      Já Paguei
                    </Button>
                    </div>
-                   </>
-                   )}
                    </motion.div>
                    )}
 
