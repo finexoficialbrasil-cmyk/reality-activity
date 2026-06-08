@@ -5,7 +5,7 @@
     "create": false,
     "read": true,
     "update": false,
-    "delete": false
+    "delete": true
   },
   "properties": {
     "title": {
@@ -37,15 +37,20 @@
       ],
       "description": "Categoria do an\u00fancio"
     },
-    "cost_to_publish": {
+    "budget_total": {
       "type": "number",
       "default": 100,
-      "description": "Custo em pontos para publicar"
+      "description": "Or\u00e7amento total em pontos para este an\u00fancio"
+    },
+    "budget_remaining": {
+      "type": "number",
+      "default": 100,
+      "description": "Saldo restante dispon\u00edvel para pagamentos"
     },
     "reward_per_share": {
       "type": "number",
       "default": 10,
-      "description": "Pontos ganhos por compartilhamento"
+      "description": "Pontos pagos por cada compartilhamento"
     },
     "user_email": {
       "type": "string",
@@ -94,6 +99,8 @@
   "required": [
     "title",
     "link",
-    "category"
+    "category",
+    "budget_total",
+    "reward_per_share"
   ]
 }

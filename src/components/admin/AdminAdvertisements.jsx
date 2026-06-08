@@ -31,7 +31,7 @@ export default function AdminAdvertisements() {
     image_url: '',
     link: '',
     category: 'outros',
-    cost_to_publish: 100,
+    budget_total: 100,
     reward_per_share: 10
   });
 
@@ -90,39 +90,14 @@ export default function AdminAdvertisements() {
         await base44.entities.Advertisement.update(editingAd.id, formData);
         toast.success('Anúncio atualizado');
       } else {
-        const user = await base44.auth.me();
         const newAd = await base44.entities.Advertisement.create({
           ...formData,
-          user_email: user.email,
-          user_name: user.full_name,
-          status: 'pending'
+          budget_remaining: formData.budget_total,
+          user_email: 'admin@platform.com',
+          user_name: 'Admin',
+          status: 'approved'
         });
-        
-        // Cobra pontos do usuário
-        const userPoints = await base44.entities.UserPoints.filter({ user_email: user.email });
-        if (userPoints.length > 0) {
-          const current = userPoints[0];
-          if (current.balance < formData.cost_to_publish) {
-            await base44.entities.Advertisement.delete(newAd.id);
-            toast.error('Saldo insuficiente para publicar este anúncio');
-            setSubmitting(false);
-            return;
-          }
-          await base44.entities.UserPoints.update(current.id, {
-            balance: current.balance - formData.cost_to_publish,
-            total_spent: (current.total_spent || 0) + formData.cost_to_publish
-          });
-        }
-        
-        await base44.entities.PointsTransaction.create({
-          user_email: user.email,
-          user_name: user.full_name,
-          type: 'spent_redemption',
-          points: -formData.cost_to_publish,
-          description: `Publicação de anúncio: ${formData.title}`
-        });
-        
-        toast.success('Anúncio criado e pontos debitados');
+        toast.success('Anúncio criado (aprovado automaticamente pelo admin)');
       }
       
       setShowForm(false);
@@ -133,7 +108,7 @@ export default function AdminAdvertisements() {
         image_url: '',
         link: '',
         category: 'outros',
-        cost_to_publish: 100,
+        budget_total: 100,
         reward_per_share: 10
       });
       
@@ -159,7 +134,7 @@ export default function AdminAdvertisements() {
       image_url: ad.image_url || '',
       link: linkValue,
       category: ad.category,
-      cost_to_publish: ad.cost_to_publish || 100,
+      budget_total: ad.budget_total || 100,
       reward_per_share: ad.reward_per_share || 10
     });
     setShowForm(true);
@@ -256,9 +231,9 @@ export default function AdminAdvertisements() {
             <div className="grid grid-cols-2 gap-4">
               <Input
                 type="number"
-                placeholder="Custo para publicar (pts)"
-                value={formData.cost_to_publish}
-                onChange={(e) => setFormData({ ...formData, cost_to_publish: parseInt(e.target.value) })}
+                placeholder="Orçamento total (pts)"
+                value={formData.budget_total}
+                onChange={(e) => setFormData({ ...formData, budget_total: parseInt(e.target.value) })}
               />
               <Input
                 type="number"
@@ -289,6 +264,7 @@ export default function AdminAdvertisements() {
               <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
               <th className="px-4 py-3 text-center text-sm font-semibold">Compartilhamentos</th>
               <th className="px-4 py-3 text-center text-sm font-semibold">Custo/Recompensa</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Orçamento</th>
               <th className="px-4 py-3 text-right text-sm font-semibold">Ações</th>
             </tr>
           </thead>
@@ -311,7 +287,11 @@ export default function AdminAdvertisements() {
                   </Select>
                 </td>
                 <td className="px-4 py-3 text-center text-sm font-semibold text-gold">{ad.shares_count}</td>
-                <td className="px-4 py-3 text-center text-sm text-muted-foreground">{ad.cost_to_publish}pt / +{ad.reward_per_share}pt</td>
+                <td className="px-4 py-3 text-center text-sm">
+                  <span className={ad.budget_remaining <= 0 ? 'text-destructive font-semibold' : 'text-gold font-semibold'}>
+                    {ad.budget_remaining || 0}/{ad.budget_total || 0} pts
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
                   <Button size="sm" variant="ghost" onClick={() => handleEdit(ad)}>
                     <Edit2 className="w-4 h-4" />

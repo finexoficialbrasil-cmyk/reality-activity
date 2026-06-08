@@ -22,7 +22,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Anúncio não encontrado ou não aprovado' }, { status: 400 });
     }
 
+    // Verifica se o anúncio ainda tem orçamento
+    const budgetRemaining = advertisement.budget_remaining || 0;
     const pointsCost = advertisement.reward_per_share || 10;
+
+    if (budgetRemaining < pointsCost) {
+      return Response.json({ error: 'Orçamento do anúncio esgotado' }, { status: 400 });
+    }
 
     // Cria registro de compartilhamento
     await base44.entities.AdvertisementShare.create({
@@ -34,10 +40,16 @@ Deno.serve(async (req) => {
       is_valid: true
     });
 
-    // Atualiza contador no anúncio
+    // Calcula novo saldo e verifica se deve pausar
+    const newBudgetRemaining = budgetRemaining - pointsCost;
+    const newStatus = newBudgetRemaining <= 0 ? 'inactive' : advertisement.status;
+
+    // Atualiza anúncio com novo saldo e status
     await base44.asServiceRole.entities.Advertisement.update(advertisement_id, {
       shares_count: (advertisement.shares_count || 0) + 1,
-      total_points_awarded: (advertisement.total_points_awarded || 0) + pointsCost
+      total_points_awarded: (advertisement.total_points_awarded || 0) + pointsCost,
+      budget_remaining: newBudgetRemaining,
+      status: newStatus
     });
 
     // Credita pontos para quem compartilhou

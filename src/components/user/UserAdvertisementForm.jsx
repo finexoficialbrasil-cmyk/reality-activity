@@ -26,7 +26,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
     description: '',
     link: '',
     category: 'outros',
-    cost_to_publish: 100,
+    budget_total: 100,
     reward_per_share: 10,
     image_url: ''
   });
@@ -66,15 +66,16 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
       // Cria o anúncio
       const newAd = await base44.entities.Advertisement.create({
         ...formData,
+        budget_remaining: formData.budget_total,
         user_email: user.email,
         user_name: user.full_name,
         status: 'approved'
       });
 
-      // Debita pontos
+      // Debita pontos do orçamento
       await base44.entities.UserPoints.update(userPoints.id, {
-        balance: userPoints.balance - formData.cost_to_publish,
-        total_spent: (userPoints.total_spent || 0) + formData.cost_to_publish
+        balance: userPoints.balance - formData.budget_total,
+        total_spent: (userPoints.total_spent || 0) + formData.budget_total
       });
 
       // Registra transação
@@ -82,8 +83,8 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         user_email: user.email,
         user_name: user.full_name,
         type: 'spent_redemption',
-        points: -formData.cost_to_publish,
-        description: `Publicação de anúncio: ${formData.title}`
+        points: -formData.budget_total,
+        description: `Orçamento de anúncio: ${formData.title}`
       });
 
       // Mostra tela de sucesso com relatório
@@ -100,17 +101,17 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         description: '',
         link: '',
         category: 'outros',
-        cost_to_publish: 100,
+        budget_total: 100,
         reward_per_share: 10,
         image_url: ''
       });
 
       if (onAdCreated) onAdCreated();
 
-      // Volta para o dashboard após 4 segundos
+      // Volta para o dashboard após 3 segundos
       setTimeout(() => {
         setSuccess(null);
-      }, 4000);
+      }, 3000);
     } catch (err) {
       console.error('Erro ao criar anúncio:', err);
       toast.error('Erro ao criar anúncio: ' + (err.message || 'Tente novamente'));
@@ -139,12 +140,12 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-destructive/10 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground mb-1">Custo Debitado</p>
+              <p className="text-xs text-muted-foreground mb-1">Orçamento Debitado</p>
               <p className="font-bold text-lg text-destructive">-{success.cost} pts</p>
             </div>
             <div className="bg-green-500/10 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">Por Compartilhamento</p>
-              <p className="font-bold text-lg text-green-400">-{success.reward} pts</p>
+              <p className="font-bold text-lg text-green-400">+{success.reward} pts</p>
             </div>
           </div>
 
@@ -271,16 +272,16 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Custo (pts)</label>
+            <label className="text-sm font-medium mb-2 block">Orçamento Total (pts)</label>
             <Input
               type="number"
-              value={formData.cost_to_publish}
-              onChange={(e) => setFormData({ ...formData, cost_to_publish: parseInt(e.target.value) })}
+              value={formData.budget_total}
+              onChange={(e) => setFormData({ ...formData, budget_total: parseInt(e.target.value) })}
               min="1"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">Recompensa/Compartilhamento</label>
+            <label className="text-sm font-medium mb-2 block">Pagamento por Compartilhamento (pts)</label>
             <Input
               type="number"
               value={formData.reward_per_share}
@@ -292,7 +293,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
 
         <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
           <div className="flex items-center gap-2">
-            {userPoints && userPoints.balance >= formData.cost_to_publish ? (
+            {userPoints && userPoints.balance >= formData.budget_total ? (
               <>
                 <Check className="w-4 h-4 text-green-400" />
                 <span className="text-sm font-medium">Saldo suficiente</span>
@@ -306,7 +307,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
           </div>
           <p className="text-xs text-muted-foreground">
             Seu saldo: <span className="text-gold font-semibold">{userPoints?.balance || 0} pts</span>
-            {' '} | Custo: <span className="font-semibold">{formData.cost_to_publish} pts</span>
+            {' '} | Orçamento: <span className="font-semibold">{formData.budget_total} pts</span>
           </p>
         </div>
 
@@ -314,7 +315,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
           <Button
             type="submit"
             className="bg-gold text-background hover:bg-gold-dark flex-1"
-            disabled={submitting || !userPoints || userPoints.balance < formData.cost_to_publish}
+            disabled={submitting || !userPoints || userPoints.balance < formData.budget_total}
           >
             {submitting ? '⏳ Publicando...' : '🚀 Publicar Anúncio'}
           </Button>
