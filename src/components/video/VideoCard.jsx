@@ -360,8 +360,8 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   };
 
   const PointsBar = () => (
-    <div className="pt-2 border-t border-border mt-2">
-      <div className="flex items-center gap-3 mb-2">
+    <div className="pt-2 border-t border-border mt-2 space-y-2">
+      <div className="flex items-center gap-3">
         <Star className="w-3.5 h-3.5 text-gold" />
         <span className="text-xs font-medium text-gold">{pps} pt/s</span>
         <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
@@ -383,6 +383,24 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           </div>
         </div>
       )}
+      {/* Share Buttons */}
+      <div className="flex items-center gap-1 justify-center pt-1">
+        {SHARE_PLATFORMS.map((p) => (
+          <motion.button
+            key={p.id}
+            onClick={() => handleShare(p.id)}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+            title={p.name}
+          >
+            <p.Icon className="w-4 h-4" />
+            {sharedPlatform === p.id && (
+              <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+            )}
+          </motion.button>
+        ))}
+      </div>
     </div>
   );
 
@@ -416,24 +434,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
-          {/* Share Buttons */}
-          <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
-            {SHARE_PLATFORMS.map((p) => (
-              <motion.button
-                key={p.id}
-                onClick={() => handleShare(p.id)}
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
-                title={p.name}
-              >
-                <p.Icon className="w-4 h-4" />
-                {sharedPlatform === p.id && (
-                  <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-                )}
-              </motion.button>
-            ))}
-          </div>
           <PointsBar />
           </div>
           </motion.div>
@@ -483,24 +483,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
               {company.name}
             </p>
           )}
-          {/* Share Buttons */}
-          <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
-           {SHARE_PLATFORMS.map((p) => (
-             <motion.button
-               key={p.id}
-               onClick={() => handleShare(p.id)}
-               whileHover={{ scale: 1.15 }}
-               whileTap={{ scale: 0.95 }}
-               className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
-               title={p.name}
-             >
-               <p.Icon className="w-4 h-4" />
-               {sharedPlatform === p.id && (
-                 <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-               )}
-             </motion.button>
-           ))}
-          </div>
           <PointsBar />
           </div>
           </motion.div>
@@ -565,24 +547,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
             🖱️ Passe o mouse para ganhar pontos
           </p>
         )}
-        {/* Share Buttons */}
-        <div className="flex items-center gap-1 justify-center mt-3 pt-3 border-t border-border">
-          {SHARE_PLATFORMS.map((p) => (
-            <motion.button
-              key={p.id}
-              onClick={() => handleShare(p.id)}
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
-              title={p.name}
-            >
-              <p.Icon className="w-4 h-4" />
-              {sharedPlatform === p.id && (
-                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-              )}
-            </motion.button>
-          ))}
-        </div>
       </div>
     </motion.div>
   );

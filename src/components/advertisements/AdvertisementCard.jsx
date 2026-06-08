@@ -159,15 +159,36 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts</span>
-          <button
-            onClick={() => window.open(ad.link, '_blank')}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-gold hover:text-gold-dark transition-all"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Ir
-          </button>
+        <div className="space-y-2 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts</span>
+            <button
+              onClick={() => window.open(ad.link, '_blank')}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-gold hover:text-gold-dark transition-all"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Ir
+            </button>
+          </div>
+          {/* Share Buttons */}
+          <div className="flex items-center gap-1 justify-center">
+            {SHARE_PLATFORMS.map((p) => (
+              <motion.button
+                key={p.id}
+                onClick={() => handleShare(p.id)}
+                disabled={isSharing}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+                title={p.name}
+              >
+                <p.Icon className="w-4 h-4" />
+                {sharedPlatform === p.id && (
+                  <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                )}
+              </motion.button>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>
