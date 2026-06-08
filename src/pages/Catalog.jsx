@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Gift, Search, Building2, CheckCircle, AlertCircle, Download, FileText } from 'lucide-react';
+import { Star, Gift, Search, Building2, CheckCircle, AlertCircle, Download, FileText, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import DynamicSearchBar from '@/components/catalog/DynamicSearchBar';
+import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 
 export default function Catalog() {
   const [products, setProducts] = useState([]);
@@ -17,6 +18,7 @@ export default function Catalog() {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [redemptions, setRedemptions] = useState([]);
+  const [activeTab, setActiveTab] = useState('produtos');
 
   useEffect(() => {
     loadData();
@@ -133,13 +135,43 @@ export default function Catalog() {
       <Navbar />
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
+          {/* Tabs */}
+          <div className="flex gap-4 mb-8 border-b border-border">
+            <button
+              onClick={() => setActiveTab('produtos')}
+              className={`pb-3 px-3 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'produtos'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Gift className="w-4 h-4" /> Resgatar Prêmios
+            </button>
+            <button
+              onClick={() => setActiveTab('anuncios')}
+              className={`pb-3 px-3 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'anuncios'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Megaphone className="w-4 h-4" /> Publicar Anúncio
+            </button>
+          </div>
+
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="font-grotesk font-bold text-3xl md:text-4xl">
-                Catálogo de <span className="text-gold">Prêmios</span>
+                {activeTab === 'produtos' ? (
+                  <>Catálogo de <span className="text-gold">Prêmios</span></>
+                ) : (
+                  <>Publique um <span className="text-gold">Anúncio</span></>
+                )}
               </h1>
-              <p className="text-muted-foreground mt-1">Troque seus pontos por produtos exclusivos</p>
+              <p className="text-muted-foreground mt-1">
+                {activeTab === 'produtos' ? 'Troque seus pontos por produtos exclusivos' : 'Gaste seus pontos para divulgar seu anúncio'}
+              </p>
             </div>
             {user && userPoints && (
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gold/10 border border-gold/30">
@@ -188,6 +220,15 @@ export default function Catalog() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {activeTab === 'anuncios' ? (
+            <UserAdvertisementForm
+              user={user}
+              userPoints={userPoints}
+              onAdCreated={loadData}
+            />
+          ) : (
+            <>
 
           {/* Redemptions Section */}
           {user && redemptions.length > 0 && (
@@ -365,9 +406,11 @@ export default function Catalog() {
                 );
               })}
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+            )}
+            </>
+            )}
+            </div>
+            </div>
+            </div>
+            );
+            }
