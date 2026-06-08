@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone } from 'lucide-react';
+import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import UserCatalog from '@/components/user/UserCatalog';
 import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
+import BuyPointsModal from '@/components/user/BuyPointsModal';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -16,6 +18,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [editingAd, setEditingAd] = useState(null);
+  const [showBuyPoints, setShowBuyPoints] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -144,6 +147,17 @@ export default function UserDashboard() {
             />
           ) : (
             <>
+          {/* Buy Points Button */}
+          <div className="mb-8">
+            <Button
+              onClick={() => setShowBuyPoints(true)}
+              className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Comprar Pontos
+            </Button>
+          </div>
+
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
@@ -234,8 +248,15 @@ export default function UserDashboard() {
           </div>
             </>
           )}
-        </div>
-      </div>
-    </div>
-  );
-}
+          </div>
+          </div>
+
+          <BuyPointsModal
+          user={user}
+          isOpen={showBuyPoints}
+          onClose={() => setShowBuyPoints(false)}
+          onSuccess={() => loadData()}
+          />
+          </div>
+          );
+          }

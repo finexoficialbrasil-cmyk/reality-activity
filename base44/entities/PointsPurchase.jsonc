@@ -1,0 +1,74 @@
+{
+  "name": "PointsPurchase",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "points_requested": {
+      "type": "number",
+      "description": "Quantidade de pontos solicitados"
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Valor pago (em reais)"
+    },
+    "receipt_image_url": {
+      "type": "string",
+      "description": "URL do comprovante de dep\u00f3sito"
+    },
+    "receipt_analysis": {
+      "type": "object",
+      "description": "Resultado da an\u00e1lise por IA",
+      "properties": {
+        "name_match": {
+          "type": "boolean",
+          "description": "Nome confere com o do usu\u00e1rio"
+        },
+        "amount_match": {
+          "type": "boolean",
+          "description": "Valor confere exatamente"
+        },
+        "date_valid": {
+          "type": "boolean",
+          "description": "Data dentro de 24 horas"
+        },
+        "is_valid": {
+          "type": "boolean",
+          "description": "Comprovante \u00e9 v\u00e1lido"
+        },
+        "analysis_text": {
+          "type": "string",
+          "description": "Detalhes da an\u00e1lise"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "analyzing",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Status da solicita\u00e7\u00e3o"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Motivo da rejei\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "user_email",
+    "user_name",
+    "points_requested",
+    "amount_paid",
+    "receipt_image_url"
+  ]
+}
