@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Anúncio não encontrado ou não aprovado' }, { status: 400 });
     }
 
-    const pointsEarned = advertisement.reward_per_share || 10;
+    const pointsCost = advertisement.reward_per_share || 10;
 
     // Cria registro de compartilhamento
     await base44.entities.AdvertisementShare.create({
@@ -30,48 +30,40 @@ Deno.serve(async (req) => {
       user_email: user.email,
       user_name: user.full_name,
       platform,
-      points_earned: pointsEarned,
+      points_earned: pointsCost,
       is_valid: true
     });
 
     // Atualiza contador no anúncio
     await base44.asServiceRole.entities.Advertisement.update(advertisement_id, {
       shares_count: (advertisement.shares_count || 0) + 1,
-      total_points_awarded: (advertisement.total_points_awarded || 0) + pointsEarned
+      total_points_awarded: (advertisement.total_points_awarded || 0) + pointsCost
     });
 
-    // Atualiza pontos do usuário
-    const userPoints = await base44.entities.UserPoints.filter({ user_email: user.email });
-    if (userPoints.length > 0) {
-      await base44.entities.UserPoints.update(userPoints[0].id, {
-        balance: (userPoints[0].balance || 0) + pointsEarned,
-        total_earned: (userPoints[0].total_earned || 0) + pointsEarned,
-        last_activity: new Date().toISOString()
-      });
-    } else {
-      await base44.entities.UserPoints.create({
-        user_email: user.email,
-        user_name: user.full_name,
-        balance: pointsEarned,
-        total_earned: pointsEarned,
+    // Debita pontos do CRIADOR do anúncio
+    const creatorPoints = await base44.entities.UserPoints.filter({ user_email: advertisement.user_email });
+    if (creatorPoints.length > 0) {
+      await base44.entities.UserPoints.update(creatorPoints[0].id, {
+        balance: Math.max(0, (creatorPoints[0].balance || 0) - pointsCost),
+        total_spent: (creatorPoints[0].total_spent || 0) + pointsCost,
         last_activity: new Date().toISOString()
       });
     }
 
-    // Cria transação
+    // Registra transação para o criador
     await base44.entities.PointsTransaction.create({
-      user_email: user.email,
-      user_name: user.full_name,
-      type: 'earned_bonus',
-      points: pointsEarned,
+      user_email: advertisement.user_email,
+      user_name: advertisement.user_name,
+      type: 'spent_redemption',
+      points: -pointsCost,
       advertisement_id,
-      description: `Compartilhou anúncio no ${platform}`
+      description: `Compartilhamento de anúncio no ${platform}`
     });
 
     return Response.json({
       success: true,
-      pointsEarned,
-      message: `+${pointsEarned} pontos ganhos!`
+      pointsCost,
+      message: `-${pointsCost} pontos debitados do criador`
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
