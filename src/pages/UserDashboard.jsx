@@ -15,6 +15,7 @@ export default function UserDashboard() {
   const [redemptions, setRedemptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [editingAd, setEditingAd] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -107,20 +108,24 @@ export default function UserDashboard() {
           </div>
 
           {activeTab === 'anuncios' ? (
-            <div className="space-y-8">
-              <div>
-                <h2 className="font-semibold text-lg mb-4">Publicar Novo Anúncio</h2>
-                <UserAdvertisementForm
-                  user={user}
-                  userPoints={userPoints}
-                  onAdCreated={loadData}
-                />
-              </div>
-              <div>
-                <h2 className="font-semibold text-lg mb-4">Meus Anúncios</h2>
-                <UserAdvertisementsManager user={user} />
-              </div>
-            </div>
+           <div className="space-y-8">
+             <div>
+               <h2 className="font-semibold text-lg mb-4">{editingAd ? 'Editar Anúncio' : 'Publicar Novo Anúncio'}</h2>
+               <UserAdvertisementForm
+                 user={user}
+                 userPoints={userPoints}
+                 onAdCreated={() => {
+                   setEditingAd(null);
+                   loadData();
+                 }}
+                 ad={editingAd}
+               />
+             </div>
+             <div>
+               <h2 className="font-semibold text-lg mb-4">Meus Anúncios</h2>
+               <UserAdvertisementsManager user={user} onEditAd={setEditingAd} />
+             </div>
+           </div>
           ) : activeTab === 'resgatar' ? (
             <UserCatalog
               user={user}

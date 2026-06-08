@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Trash2, Edit2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
-export default function UserAdvertisementsManager({ user }) {
+export default function UserAdvertisementsManager({ user, onEditAd }) {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,7 @@ export default function UserAdvertisementsManager({ user }) {
   if (ads.length === 0) {
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
-        <Eye className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
+        <Edit2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
         <p className="text-muted-foreground">Você não tem anúncios ainda</p>
       </motion.div>
     );
@@ -91,14 +91,24 @@ export default function UserAdvertisementsManager({ user }) {
                 </a>
               </div>
             </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => handleDelete(ad.id)}
-              className="text-destructive hover:bg-destructive/10 flex-shrink-0"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => onEditAd(ad)}
+                className="text-gold hover:bg-gold/10"
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => handleDelete(ad.id)}
+                className="text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         );
       })}
