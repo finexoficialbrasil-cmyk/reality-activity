@@ -68,9 +68,11 @@ Por favor, seja rigoroso. Se algo não estiver claro, reporte como não encontra
     const dateValid = hoursDiff >= 0 && hoursDiff <= 24;
     const isValid = nameMatch && amountMatch && dateValid;
 
-    // Always send to admin for manual review (never auto-approve)
+    // Auto-approve if valid, otherwise send to admin
+    let status = isValid ? 'approved' : 'analyzing';
+
     await base44.asServiceRole.entities.PointsPurchase.update(purchase_id, {
-      status: 'analyzing',
+      status,
       receipt_analysis: {
         name_match: nameMatch,
         amount_match: amountMatch,
@@ -80,9 +82,36 @@ Por favor, seja rigoroso. Se algo não estiver claro, reporte como não encontra
       }
     });
 
+    // If approved, credit the points immediately
+    if (isValid) {
+      const userPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: purchase.user_email });
+
+      if (userPoints.length > 0) {
+        await base44.asServiceRole.entities.UserPoints.update(userPoints[0].id, {
+          balance: (userPoints[0].balance || 0) + purchase.points_requested,
+          total_earned: (userPoints[0].total_earned || 0) + purchase.points_requested
+        });
+      } else {
+        await base44.asServiceRole.entities.UserPoints.create({
+          user_email: purchase.user_email,
+          user_name: purchase.user_name,
+          balance: purchase.points_requested,
+          total_earned: purchase.points_requested
+        });
+      }
+
+      await base44.asServiceRole.entities.PointsTransaction.create({
+        user_email: purchase.user_email,
+        user_name: purchase.user_name,
+        type: 'earned_bonus',
+        points: purchase.points_requested,
+        description: `Compra de ${purchase.points_requested} pontos por R$ ${purchase.amount_paid}`
+      });
+    }
+
     return Response.json({
       purchase_id,
-      status: 'analyzing',
+      status,
       is_valid: isValid,
       analysis
     });

@@ -10,12 +10,16 @@ import confetti from 'canvas-confetti';
 const PRICE_PER_POINT = 0.01; // 1 centavo por ponto
 
 export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
-  const [step, setStep] = useState('select'); // select, upload, analyzing, result
+  const [step, setStep] = useState('select'); // select, pix, upload, analyzing, approved
   const [customPoints, setCustomPoints] = useState('1000');
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
+  const [pixCopied, setPixCopied] = useState(false);
+
+  const PIX_KEY = '00619141';  // Substitua com a chave PIX real
+  const ACCOUNT_NAME = 'MARCIO JOSE GOMES DE SOUZA'; // Substitua com o nome real da conta
 
   const points = parseInt(customPoints) || 0;
   const price = (points * PRICE_PER_POINT).toFixed(2);
@@ -63,14 +67,26 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         purchase_id: purchase.id
       });
 
+      const resultData = analysisRes.data;
       setResult({
-        ...analysisRes.data,
+        ...resultData,
         points_requested: points,
         amount_paid: parseFloat(price)
       });
 
-      // Sempre envia para análise do admin
-      setStep('analyzing');
+      // Se válido → aprovado. Caso contrário → análise do admin
+      if (resultData.is_valid) {
+        setStep('approved');
+        setTimeout(() => {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }, 300);
+      } else {
+        setStep('analyzing');
+      }
     } catch (err) {
       console.error('Erro ao processar:', err);
       toast.error('Erro ao processar comprovante: ' + err.message);
@@ -175,7 +191,7 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                     toast.error('Digite uma quantidade válida de pontos');
                     return;
                   }
-                  setStep('upload');
+                  setStep('pix');
                 }}
                 className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl text-base"
               >
@@ -184,8 +200,78 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
             </motion.div>
           )}
 
+          {/* Step: PIX */}
+           {step === 'pix' && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+               <div className="text-center space-y-2 mb-4">
+                 <h3 className="text-xl font-bold text-foreground">Realize o Pagamento</h3>
+                 <p className="text-sm text-muted-foreground">Copie a chave PIX abaixo e realize o depósito</p>
+               </div>
+
+               {/* PIX Key Box */}
+               <div className="bg-gradient-to-br from-gold/20 to-yellow-500/10 border border-gold/40 rounded-2xl p-6 space-y-4">
+                 <div className="text-center space-y-3">
+                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Chave PIX</p>
+                   <div 
+                     onClick={() => {
+                       navigator.clipboard.writeText(PIX_KEY);
+                       setPixCopied(true);
+                       setTimeout(() => setPixCopied(false), 2000);
+                       toast.success('PIX copiado!');
+                     }}
+                     className="bg-background/50 border border-gold/30 rounded-xl p-4 cursor-pointer hover:bg-background/80 transition-all group"
+                   >
+                     <p className="font-mono font-bold text-lg text-gold group-hover:text-yellow-300 transition-colors">{PIX_KEY}</p>
+                   </div>
+                 </div>
+
+                 <div className="border-t border-gold/20 pt-4 space-y-3">
+                   <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Titular:</span> {ACCOUNT_NAME}</p>
+                   <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Valor:</span> R$ {parseFloat(price).toFixed(2)}</p>
+                   <p className="text-xs text-gold font-semibold">⚠️ Confirme o valor antes de pagar</p>
+                 </div>
+               </div>
+
+               {/* Summary */}
+               <div className="bg-gradient-to-br from-secondary to-secondary/50 rounded-2xl p-5 space-y-3 border border-border/50">
+                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Resumo do Pedido</p>
+                 <div className="space-y-2">
+                   <div className="flex justify-between items-center">
+                     <span className="text-sm text-muted-foreground">Pontos:</span>
+                     <span className="text-lg font-bold text-gold">{points.toLocaleString('pt-BR')} pts</span>
+                   </div>
+                   <div className="h-px bg-border/50" />
+                   <div className="flex justify-between items-center">
+                     <span className="text-sm text-muted-foreground">Valor a depositar:</span>
+                     <span className="text-lg font-bold">R$ {parseFloat(price).toFixed(2)}</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Buttons */}
+               <div className="flex gap-3">
+                 <Button
+                   variant="outline"
+                   onClick={() => {
+                     setStep('select');
+                     setPixCopied(false);
+                   }}
+                   className="flex-1 h-12 rounded-xl border-gold/20 hover:border-gold/40"
+                 >
+                   Voltar
+                 </Button>
+                 <Button
+                   onClick={() => setStep('upload')}
+                   className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
+                 >
+                   Já Paguei
+                 </Button>
+               </div>
+             </motion.div>
+           )}
+
           {/* Step: Upload Receipt */}
-          {step === 'upload' && (
+           {step === 'upload' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               {/* Upload Area */}
               <div className="relative">
@@ -257,6 +343,88 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                   )}
                 </Button>
               </div>
+            </motion.div>
+          )}
+
+          {/* Step: Approved */}
+          {step === 'approved' && result && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                className="text-center space-y-4"
+              >
+                <motion.div 
+                  className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400 flex items-center justify-center mx-auto shadow-xl shadow-green-500/20"
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    boxShadow: ['0 0 0px rgba(34,197,94,0.2)', '0 0 30px rgba(34,197,94,0.5)', '0 0 0px rgba(34,197,94,0.2)']
+                  }}
+                  transition={{ duration: 0.6, repeat: 2 }}
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <CheckCircle className="w-12 h-12 text-green-400" />
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-2"
+                >
+                  <h3 className="font-grotesk font-bold text-3xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                    Parabéns! 🎉
+                  </h3>
+                  <p className="text-lg text-foreground font-semibold">
+                    Comprovante Validado!
+                  </p>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6 space-y-4"
+              >
+                <div className="text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">Seus pontos foram creditados:</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl font-grotesk font-bold text-green-400">
+                      +{result.points_requested?.toLocaleString('pt-BR')}
+                    </span>
+                    <span className="text-xl text-gold">pts</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-green-500/20 pt-4">
+                  <p className="text-xs text-muted-foreground text-center">
+                    ✨ Seu saldo foi atualizado e você já pode usar os pontos!
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="space-y-2"
+              >
+                <Button
+                  onClick={() => {
+                    if (onSuccess) onSuccess();
+                    onClose();
+                  }}
+                  className="w-full h-12 bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 font-bold rounded-xl shadow-lg shadow-green-500/20"
+                >
+                  Ir ao Dashboard
+                </Button>
+              </motion.div>
             </motion.div>
           )}
 
