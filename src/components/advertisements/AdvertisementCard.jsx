@@ -22,61 +22,51 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       return;
     }
 
+    const productLink = ad.link;
+    const siteUrl = window.location.origin;
+    const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    let messageText = '';
+    let url = '';
+
+    const baseMessage = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
+    switch (platform) {
+      case 'whatsapp':
+        url = isMobile 
+          ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
+          : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
+        break;
+      case 'facebook':
+        const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
+        break;
+      case 'twitter':
+        messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+        break;
+    }
+
+    if (url) window.open(url, '_blank');
+
+    setSharedPlatform(platform);
     setIsSharing(true);
-    try {
-      const res = await base44.functions.invoke('processAdvertisementShare', {
-        advertisement_id: ad.id,
-        platform
-      });
 
-      const rewardPoints = res.data.pointsCost;
-      const productLink = ad.link;
-      const siteUrl = window.location.origin;
-
-      let messageText = '';
-      let url = '';
-
-      const baseMessage = `Oii! 👋 Tô ganhando ${rewardPoints} pontos só por compartilhar esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
-
-      const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-      switch (platform) {
-        case 'whatsapp':
-          url = isMobile 
-            ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
-            : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
-          break;
-        case 'facebook':
-          const facebookMessage = `Confira: ${ad.title} - ${productLink}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`;
-          if (isMobile) {
-            url = `fb://page/${siteUrl}`;
-          } else {
-            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
-          }
-          break;
-        case 'twitter':
-          messageText = `Achei esse produto incrível "${ad.title}" e já tô ganhando pontos compartilhando! 💰\n${productLink}\n\nVocê também pode ganhar pontos em ${siteUrl}\n#GanheComACommunity`;
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
-          break;
-      }
-
-      if (url) {
-        window.open(url, '_blank');
-      }
-
-      setSharedPlatform(platform);
-      toast.success(`+${rewardPoints} pontos! 🎉`);
+    base44.functions.invoke('processAdvertisementShare', {
+      advertisement_id: ad.id,
+      platform
+    }).then(res => {
+      toast.success(`+${res.data.pointsCost} pontos! 🎉`);
       if (onPointsEarned) onPointsEarned();
-
+    }).catch(err => {
+      toast.error(err.message || 'Erro ao processar compartilhamento');
+    }).finally(() => {
       setTimeout(() => {
         setShowShareMenu(false);
         setSharedPlatform(null);
-      }, 1500);
-    } catch (err) {
-      toast.error(err.message || 'Erro ao compartilhar');
-    } finally {
-      setIsSharing(false);
-    }
+        setIsSharing(false);
+      }, 1000);
+    });
   };
 
   const categoryLabels = {
