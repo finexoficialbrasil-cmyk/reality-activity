@@ -6,6 +6,11 @@ import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
+  { id: 'instagram', name: 'Instagram', Icon: Instagram },
+  { id: 'facebook', name: 'Facebook', Icon: Facebook },
+  { id: 'youtube', name: 'YouTube', Icon: Youtube },
+  { id: 'tiktok', name: 'TikTok', Icon: Music },
+  { id: 'twitter', name: 'X', Icon: Twitter },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -29,10 +34,40 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       });
 
       // Gera link compartilhável
-      const shareText = `Confira: ${ad.title}\n${ad.link}`;
-      const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      const shareText = `Confira: ${ad.title}`;
+      const shareUrl = ad.link;
+      let url;
 
-      window.open(url, '_blank');
+      switch (platform) {
+        case 'whatsapp':
+          url = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+          break;
+        case 'instagram':
+          url = `https://instagram.com/`;
+          navigator.clipboard.writeText(shareUrl);
+          toast.info('Link copiado! Cole no Instagram Stories ou DM');
+          break;
+        case 'facebook':
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+          break;
+        case 'youtube':
+          url = `https://youtube.com/`;
+          navigator.clipboard.writeText(shareUrl);
+          toast.info('Link copiado! Compartilhe nos comentários');
+          break;
+        case 'tiktok':
+          url = `https://tiktok.com/`;
+          navigator.clipboard.writeText(shareUrl);
+          toast.info('Link copiado! Compartilhe no TikTok');
+          break;
+        case 'twitter':
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+          break;
+      }
+
+      if (url && !['instagram', 'youtube', 'tiktok'].includes(platform)) {
+        window.open(url, '_blank');
+      }
 
       setSharedPlatform(platform);
       toast.success(`+${res.data.pointsEarned} pontos! 🎉`);
