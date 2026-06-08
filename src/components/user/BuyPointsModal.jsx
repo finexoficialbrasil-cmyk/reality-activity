@@ -63,27 +63,14 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         purchase_id: purchase.id
       });
 
-      const result = analysisRes.data;
-      
       setResult({
-        ...result,
+        ...analysisRes.data,
         points_requested: points,
         amount_paid: parseFloat(price)
       });
 
-      // Se validou (is_valid === true) → approved. Caso contrário → analyzing
-      if (result.is_valid === true) {
-        setStep('approved');
-        setTimeout(() => {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
-        }, 300);
-      } else {
-        setStep('analyzing');
-      }
+      // Sempre envia para análise do admin
+      setStep('analyzing');
     } catch (err) {
       console.error('Erro ao processar:', err);
       toast.error('Erro ao processar comprovante: ' + err.message);
@@ -356,87 +343,7 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
             </motion.div>
           )}
 
-          {/* Step: Approved */}
-          {step === 'approved' && result && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-                className="text-center space-y-4"
-              >
-                <motion.div 
-                  className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400 flex items-center justify-center mx-auto shadow-xl shadow-green-500/20"
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    boxShadow: ['0 0 0px rgba(34,197,94,0.2)', '0 0 30px rgba(34,197,94,0.5)', '0 0 0px rgba(34,197,94,0.2)']
-                  }}
-                  transition={{ duration: 0.6, repeat: 2 }}
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <CheckCircle className="w-12 h-12 text-green-400" />
-                  </motion.div>
-                </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="space-y-2"
-                >
-                  <h3 className="font-grotesk font-bold text-3xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                    Parabéns! 🎉
-                  </h3>
-                  <p className="text-lg text-foreground font-semibold">
-                    Comprovante Validado!
-                  </p>
-                </motion.div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6 space-y-4"
-              >
-                <div className="text-center space-y-3">
-                  <p className="text-sm text-muted-foreground">Seus pontos foram creditados:</p>
-                  <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-4xl font-grotesk font-bold text-green-400">
-                      +{result.points_requested?.toLocaleString('pt-BR')}
-                    </span>
-                    <span className="text-xl text-gold">pts</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-green-500/20 pt-4">
-                  <p className="text-xs text-muted-foreground text-center">
-                    ✨ Seu saldo foi atualizado e você já pode usar os pontos!
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="space-y-2"
-              >
-                <Button
-                  onClick={() => {
-                    if (onSuccess) onSuccess();
-                    onClose();
-                  }}
-                  className="w-full h-12 bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 font-bold rounded-xl shadow-lg shadow-green-500/20"
-                >
-                  Ir ao Dashboard
-                </Button>
-              </motion.div>
-            </motion.div>
-          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>
