@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, CheckCircle, XCircle, BarChart3, ShieldCheck,
-  Plus, Eye, Settings, Coins
+  Plus, Eye, Settings, Coins, Target
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -17,6 +17,7 @@ import AdminAdvertisements from '@/components/admin/AdminAdvertisements';
 import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
 import AdminPointsPurchases from '@/components/admin/AdminPointsPurchases';
 import AdminAdvertisersSpending from '@/components/admin/AdminAdvertisersSpending';
+import AdminCampaignsAnalytics from '@/components/admin/AdminCampaignsAnalytics';
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -36,6 +37,7 @@ export default function Admin() {
   const tabs = [
     { id: 'stats', label: 'Dashboard', icon: BarChart3 },
     { id: 'spending', label: 'Gastos', icon: TrendingUp },
+    { id: 'campaigns', label: 'Campanhas', icon: Target },
     { id: 'companies', label: 'Empresas', icon: Building2 },
     { id: 'videos', label: 'Vídeos', icon: Play },
     { id: 'advertisements', label: 'Anúncios', icon: Star },
@@ -90,6 +92,7 @@ export default function Admin() {
        <div className="pt-14 p-6">
          {activeTab === 'stats' && <AdminStats />}
          {activeTab === 'spending' && <AdminAdvertisersSpending />}
+         {activeTab === 'campaigns' && <AdminCampaignsAnalytics />}
          {activeTab === 'companies' && <AdminCompanies />}
          {activeTab === 'videos' && <AdminVideos />}
          {activeTab === 'advertisements' && <AdminAdvertisements />}
