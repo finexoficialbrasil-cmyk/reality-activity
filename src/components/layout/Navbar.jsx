@@ -18,15 +18,27 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (auth) => {
+    const loadUserData = async () => {
+      const auth = await base44.auth.isAuthenticated();
       if (auth) {
         const me = await base44.auth.me();
         setUser(me);
         const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
         if (pts.length > 0) setUserPoints(pts[0]);
       }
+    };
+
+    loadUserData();
+
+    // Subscribe to UserPoints changes for real-time updates
+    const unsubscribe = base44.entities.UserPoints.subscribe((event) => {
+      if (user && event.data.user_email === user.email) {
+        setUserPoints(event.data);
+      }
     });
-  }, [location]);
+
+    return () => unsubscribe();
+  }, [location, user?.email]);
 
   const handleLogout = () => base44.auth.logout('/');
 
