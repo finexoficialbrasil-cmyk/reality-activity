@@ -5,12 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
-  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, enabled: true },
-  { id: 'instagram', name: 'Instagram', Icon: Instagram, enabled: false },
-  { id: 'facebook', name: 'Facebook', Icon: Facebook, enabled: false },
-  { id: 'youtube', name: 'YouTube', Icon: Youtube, enabled: false },
-  { id: 'tiktok', name: 'TikTok', Icon: Music, enabled: false },
-  { id: 'twitter', name: 'X', Icon: Twitter, enabled: false },
+  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -133,16 +128,11 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             {SHARE_PLATFORMS.map((p) => (
               <motion.button
                 key={p.id}
-                onClick={() => p.enabled && handleShare(p.id)}
-                disabled={isSharing || !p.enabled}
-                whileHover={p.enabled ? { scale: 1.1 } : {}}
-                whileTap={p.enabled ? { scale: 0.95 } : {}}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                  p.enabled
-                    ? 'hover:bg-gold/10 cursor-pointer'
-                    : 'opacity-40 cursor-not-allowed'
-                }`}
-                title={!p.enabled ? 'Disponível em breve' : ''}
+                onClick={() => handleShare(p.id)}
+                disabled={isSharing}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gold/10 transition-all cursor-pointer"
               >
                 <p.Icon className="w-6 h-6 text-foreground" />
                 <span className="text-xs font-semibold text-foreground">{p.name}</span>
