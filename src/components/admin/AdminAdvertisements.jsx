@@ -24,6 +24,7 @@ export default function AdminAdvertisements() {
   const [showForm, setShowForm] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -76,10 +77,14 @@ export default function AdminAdvertisements() {
       return;
     }
 
-    const isValid = await validateLink(formData.link);
-    if (!isValid) return;
-
+    setSubmitting(true);
     try {
+      const isValid = await validateLink(formData.link);
+      if (!isValid) {
+        setSubmitting(false);
+        return;
+      }
+
       if (editingAd) {
         await base44.asServiceRole.entities.Advertisement.update(editingAd.id, formData);
         toast.success('Anúncio atualizado');
@@ -102,6 +107,8 @@ export default function AdminAdvertisements() {
     } catch (err) {
       toast.error('Erro ao salvar anúncio');
       console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -225,10 +232,10 @@ export default function AdminAdvertisements() {
               />
             </div>
             <div className="flex gap-2">
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                {editingAd ? 'Atualizar' : 'Criar'}
+              <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={submitting}>
+                {submitting ? '⏳ Salvando...' : (editingAd ? 'Atualizar' : 'Criar')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingAd(null); }}>
+              <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingAd(null); }} disabled={submitting}>
                 Cancelar
               </Button>
             </div>
