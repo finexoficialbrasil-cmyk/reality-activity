@@ -552,7 +552,6 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
             </motion.div>
             )}
             </motion.div>
-            </motion.div>
             </AnimatePresence>
             );
             }
