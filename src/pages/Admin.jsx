@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, CheckCircle, XCircle, BarChart3, ShieldCheck,
-  Plus, Eye, Settings
+  Plus, Eye, Settings, Coins
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -15,6 +15,7 @@ import AdminUsers from '@/components/admin/AdminUsers';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminAdvertisements from '@/components/admin/AdminAdvertisements';
 import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
+import AdminPointsPurchases from '@/components/admin/AdminPointsPurchases';
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -37,6 +38,7 @@ export default function Admin() {
     { id: 'videos', label: 'Vídeos', icon: Play },
     { id: 'advertisements', label: 'Anúncios', icon: Star },
     { id: 'products', label: 'Produtos', icon: Package },
+    { id: 'purchases', label: 'Compras', icon: Coins },
     { id: 'redemptions', label: 'Resgates', icon: Gift },
     { id: 'users', label: 'Usuários', icon: Users },
     { id: 'account', label: 'Conta', icon: Settings },
@@ -89,6 +91,7 @@ export default function Admin() {
          {activeTab === 'videos' && <AdminVideos />}
          {activeTab === 'advertisements' && <AdminAdvertisements />}
          {activeTab === 'products' && <AdminProducts />}
+         {activeTab === 'purchases' && <AdminPointsPurchases />}
          {activeTab === 'redemptions' && <AdminRedemptions />}
          {activeTab === 'users' && <AdminUsers />}
          {activeTab === 'account' && <AdminAccountSettings user={user} />}
