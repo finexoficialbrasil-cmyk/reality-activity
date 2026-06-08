@@ -28,16 +28,22 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         platform
       });
 
-      const shareText = `Confira: ${ad.title}`;
-      const shareUrl = ad.link;
-      let url;
+      const rewardPoints = res.data.pointsCost;
+      const productLink = ad.link;
+      const siteUrl = window.location.origin;
+
+      let messageText = '';
+      let url = '';
+
+      const baseMessage = `Oii! 👋 Tô ganhando ${rewardPoints} pontos só por compartilhar esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
 
       switch (platform) {
         case 'whatsapp':
-          url = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+          url = `https://wa.me/?text=${encodeURIComponent(baseMessage)}`;
           break;
         case 'twitter':
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+          messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
           break;
       }
 
@@ -46,7 +52,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       setSharedPlatform(platform);
-      toast.success(`+${res.data.pointsCost} pontos! 🎉`);
+      toast.success(`+${rewardPoints} pontos! 🎉`);
       if (onPointsEarned) onPointsEarned();
 
       setTimeout(() => {
