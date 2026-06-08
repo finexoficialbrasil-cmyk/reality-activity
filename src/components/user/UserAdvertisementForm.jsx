@@ -24,11 +24,13 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    type: 'image',
     link: '',
     category: 'outros',
     budget_total: 100,
     reward_per_share: 10,
-    image_url: ''
+    image_url: '',
+    video_url: ''
   });
 
   const validateLink = async (link) => {
@@ -99,11 +101,13 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
       setFormData({
         title: '',
         description: '',
+        type: 'image',
         link: '',
         category: 'outros',
         budget_total: 100,
         reward_per_share: 10,
-        image_url: ''
+        image_url: '',
+        video_url: ''
       });
 
       if (onAdCreated) onAdCreated();
@@ -193,6 +197,19 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         </div>
 
         <div>
+          <label className="text-sm font-medium mb-2 block">Tipo de Anúncio *</label>
+          <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="image">🖼️ Anúncio com Imagem</SelectItem>
+              <SelectItem value="video">🎥 Anúncio com Vídeo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
           <label className="text-sm font-medium mb-2 block">Categoria *</label>
           <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
             <SelectTrigger>
@@ -206,7 +223,26 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
           </Select>
         </div>
 
-        {formData.category === 'mercado_livre' ? (
+        {formData.type === 'video' ? (
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Link do Vídeo YouTube *</label>
+              <Input
+                placeholder="https://youtu.be/... ou https://youtube.com/watch?v=..."
+                value={formData.video_url}
+                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Link do Anúncio (onde leva ao clicar) *</label>
+              <Input
+                placeholder="https://exemplo.com/produto"
+                value={formData.link}
+                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              />
+            </div>
+          </div>
+        ) : formData.category === 'mercado_livre' ? (
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium mb-2 block">Link Mercado Livre *</label>
@@ -268,7 +304,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
               )}
             </div>
           </>
-        )}
+        ) }
 
         <div className="grid grid-cols-2 gap-4">
           <div>
