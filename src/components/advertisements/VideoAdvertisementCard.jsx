@@ -417,6 +417,24 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
             ))}
           </div>
 
+          {/* Progress Bar - Ganhos em tempo real */}
+          {isWatching && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gold">Ganho agora</span>
+                <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {ad.budget_remaining} pts</span>
+              </div>
+              <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden border border-gold/20">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((pointsEarned / ad.budget_remaining) * 100, 100)}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </motion.div>
+          )}
+
           {/* Advertiser Info */}
           <div className="text-xs text-muted-foreground/70 pt-1 border-t border-border/40">
             Anunciado por: <span className="font-medium text-foreground">{ad.user_name}</span>
