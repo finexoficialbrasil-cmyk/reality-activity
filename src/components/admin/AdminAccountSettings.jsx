@@ -106,6 +106,7 @@ export default function AdminAccountSettings({ user }) {
                 <SelectItem value="caixa">Caixa Econômica</SelectItem>
                 <SelectItem value="inter">Inter</SelectItem>
                 <SelectItem value="c6">C6 Bank</SelectItem>
+                <SelectItem value="xp">XP Investimentos</SelectItem>
                 <SelectItem value="pix">Outro</SelectItem>
               </SelectContent>
             </Select>
