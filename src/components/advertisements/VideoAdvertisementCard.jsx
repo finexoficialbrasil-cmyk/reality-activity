@@ -169,6 +169,20 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
   }, [user, ad, onPointsEarned]);
 
+  // Start counting points
+  const startCounting = useCallback(() => {
+    if (!user) return;
+    if (isCounting.current) return;
+    isCounting.current = true;
+    if (mountedRef.current) setIsWatching(true);
+
+    intervalRef.current = setInterval(() => {
+      secondsRef.current += 1;
+      pointsRef.current += pps;
+      if (mountedRef.current) setPointsEarned(prev => prev + pps);
+    }, 1000);
+  }, [user, pps]);
+
   // Stop counting points
   const stopCounting = useCallback(() => {
     if (!isCounting.current) return;
@@ -188,20 +202,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     secondsRef.current = 0;
     pointsRef.current = 0;
   }, [savePoints]);
-
-  // Start counting points
-  const startCounting = useCallback(() => {
-    if (!user) return;
-    if (isCounting.current) return;
-    isCounting.current = true;
-    if (mountedRef.current) setIsWatching(true);
-
-    intervalRef.current = setInterval(() => {
-      secondsRef.current += 1;
-      pointsRef.current += pps;
-      if (mountedRef.current) setPointsEarned(prev => prev + pps);
-    }, 1000);
-  }, [user, pps]);
 
   const handleYTEnter = () => {
     setIsHovered(true);
