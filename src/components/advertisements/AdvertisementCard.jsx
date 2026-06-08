@@ -52,10 +52,10 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(`Confira: ${ad.title}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`)}`;
           break;
         case 'instagram':
-          // Instagram não suporta deep linking direto, copia a mensagem
           messageText = `Confira: ${ad.title}\n${productLink}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`;
           navigator.clipboard.writeText(messageText);
-          toast.success('Mensagem copiada! Abra Instagram e cole nos comentários ou DM');
+          url = isMobile ? `instagram://` : `https://www.instagram.com/`;
+          toast.success('Mensagem copiada! Cole no seu post ou stories');
           break;
         case 'twitter':
           messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
@@ -63,13 +63,13 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           break;
         case 'youtube':
           messageText = `Confira este produto incrível: ${ad.title}\n${productLink}\n\nGanhe pontos compartilhando: ${siteUrl}`;
-          url = `https://www.youtube.com/`;
           navigator.clipboard.writeText(messageText);
-          toast.success('Mensagem copiada! Compartilhe nos comentários do YouTube');
+          url = `https://www.youtube.com/`;
+          toast.success('Mensagem copiada! Cole nos comentários do YouTube');
           break;
       }
 
-      if (url && platform !== 'instagram' && platform !== 'youtube') {
+      if (url) {
         window.open(url, '_blank');
       }
 
