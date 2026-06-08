@@ -17,9 +17,34 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [pixCopied, setPixCopied] = useState(false);
+  const [adminData, setAdminData] = useState(null);
+  const [loadingAdmin, setLoadingAdmin] = useState(true);
 
-  const PIX_KEY = '00619141';  // Substitua com a chave PIX real
-  const ACCOUNT_NAME = 'MARCIO JOSE GOMES DE SOUZA'; // Substitua com o nome real da conta
+  useEffect(() => {
+    if (isOpen) {
+      loadAdminData();
+    }
+  }, [isOpen]);
+
+  const loadAdminData = async () => {
+    try {
+      setLoadingAdmin(true);
+      const admins = await base44.entities.User.filter({ role: 'admin' });
+      if (admins.length > 0) {
+        const admin = admins[0];
+        setAdminData({
+          name: admin.admin_name || admin.full_name,
+          pix_key: admin.pix_key,
+          bank_name: admin.bank_name,
+          pix_key_type: admin.pix_key_type
+        });
+      }
+    } catch (err) {
+      console.error('Erro ao carregar dados do admin:', err);
+    } finally {
+      setLoadingAdmin(false);
+    }
+  };
 
   const points = parseInt(customPoints) || 0;
   const price = (points * PRICE_PER_POINT).toFixed(2);
@@ -208,29 +233,43 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                  <p className="text-sm text-muted-foreground">Copie a chave PIX abaixo e realize o depósito</p>
                </div>
 
-               {/* PIX Key Box */}
-               <div className="bg-gradient-to-br from-gold/20 to-yellow-500/10 border border-gold/40 rounded-2xl p-6 space-y-4">
-                 <div className="text-center space-y-3">
-                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Chave PIX</p>
-                   <div 
-                     onClick={() => {
-                       navigator.clipboard.writeText(PIX_KEY);
-                       setPixCopied(true);
-                       setTimeout(() => setPixCopied(false), 2000);
-                       toast.success('PIX copiado!');
-                     }}
-                     className="bg-background/50 border border-gold/30 rounded-xl p-4 cursor-pointer hover:bg-background/80 transition-all group"
-                   >
-                     <p className="font-mono font-bold text-lg text-gold group-hover:text-yellow-300 transition-colors">{PIX_KEY}</p>
-                   </div>
+               {loadingAdmin ? (
+                 <div className="flex justify-center py-8">
+                   <Loader2 className="w-6 h-6 text-gold animate-spin" />
                  </div>
+               ) : adminData?.pix_key ? (
+                 <>
+                   {/* PIX Key Box */}
+                   <div className="bg-gradient-to-br from-gold/20 to-yellow-500/10 border border-gold/40 rounded-2xl p-6 space-y-4">
+                     <div className="text-center space-y-3">
+                       <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                         {adminData.pix_key_type?.toUpperCase()} - {adminData.bank_name}
+                       </p>
+                       <div 
+                         onClick={() => {
+                           navigator.clipboard.writeText(adminData.pix_key);
+                           setPixCopied(true);
+                           setTimeout(() => setPixCopied(false), 2000);
+                           toast.success('PIX copiado!');
+                         }}
+                         className="bg-background/50 border border-gold/30 rounded-xl p-4 cursor-pointer hover:bg-background/80 transition-all group"
+                       >
+                         <p className="font-mono font-bold text-lg text-gold group-hover:text-yellow-300 transition-colors">{adminData.pix_key}</p>
+                       </div>
+                     </div>
 
-                 <div className="border-t border-gold/20 pt-4 space-y-3">
-                   <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Titular:</span> {ACCOUNT_NAME}</p>
-                   <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Valor:</span> R$ {parseFloat(price).toFixed(2)}</p>
-                   <p className="text-xs text-gold font-semibold">⚠️ Confirme o valor antes de pagar</p>
+                     <div className="border-t border-gold/20 pt-4 space-y-3">
+                       <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Titular:</span> {adminData.name}</p>
+                       <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">Valor:</span> R$ {parseFloat(price).toFixed(2)}</p>
+                       <p className="text-xs text-gold font-semibold">⚠️ Confirme o valor antes de pagar</p>
+                     </div>
+                   </div>
+                 </>
+               ) : (
+                 <div className="bg-destructive/20 border border-destructive/40 rounded-2xl p-6 text-center">
+                   <p className="text-sm text-destructive">Dados de PIX não configurados pelo administrador</p>
                  </div>
-               </div>
+               )}
 
                {/* Summary */}
                <div className="bg-gradient-to-br from-secondary to-secondary/50 rounded-2xl p-5 space-y-3 border border-border/50">
@@ -248,27 +287,29 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                  </div>
                </div>
 
-               {/* Buttons */}
-               <div className="flex gap-3">
-                 <Button
-                   variant="outline"
-                   onClick={() => {
-                     setStep('select');
-                     setPixCopied(false);
-                   }}
-                   className="flex-1 h-12 rounded-xl border-gold/20 hover:border-gold/40"
-                 >
-                   Voltar
-                 </Button>
-                 <Button
-                   onClick={() => setStep('upload')}
-                   className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
-                 >
-                   Já Paguei
-                 </Button>
-               </div>
-             </motion.div>
-           )}
+                 {/* Buttons */}
+                 <div className="flex gap-3">
+                   <Button
+                     variant="outline"
+                     onClick={() => {
+                       setStep('select');
+                       setPixCopied(false);
+                     }}
+                     className="flex-1 h-12 rounded-xl border-gold/20 hover:border-gold/40"
+                   >
+                     Voltar
+                   </Button>
+                   <Button
+                     onClick={() => setStep('upload')}
+                     className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
+                   >
+                     Já Paguei
+                   </Button>
+                 </div>
+                 </>
+                 )}
+                 </motion.div>
+                 )}
 
           {/* Step: Upload Receipt */}
            {step === 'upload' && (
@@ -509,11 +550,9 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                 Entendi
               </Button>
             </motion.div>
-          )}
-
-
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
+            )}
+            </motion.div>
+            </motion.div>
+            </AnimatePresence>
+            );
+            }
