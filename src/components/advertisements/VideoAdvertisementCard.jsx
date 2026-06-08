@@ -394,6 +394,11 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
+          {/* Advertiser Info */}
+          <div className="text-xs text-muted-foreground/70 pt-1 border-t border-border/40">
+            Anunciado por: <span className="font-medium text-foreground">{ad.user_name}</span>
+          </div>
+
           {/* Progress Bar - Ganhos em tempo real */}
           {isWatching && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
