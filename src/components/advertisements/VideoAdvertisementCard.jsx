@@ -161,11 +161,20 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     if (mountedRef.current) setIsWatching(true);
 
     intervalRef.current = setInterval(() => {
+      const budgetRemaining = ad.budget_remaining || 0;
+      const pointsToAdd = Math.min(pps, budgetRemaining);
+      
+      if (pointsToAdd <= 0) {
+        // Orçamento zerado, parar de contar
+        stopCounting();
+        return;
+      }
+      
       secondsRef.current += 1;
-      pointsRef.current += pps;
-      if (mountedRef.current) setPointsEarned(prev => prev + pps);
+      pointsRef.current += pointsToAdd;
+      if (mountedRef.current) setPointsEarned(prev => prev + pointsToAdd);
     }, 1000);
-  }, [user, pps]);
+  }, [user, pps, ad.budget_remaining]);
 
   // Stop counting points
   const stopCounting = useCallback(() => {
@@ -296,6 +305,10 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
 
   const budgetPercentage = ad.budget_total ? (ad.budget_remaining / ad.budget_total) * 100 : 0;
   const thumbnail = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null;
+  
+  // Verificar se está em cooldown
+  const cooldownUntil = ad.cooldown_until ? new Date(ad.cooldown_until) : null;
+  const isInCooldown = cooldownUntil && new Date() < cooldownUntil;
 
   return (
     <motion.div
@@ -404,16 +417,23 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gold">Ganho agora</span>
-                <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {maxPts} pts</span>
+                <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {ad.budget_remaining} pts</span>
               </div>
               <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden border border-gold/20">
                 <motion.div
                   className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
                   initial={{ width: 0 }}
-                  animate={{ width: `${(pointsEarned / maxPts) * 100}%` }}
+                  animate={{ width: `${Math.min((pointsEarned / ad.budget_remaining) * 100, 100)}%` }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
+            </motion.div>
+          )}
+
+          {/* Cooldown Message */}
+          {isInCooldown && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-2 bg-orange-500/10 border border-orange-500/30 rounded text-xs text-orange-500 text-center">
+              ⏱️ Anúncio em cooldown. Volta em {Math.ceil((cooldownUntil - new Date()) / 1000 / 60)} min
             </motion.div>
           )}
         </div>

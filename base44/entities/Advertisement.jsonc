@@ -107,6 +107,11 @@
       "type": "number",
       "default": 0,
       "description": "Ordem de exibi\u00e7\u00e3o"
+    },
+    "cooldown_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora at\u00e9 quando o an\u00fancio est\u00e1 em cooldown de 24h ap\u00f3s or\u00e7amento zerado"
     }
   },
   "required": [

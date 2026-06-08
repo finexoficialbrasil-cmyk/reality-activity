@@ -47,15 +47,24 @@ Deno.serve(async (req) => {
 
     // Calcula novo saldo e verifica se deve pausar
     const newBudgetRemaining = budgetRemaining - pointsCost;
-    const newStatus = newBudgetRemaining <= 0 ? 'inactive' : advertisement.status;
+    const budgetZeroed = newBudgetRemaining <= 0;
+    
+    // Se zerou, ativa cooldown de 24h
+    const cooldownUntil = budgetZeroed ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
 
-    // Atualiza anúncio com novo saldo e status
-    await base44.asServiceRole.entities.Advertisement.update(advertisement_id, {
+    // Atualiza anúncio com novo saldo, status e cooldown
+    const updateData = {
       shares_count: (advertisement.shares_count || 0) + 1,
       total_points_awarded: (advertisement.total_points_awarded || 0) + pointsCost,
-      budget_remaining: newBudgetRemaining,
-      status: newStatus
-    });
+      budget_remaining: Math.max(newBudgetRemaining, 0),
+      status: budgetZeroed ? 'inactive' : advertisement.status
+    };
+    
+    if (cooldownUntil) {
+      updateData.cooldown_until = cooldownUntil;
+    }
+
+    await base44.asServiceRole.entities.Advertisement.update(advertisement_id, updateData);
 
     // Credita pontos para quem compartilhou
     const userPoints = await base44.entities.UserPoints.filter({ user_email: user.email });
