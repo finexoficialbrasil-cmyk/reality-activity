@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,22 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
     image_url: '',
     video_url: ''
   });
+
+  useEffect(() => {
+    if (ad) {
+      setFormData({
+        title: ad.title,
+        description: ad.description,
+        type: ad.type || 'image',
+        link: ad.link,
+        category: ad.category,
+        budget_total: ad.budget_total,
+        reward_per_share: ad.reward_per_share,
+        image_url: ad.image_url || '',
+        video_url: ad.video_url || ''
+      });
+    }
+  }, [ad]);
 
   const validateLink = async (link) => {
     try {
