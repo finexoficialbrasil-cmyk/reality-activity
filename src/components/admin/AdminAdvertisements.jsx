@@ -59,11 +59,12 @@ export default function AdminAdvertisements() {
     try {
       const res = await base44.functions.invoke('validateAdvertisementLink', { link });
       if (!res.data.valid) {
-        toast.error(res.data.message);
+        toast.error(res.data.message || 'Link inválido');
         return false;
       }
       return true;
-    } catch {
+    } catch (err) {
+      console.error('Erro ao validar link:', err);
       toast.error('Erro ao validar link');
       return false;
     }
@@ -92,6 +93,7 @@ export default function AdminAdvertisements() {
         await base44.asServiceRole.entities.Advertisement.create(formData);
         toast.success('Anúncio criado');
       }
+      
       setShowForm(false);
       setEditingAd(null);
       setFormData({
@@ -103,11 +105,12 @@ export default function AdminAdvertisements() {
         cost_to_publish: 100,
         reward_per_share: 10
       });
-      loadData();
+      
+      await loadData();
+      setSubmitting(false);
     } catch (err) {
-      toast.error('Erro ao salvar anúncio');
-      console.error(err);
-    } finally {
+      console.error('Erro ao salvar anúncio:', err);
+      toast.error('Erro ao salvar anúncio: ' + (err.message || 'Tente novamente'));
       setSubmitting(false);
     }
   };
