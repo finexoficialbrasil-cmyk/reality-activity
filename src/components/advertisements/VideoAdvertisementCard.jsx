@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook, Play, Star, Zap } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook, Play, Star, Zap, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -271,15 +271,23 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts</span>
-          <button
-            onClick={() => window.open(ad.link, '_blank')}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-gold hover:text-gold-dark transition-all"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Ir
-          </button>
+        <div className="space-y-2 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-gold" />
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts/s</span>
+                <span className="text-xs text-muted-foreground">por segundo assistido</span>
+              </div>
+            </div>
+            <button
+              onClick={() => window.open(ad.link, '_blank')}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-gold hover:text-gold-dark transition-all"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Ir
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
