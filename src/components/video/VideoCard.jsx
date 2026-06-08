@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Play, Star, CheckCircle, Lock, ExternalLink, Zap, MessageCircle, Twitter, Facebook } from 'lucide-react';
+import { Play, Star, CheckCircle, Lock, ExternalLink, Zap, MessageCircle, X, Facebook } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
-  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
+  { id: 'twitter', name: 'X', Icon: X, color: 'text-[#000000] hover:bg-black/10' },
 ];
 
 // Extract YouTube video ID from various URL formats
@@ -386,22 +386,24 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         </div>
       )}
       {/* Share Buttons */}
-      <div className="flex items-center gap-1 justify-center pt-1">
-        {SHARE_PLATFORMS.map((p) => (
-          <motion.button
-            key={p.id}
-            onClick={() => handleShare(p.id)}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
-            className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
-            title={p.name}
-          >
-            <p.Icon className="w-4 h-4" />
-            {sharedPlatform === p.id && (
-              <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-            )}
-          </motion.button>
-        ))}
+      <div className="space-y-2 pt-2 border-t border-border">
+        <div className="flex items-center gap-1 justify-center">
+          {SHARE_PLATFORMS.map((p) => (
+            <motion.button
+              key={p.id}
+              onClick={() => handleShare(p.id)}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+              title={p.name}
+            >
+              <p.Icon className="w-4 h-4" />
+              {sharedPlatform === p.id && (
+                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+              )}
+            </motion.button>
+          ))}
+        </div>
       </div>
     </div>
   );
