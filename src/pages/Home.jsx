@@ -12,6 +12,7 @@ import BannerCarousel from '@/components/home/BannerCarousel';
 import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import CeoVideo from '@/components/home/CeoVideo';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
+import AdvertisementsGrid from '@/components/advertisements/AdvertisementsGrid';
 
 export default function Home() {
   const [videos, setVideos] = useState([]);

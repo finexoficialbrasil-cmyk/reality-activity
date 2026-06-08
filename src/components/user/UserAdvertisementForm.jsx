@@ -24,11 +24,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    image_url: '',
     link: '',
     category: 'outros',
     cost_to_publish: 100,
-    reward_per_share: 10
+    reward_per_share: 10,
+    image_url: ''
   });
 
   const validateLink = async (link) => {
@@ -68,7 +68,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         ...formData,
         user_email: user.email,
         user_name: user.full_name,
-        status: 'pending'
+        status: 'approved'
       });
 
       // Debita pontos
@@ -98,11 +98,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
       setFormData({
         title: '',
         description: '',
-        image_url: '',
         link: '',
         category: 'outros',
         cost_to_publish: 100,
-        reward_per_share: 10
+        reward_per_share: 10,
+        image_url: ''
       });
 
       if (onAdCreated) onAdCreated();
@@ -128,7 +128,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
             <Check className="w-8 h-8 text-green-400" />
           </motion.div>
           <h2 className="font-grotesk font-bold text-2xl text-foreground">Anúncio Publicado! 🎉</h2>
-          <p className="text-muted-foreground">Seu anúncio foi enviado para aprovação</p>
+          <p className="text-muted-foreground">Seu anúncio está ativo e pronto para compartilhar</p>
         </div>
 
         <div className="bg-background/40 rounded-lg p-6 space-y-4">

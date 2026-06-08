@@ -5,6 +5,7 @@ import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphon
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import UserCatalog from '@/components/user/UserCatalog';
+import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -106,11 +107,20 @@ export default function UserDashboard() {
           </div>
 
           {activeTab === 'anuncios' ? (
-            <UserAdvertisementForm
-              user={user}
-              userPoints={userPoints}
-              onAdCreated={loadData}
-            />
+            <div className="space-y-8">
+              <div>
+                <h2 className="font-semibold text-lg mb-4">Publicar Novo Anúncio</h2>
+                <UserAdvertisementForm
+                  user={user}
+                  userPoints={userPoints}
+                  onAdCreated={loadData}
+                />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg mb-4">Meus Anúncios</h2>
+                <UserAdvertisementsManager user={user} />
+              </div>
+            </div>
           ) : activeTab === 'resgatar' ? (
             <UserCatalog
               user={user}
