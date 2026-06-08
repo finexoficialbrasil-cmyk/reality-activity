@@ -90,8 +90,39 @@ export default function AdminAdvertisements() {
         await base44.entities.Advertisement.update(editingAd.id, formData);
         toast.success('Anúncio atualizado');
       } else {
-        await base44.entities.Advertisement.create(formData);
-        toast.success('Anúncio criado');
+        const user = await base44.auth.me();
+        const newAd = await base44.entities.Advertisement.create({
+          ...formData,
+          user_email: user.email,
+          user_name: user.full_name,
+          status: 'pending'
+        });
+        
+        // Cobra pontos do usuário
+        const userPoints = await base44.entities.UserPoints.filter({ user_email: user.email });
+        if (userPoints.length > 0) {
+          const current = userPoints[0];
+          if (current.balance < formData.cost_to_publish) {
+            await base44.entities.Advertisement.delete(newAd.id);
+            toast.error('Saldo insuficiente para publicar este anúncio');
+            setSubmitting(false);
+            return;
+          }
+          await base44.entities.UserPoints.update(current.id, {
+            balance: current.balance - formData.cost_to_publish,
+            total_spent: (current.total_spent || 0) + formData.cost_to_publish
+          });
+        }
+        
+        await base44.entities.PointsTransaction.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          type: 'spent_redemption',
+          points: -formData.cost_to_publish,
+          description: `Publicação de anúncio: ${formData.title}`
+        });
+        
+        toast.success('Anúncio criado e pontos debitados');
       }
       
       setShowForm(false);
@@ -137,20 +168,22 @@ export default function AdminAdvertisements() {
   const handleDelete = async (id) => {
     if (!confirm('Tem certeza que deseja deletar?')) return;
     try {
-      await base44.asServiceRole.entities.Advertisement.delete(id);
+      await base44.entities.Advertisement.delete(id);
       toast.success('Anúncio deletado');
       loadData();
-    } catch {
+    } catch (err) {
+      console.error('Erro ao deletar:', err);
       toast.error('Erro ao deletar');
     }
   };
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await base44.asServiceRole.entities.Advertisement.update(id, { status: newStatus });
+      await base44.entities.Advertisement.update(id, { status: newStatus });
       toast.success(`Status alterado para ${newStatus}`);
       loadData();
-    } catch {
+    } catch (err) {
+      console.error('Erro ao atualizar status:', err);
       toast.error('Erro ao atualizar status');
     }
   };
