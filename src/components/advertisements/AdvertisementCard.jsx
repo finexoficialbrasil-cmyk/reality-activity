@@ -49,27 +49,36 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
           break;
         case 'facebook':
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(`Confira: ${ad.title}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`)}`;
+          const facebookMessage = `Confira: ${ad.title} - ${productLink}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`;
+          if (isMobile) {
+            url = `fb://page/${siteUrl}`;
+          } else {
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
+          }
           break;
         case 'instagram':
-          messageText = `Confira: ${ad.title}\n${productLink}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`;
+          messageText = `Confira: ${ad.title}\n\n${productLink}\n\nEu tô ganhando pontos compartilhando isso!\n${siteUrl}`;
           navigator.clipboard.writeText(messageText);
-          url = isMobile ? `instagram://` : `https://www.instagram.com/`;
-          toast.success('Mensagem copiada! Cole no seu post ou stories');
+          if (isMobile) {
+            url = `instagram://user?username=`;
+          } else {
+            url = `https://www.instagram.com/`;
+          }
+          toast.success('✅ Mensagem copiada! Cole no seu post ou stories do Instagram');
           break;
         case 'twitter':
-          messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
+          messageText = `Achei esse produto incrível "${ad.title}" e já tô ganhando pontos compartilhando! 💰\n${productLink}\n\nVocê também pode ganhar pontos em ${siteUrl}\n#GanheComACommunity`;
           url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
           break;
         case 'youtube':
           messageText = `Confira este produto incrível: ${ad.title}\n${productLink}\n\nGanhe pontos compartilhando: ${siteUrl}`;
           navigator.clipboard.writeText(messageText);
           url = `https://www.youtube.com/`;
-          toast.success('Mensagem copiada! Cole nos comentários do YouTube');
+          toast.success('✅ Mensagem copiada! Cole nos comentários do YouTube');
           break;
       }
 
-      if (url) {
+      if (url && (platform === 'whatsapp' || platform === 'twitter' || platform === 'facebook' || (platform === 'instagram' && !isMobile) || (platform === 'youtube'))) {
         window.open(url, '_blank');
       }
 
