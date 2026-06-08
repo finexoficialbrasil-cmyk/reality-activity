@@ -16,6 +16,7 @@ import AdminStats from '@/components/admin/AdminStats';
 import AdminAdvertisements from '@/components/admin/AdminAdvertisements';
 import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
 import AdminPointsPurchases from '@/components/admin/AdminPointsPurchases';
+import AdminAdvertisersSpending from '@/components/admin/AdminAdvertisersSpending';
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -34,6 +35,7 @@ export default function Admin() {
 
   const tabs = [
     { id: 'stats', label: 'Dashboard', icon: BarChart3 },
+    { id: 'spending', label: 'Gastos', icon: TrendingUp },
     { id: 'companies', label: 'Empresas', icon: Building2 },
     { id: 'videos', label: 'Vídeos', icon: Play },
     { id: 'advertisements', label: 'Anúncios', icon: Star },
@@ -87,6 +89,7 @@ export default function Admin() {
       {/* Content */}
        <div className="pt-14 p-6">
          {activeTab === 'stats' && <AdminStats />}
+         {activeTab === 'spending' && <AdminAdvertisersSpending />}
          {activeTab === 'companies' && <AdminCompanies />}
          {activeTab === 'videos' && <AdminVideos />}
          {activeTab === 'advertisements' && <AdminAdvertisements />}
