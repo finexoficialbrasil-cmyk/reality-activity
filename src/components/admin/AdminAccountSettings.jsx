@@ -13,6 +13,7 @@ export default function AdminAccountSettings({ user }) {
     admin_name: '',
     pix_key_type: '',
     pix_key: '',
+    bank_name: '',
   });
 
   useEffect(() => {
@@ -25,6 +26,7 @@ export default function AdminAccountSettings({ user }) {
         admin_name: user?.full_name || '',
         pix_key_type: '',
         pix_key: '',
+        bank_name: '',
       });
       return;
     }
@@ -33,11 +35,12 @@ export default function AdminAccountSettings({ user }) {
       admin_name: user?.admin_name || user?.full_name || '',
       pix_key_type: user?.pix_key_type || '',
       pix_key: user?.pix_key || '',
+      bank_name: user?.bank_name || '',
     });
   };
 
   const handleSave = async () => {
-    if (!accountData.admin_name || !accountData.pix_key_type || !accountData.pix_key) {
+    if (!accountData.admin_name || !accountData.pix_key_type || !accountData.pix_key || !accountData.bank_name) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
@@ -48,6 +51,7 @@ export default function AdminAccountSettings({ user }) {
         admin_name: accountData.admin_name,
         pix_key_type: accountData.pix_key_type,
         pix_key: accountData.pix_key,
+        bank_name: accountData.bank_name,
       });
       toast.success('Configurações salvas com sucesso!');
     } catch (err) {
@@ -81,6 +85,31 @@ export default function AdminAccountSettings({ user }) {
               onChange={(e) => setAccountData({ ...accountData, admin_name: e.target.value })}
             />
             <p className="text-xs text-muted-foreground mt-1">Este nome será usado em comprovantes de recebimento</p>
+          </div>
+
+          {/* Banco */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Banco *</label>
+            <Select 
+              value={accountData.bank_name} 
+              onValueChange={(value) => setAccountData({ ...accountData, bank_name: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione seu banco" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nubank">NuBank</SelectItem>
+                <SelectItem value="itau">Itaú</SelectItem>
+                <SelectItem value="bradesco">Bradesco</SelectItem>
+                <SelectItem value="santander">Santander</SelectItem>
+                <SelectItem value="bb">Banco do Brasil</SelectItem>
+                <SelectItem value="caixa">Caixa Econômica</SelectItem>
+                <SelectItem value="inter">Inter</SelectItem>
+                <SelectItem value="c6">C6 Bank</SelectItem>
+                <SelectItem value="pix">Outro</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">A instituição financeira onde sua conta PIX está registrada</p>
           </div>
 
           {/* PIX Key Type */}
