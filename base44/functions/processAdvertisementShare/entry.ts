@@ -78,18 +78,28 @@ Deno.serve(async (req) => {
 
     // Registra transação para quem compartilhou
     await base44.entities.PointsTransaction.create({
-      user_email: user.email,
-      user_name: user.full_name,
-      type: 'earned_bonus',
-      points: pointsCost,
-      advertisement_id,
-      description: `Compartilhamento de anúncio no ${platform}`
+     user_email: user.email,
+     user_name: user.full_name,
+     type: 'earned_bonus',
+     points: pointsCost,
+     advertisement_id,
+     description: `Compartilhamento de anúncio no ${platform}`
+    });
+
+    // Registra transação de gasto para o anunciante
+    await base44.entities.PointsTransaction.create({
+     user_email: advertisement.user_email,
+     user_name: advertisement.user_name,
+     type: 'spent_redemption',
+     points: -pointsCost,
+     advertisement_id,
+     description: `Compartilhamento de "${advertisement.title}" no ${platform}`
     });
 
     return Response.json({
-      success: true,
-      pointsCost,
-      message: `-${pointsCost} pontos debitados do criador`
+     success: true,
+     pointsCost,
+     message: `-${pointsCost} pontos debitados do criador`
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
