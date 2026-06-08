@@ -21,6 +21,7 @@ const CATEGORIES = [
 export default function UserAdvertisementForm({ user, userPoints, onAdCreated, ad }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [linkError, setLinkError] = useState(null);
   const [formData, setFormData] = useState(ad ? {
     title: ad.title,
     description: ad.description,
@@ -62,9 +63,14 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
   const validateLink = async (link) => {
     try {
       const res = await base44.functions.invoke('validateAdvertisementLink', { link });
+      setLinkError(res.data.valid ? null : res.data);
+      if (res.data.blocked) {
+        toast.error('Conta bloqueada: ' + res.data.message);
+      }
       return res.data.valid;
     } catch (err) {
       console.error('Erro ao validar link:', err);
+      setLinkError({ message: 'Erro ao validar link' });
       return false;
     }
   };
@@ -308,13 +314,21 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
               <Input
                 placeholder="https://exemplo.com/produto"
                 value={formData.link}
-                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, link: e.target.value });
+                  setLinkError(null);
+                }}
               />
+              {linkError && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-2 p-3 bg-red-600/20 border-2 border-red-600 rounded-lg">
+                  <p className="text-sm font-bold text-red-500">🚫 {linkError.message}</p>
+                </motion.div>
+              )}
             </div>
           </div>
         ) : formData.category === 'mercado_livre' ? (
-          <div className="space-y-3">
-            <div>
+           <div className="space-y-3">
+             <div>
               <label className="text-sm font-medium mb-2 block">Link Mercado Livre *</label>
               <Input
                 placeholder="https://meli.la/1B6VAmR ou link completo"
@@ -322,7 +336,8 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
                 onChange={(e) => {
                   const link = e.target.value;
                   setFormData({ ...formData, link });
-                  
+                  setLinkError(null);
+
                   // Busca imagem automaticamente se link foi preenchido
                   if (link && !formData.image_url) {
                     base44.functions.invoke('extractMercadoLivreImage', {
@@ -335,6 +350,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
                   }
                 }}
               />
+              {linkError && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-2 p-3 bg-red-600/20 border-2 border-red-600 rounded-lg">
+                  <p className="text-sm font-bold text-red-500">🚫 {linkError.message}</p>
+                </motion.div>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">URL da Imagem (opcional - se automática não funcionar)</label>
@@ -357,8 +377,16 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
               <Input
                 placeholder="https://exemplo.com/produto"
                 value={formData.link}
-                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, link: e.target.value });
+                  setLinkError(null);
+                }}
               />
+              {linkError && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-2 p-3 bg-red-600/20 border-2 border-red-600 rounded-lg">
+                  <p className="text-sm font-bold text-red-500">🚫 {linkError.message}</p>
+                </motion.div>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">URL da Imagem</label>
