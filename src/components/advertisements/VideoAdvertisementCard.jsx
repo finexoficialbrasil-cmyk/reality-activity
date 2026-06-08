@@ -252,16 +252,21 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
         break;
       case 'facebook':
-        const facebookMessage = `Confira: ${ad.title} - ${productLink}\n\nEu tô compartilhando! ${siteUrl}`;
+        const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
         if (isMobile) {
-          url = `fb://page/${siteUrl}`;
+          // Mobile: usa intent para abrir Facebook app ou web
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
         } else {
           url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
         }
         break;
       case 'twitter':
-        messageText = `Achei esse produto incrível "${ad.title}"! 💰\n${productLink}\n\nVocê também pode compartilhar e ganhar pontos em ${siteUrl}\n#GanheComACommunity`;
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+        messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
+        if (isMobile) {
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+        } else {
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+        }
         break;
     }
 
