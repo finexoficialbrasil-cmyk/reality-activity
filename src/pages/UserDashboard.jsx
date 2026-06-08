@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
+import UserCatalog from '@/components/user/UserCatalog';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -71,7 +72,7 @@ export default function UserDashboard() {
           </motion.div>
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-8 border-b border-border">
+          <div className="flex gap-4 mb-8 border-b border-border flex-wrap">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`pb-3 px-2 font-medium text-sm transition-colors ${
@@ -90,7 +91,17 @@ export default function UserDashboard() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Megaphone className="w-4 h-4" /> Criar Anúncio
+              <Megaphone className="w-4 h-4" /> Anúncios
+            </button>
+            <button
+              onClick={() => setActiveTab('resgatar')}
+              className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'resgatar'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Gift className="w-4 h-4" /> Resgatar
             </button>
           </div>
 
@@ -99,6 +110,12 @@ export default function UserDashboard() {
               user={user}
               userPoints={userPoints}
               onAdCreated={loadData}
+            />
+          ) : activeTab === 'resgatar' ? (
+            <UserCatalog
+              user={user}
+              userPoints={userPoints}
+              onRedeemed={loadData}
             />
           ) : (
             <>
