@@ -63,16 +63,18 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         purchase_id: purchase.id
       });
 
+      const result = analysisRes.data;
+      
       setResult({
-        ...analysisRes.data,
+        ...result,
         points_requested: points,
         amount_paid: parseFloat(price)
       });
 
-      if (analysisRes.data.is_valid) {
+      // Se validou (is_valid === true) → approved. Caso contrário → analyzing
+      if (result.is_valid === true) {
         setStep('approved');
         setTimeout(() => {
-          // Trigger confetti celebration
           confetti({
             particleCount: 100,
             spread: 70,
@@ -83,9 +85,8 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         setStep('analyzing');
       }
     } catch (err) {
-      console.error('Erro:', err);
-      toast.error('Erro ao processar comprovante');
-    } finally {
+      console.error('Erro ao processar:', err);
+      toast.error('Erro ao processar comprovante: ' + err.message);
       setAnalyzing(false);
     }
   };
