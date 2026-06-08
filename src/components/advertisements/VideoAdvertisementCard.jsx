@@ -43,12 +43,21 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
   const [isSharing, setIsSharing] = useState(false);
   const [sharedPlatform, setSharedPlatform] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [isWatching, setIsWatching] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(0);
 
   const ytWrapperRef = useRef(null);
   const playerRef = useRef(null);
   const mountedRef = useRef(true);
+  const intervalRef = useRef(null);
+  const secondsRef = useRef(0);
+  const pointsRef = useRef(0);
+  const isCounting = useRef(false);
+  const savedRef = useRef(false);
 
   const youtubeId = getYouTubeId(ad.video_url);
+  const pps = ad.reward_per_share || 1;
+  const maxPts = pps * 30; // Assume 30 segundos máximo
 
   // YouTube IFrame API setup
   useEffect(() => {
@@ -91,21 +100,116 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     return () => {
       destroyed = true;
       mountedRef.current = false;
+      clearInterval(intervalRef.current);
+      isCounting.current = false;
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
+      
       try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
     };
-  }, [youtubeId]);
+  }, [youtubeId, savePoints]);
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      isCounting.current = false;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
     };
-  }, []);
+  }, [savePoints]);
+
+  // Save points to database
+  const savePoints = useCallback(async (pts, secs) => {
+    if (pts <= 0 || !user || savedRef.current) return;
+    savedRef.current = true;
+    
+    try {
+      await base44.entities.PointsTransaction.create({
+        user_email: user.email,
+        user_name: user.full_name,
+        type: 'earned_watch',
+        points: pts,
+        description: `Compartilhou anúncio "${ad.title}" por ${secs}s`,
+        watch_seconds: secs
+      });
+      
+      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
+      if (existing.length > 0) {
+        await base44.entities.UserPoints.update(existing[0].id, {
+          balance: (existing[0].balance || 0) + pts,
+          total_earned: (existing[0].total_earned || 0) + pts,
+          last_activity: new Date().toISOString()
+        });
+      } else {
+        await base44.entities.UserPoints.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          balance: pts,
+          total_earned: pts,
+          last_activity: new Date().toISOString()
+        });
+      }
+      if (onPointsEarned) onPointsEarned();
+    } catch (err) {
+      console.error('Erro ao salvar pontos:', err);
+      savedRef.current = false;
+    }
+  }, [user, ad, onPointsEarned]);
+
+  // Stop counting points
+  const stopCounting = useCallback(() => {
+    if (!isCounting.current) return;
+    isCounting.current = false;
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+
+    const secs = Math.floor(secondsRef.current);
+    const pts = Math.floor(pointsRef.current);
+
+    if (mountedRef.current) setIsWatching(false);
+
+    if (secs > 0 && pts > 0 && !savedRef.current) {
+      savePoints(pts, secs);
+    }
+
+    secondsRef.current = 0;
+    pointsRef.current = 0;
+  }, [savePoints]);
+
+  // Start counting points
+  const startCounting = useCallback(() => {
+    if (!user) return;
+    if (isCounting.current) return;
+    isCounting.current = true;
+    if (mountedRef.current) setIsWatching(true);
+
+    intervalRef.current = setInterval(() => {
+      secondsRef.current += 1;
+      pointsRef.current += pps;
+      if (mountedRef.current) setPointsEarned(prev => prev + pps);
+    }, 1000);
+  }, [user, pps]);
 
   const handleYTEnter = () => {
     setIsHovered(true);
     if (playerReady) {
-      try { playerRef.current?.playVideo(); } catch {}
+      try { 
+        playerRef.current?.playVideo();
+        if (user && !isCounting.current) startCounting();
+      } catch {}
     }
   };
 
@@ -114,6 +218,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     if (playerReady) {
       try { playerRef.current?.pauseVideo(); } catch {}
     }
+    stopCounting();
   };
 
   const handleShare = async (platform) => {
@@ -271,7 +376,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         </div>
 
         {/* Footer */}
-        <div className="space-y-2 pt-2 border-t border-border">
+        <div className="space-y-3 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-gold" />
@@ -288,6 +393,24 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
               Ir
             </button>
           </div>
+
+          {/* Progress Bar - Ganhos em tempo real */}
+          {isWatching && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gold">Ganho agora</span>
+                <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {maxPts} pts</span>
+              </div>
+              <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden border border-gold/20">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(pointsEarned / maxPts) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </motion.div>
