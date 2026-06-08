@@ -365,31 +365,21 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     <div className="space-y-2 pt-2 border-t border-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Star className="w-3.5 h-3.5 text-gold" />
+          <Star className="w-4 h-4 text-gold" />
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-gold">{pps} pt/s</span>
             <span className="text-xs text-muted-foreground">por segundo assistido</span>
           </div>
         </div>
-        <span className="text-xs font-semibold">até {maxPts} pts</span>
+        <button
+          onClick={() => window.open(video.banner_link || '#', '_blank')}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-gold hover:text-gold-dark transition-all"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Ir
+        </button>
       </div>
-      {user && isWatching && (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Progresso: {secondsRef.current}s / {video.duration_seconds || 30}s</span>
-            <span className="text-xs font-bold text-gold">+{Math.floor(pointsEarned)} pts</span>
-          </div>
-          <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-gradient-to-r from-gold to-gold-dark"
-              initial={{ width: '0%' }}
-              animate={{ width: `${Math.min((secondsRef.current / (video.duration_seconds || 30)) * 100, 100)}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        </div>
-      )}
-      {/* Share Buttons */}
+      {/* Share Buttons Footer */}
       <div className="flex items-center gap-1 justify-center">
         {SHARE_PLATFORMS.map((p) => (
           <motion.button
