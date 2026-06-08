@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
+import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -11,6 +12,7 @@ export default function UserDashboard() {
   const [transactions, setTransactions] = useState([]);
   const [redemptions, setRedemptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
     loadData();
@@ -68,6 +70,38 @@ export default function UserDashboard() {
             <p className="text-muted-foreground mt-1">Acompanhe seus pontos e resgates</p>
           </motion.div>
 
+          {/* Tabs */}
+          <div className="flex gap-4 mb-8 border-b border-border">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`pb-3 px-2 font-medium text-sm transition-colors ${
+                activeTab === 'dashboard'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('anuncios')}
+              className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'anuncios'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Megaphone className="w-4 h-4" /> Criar Anúncio
+            </button>
+          </div>
+
+          {activeTab === 'anuncios' ? (
+            <UserAdvertisementForm
+              user={user}
+              userPoints={userPoints}
+              onAdCreated={loadData}
+            />
+          ) : (
+            <>
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
@@ -156,6 +190,8 @@ export default function UserDashboard() {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
