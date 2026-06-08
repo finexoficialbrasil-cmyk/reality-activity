@@ -362,7 +362,7 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   };
 
   const PointsBar = () => (
-    <div className="space-y-2 pt-2 border-t border-border">
+    <div className="space-y-3 pt-2 border-t border-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Star className="w-4 h-4 text-gold" />
@@ -379,6 +379,25 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           Ir
         </button>
       </div>
+
+      {/* Progress Bar - Ganhos do vídeo */}
+      {isWatching && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gold">Ganho em tempo real</span>
+            <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {maxPts} pts</span>
+          </div>
+          <div className="w-full bg-secondary/50 rounded-full h-2.5 overflow-hidden border border-gold/20">
+            <motion.div
+              className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(pointsEarned / maxPts) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </motion.div>
+      )}
+
       {/* Share Buttons Footer */}
       <div className="flex items-center gap-1 justify-center">
         {SHARE_PLATFORMS.map((p) => (

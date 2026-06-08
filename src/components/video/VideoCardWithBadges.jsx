@@ -322,13 +322,32 @@ export default function VideoCardWithBadges({ video, company, user, onPointsEarn
   };
 
   const PointsBar = () => (
-    <div className="space-y-2 pt-2 border-t border-border mt-2">
+    <div className="space-y-3 pt-2 border-t border-border mt-2">
       <div className="flex items-center gap-3">
         <Star className="w-3.5 h-3.5 text-gold" />
         <span className="text-xs font-medium text-gold">{pps} pt/s</span>
         <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
         <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
       </div>
+
+      {/* Progress Bar - Ganhos em tempo real */}
+      {isWatching && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gold">Ganho agora</span>
+            <span className="text-xs font-bold text-gold">{Math.floor(pointsEarned)} / {maxPts} pts</span>
+          </div>
+          <div className="w-full bg-secondary/50 rounded-full h-2.5 overflow-hidden border border-gold/20">
+            <motion.div
+              className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(pointsEarned / maxPts) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </motion.div>
+      )}
+
       {company && (company.website || company.phone) && (
         <button
           onClick={handleCompanyClick}
