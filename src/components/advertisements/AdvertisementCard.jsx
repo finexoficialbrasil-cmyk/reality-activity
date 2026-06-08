@@ -37,9 +37,13 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
       const baseMessage = `Oii! 👋 Tô ganhando ${rewardPoints} pontos só por compartilhar esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
 
+      const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
       switch (platform) {
         case 'whatsapp':
-          url = `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
+          url = isMobile 
+            ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
+            : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
           break;
         case 'twitter':
           messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
