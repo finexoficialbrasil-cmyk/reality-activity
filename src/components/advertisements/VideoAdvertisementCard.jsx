@@ -113,23 +113,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
     };
-  }, [youtubeId, savePoints]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      isCounting.current = false;
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      
-      const secs = Math.floor(secondsRef.current);
-      const pts = Math.floor(pointsRef.current);
-      
-      if (secs > 0 && pts > 0 && !savedRef.current) {
-        savePoints(pts, secs);
-      }
-    };
-  }, [savePoints]);
+  }, [youtubeId]);
 
   // Save points to database
   const savePoints = useCallback(async (pts, secs) => {
@@ -201,6 +185,22 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
 
     secondsRef.current = 0;
     pointsRef.current = 0;
+  }, [savePoints]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      isCounting.current = false;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      const secs = Math.floor(secondsRef.current);
+      const pts = Math.floor(pointsRef.current);
+      
+      if (secs > 0 && pts > 0 && !savedRef.current) {
+        savePoints(pts, secs);
+      }
+    };
   }, [savePoints]);
 
   const handleYTEnter = () => {
