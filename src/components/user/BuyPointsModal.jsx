@@ -62,7 +62,11 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         purchase_id: purchase.id
       });
 
-      setResult(analysisRes.data);
+      setResult({
+        ...analysisRes.data,
+        points_requested: points,
+        amount_paid: parseFloat(price)
+      });
       setStep('result');
 
       if (analysisRes.data.is_valid) {
@@ -71,8 +75,8 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
           if (onSuccess) onSuccess();
           onClose();
         }, 2000);
-      } else {
-        toast.error(`❌ ${analysisRes.data.rejection_reason}`);
+      } else if (analysisRes.data.status === 'analyzing') {
+        toast.info('⏳ Comprovante em análise manual');
       }
     } catch (err) {
       console.error('Erro:', err);
@@ -281,7 +285,7 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                     <div>
                       <h3 className="font-bold text-2xl text-foreground mb-2">Validado com sucesso! 🎉</h3>
                       <p className="text-sm text-muted-foreground">
-                        Seus <span className="text-gold font-bold">{points.toLocaleString('pt-BR')} pontos</span> foram creditados na sua conta.
+                        Seus <span className="text-gold font-bold">{result.points_requested?.toLocaleString('pt-BR')} pontos</span> foram creditados na sua conta.
                       </p>
                     </div>
                   </motion.div>
@@ -299,37 +303,38 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                     className="text-center space-y-4"
                   >
-                    <div className="w-20 h-20 rounded-full bg-destructive/20 border-2 border-destructive flex items-center justify-center mx-auto">
-                      <XCircle className="w-10 h-10 text-destructive" />
+                    <div className="w-20 h-20 rounded-full bg-blue-500/20 border-2 border-blue-400 flex items-center justify-center mx-auto animate-pulse">
+                      <Loader2 className="w-10 h-10 text-blue-400 animate-spin" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl text-destructive">Validação falhou</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{result.rejection_reason}</p>
+                      <h3 className="font-bold text-xl text-foreground mb-1">Comprovante em Análise</h3>
+                      <p className="text-sm text-muted-foreground">Nosso setor financeiro está analisando seu comprovante</p>
                     </div>
                   </motion.div>
-                  {result.analysis && (
-                    <div className="bg-secondary/50 border border-border/50 rounded-2xl p-5 text-sm space-y-2">
-                      <p className="font-semibold text-foreground mb-3">Detalhes da análise:</p>
-                      <div className="space-y-2 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <span className="text-destructive">✗</span>
-                          <span>Nome: {result.analysis.name_match ? '✓ Encontrado' : '✗ Não encontrado'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={result.analysis.amount_match ? 'text-green-400' : 'text-destructive'}>
-                            {result.analysis.amount_match ? '✓' : '✗'}
-                          </span>
-                          <span>Valor: {result.analysis.amount_match ? '✓ Confere' : '✗ Não confere'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={result.analysis.date_valid ? 'text-green-400' : 'text-destructive'}>
-                            {result.analysis.date_valid ? '✓' : '✗'}
-                          </span>
-                          <span>Data: {result.analysis.date_valid ? '✓ Válida' : '✗ Inválida'}</span>
-                        </div>
-                      </div>
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 space-y-3">
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-blue-400">⏳ O que esperar:</p>
+                      <ul className="text-xs text-muted-foreground space-y-1.5">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5">•</span>
+                          <span><span className="font-medium text-foreground">Análise manual:</span> Até 24 horas</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5">•</span>
+                          <span><span className="font-medium text-foreground">Se aprovado:</span> Pontos creditados automaticamente</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5">•</span>
+                          <span><span className="font-medium text-foreground">Se recusado:</span> Você será notificado do motivo</span>
+                        </li>
+                      </ul>
                     </div>
-                  )}
+                    <div className="border-t border-blue-500/20 pt-3">
+                      <p className="text-xs text-muted-foreground text-center">
+                        Você receberá notificação no seu email quando a análise terminar
+                      </p>
+                    </div>
+                  </div>
                 </>
               )}
 
@@ -337,7 +342,7 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
                 onClick={onClose}
                 className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
               >
-                {result.is_valid ? 'Ir ao Dashboard' : 'Fechar'}
+                {result.is_valid ? 'Ir ao Dashboard' : 'Entendi'}
               </Button>
             </motion.div>
           )}

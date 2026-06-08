@@ -68,9 +68,14 @@ Por favor, seja rigoroso. Se algo não estiver claro, reporte como não encontra
     const dateValid = hoursDiff >= 0 && hoursDiff <= 24;
     const isValid = nameMatch && amountMatch && dateValid;
 
-    // Update purchase with analysis results
-    const status = isValid ? 'approved' : 'rejected';
-    const rejectionReason = !nameMatch ? 'Nome não confere' : !amountMatch ? `Valor incorreto. Encontrado: R$ ${analysis.amount_found}` : !dateValid ? 'Data fora da janela de 24 horas' : null;
+    // If all checks pass → approved. Otherwise → analyzing (manual review)
+    let status = 'approved';
+    let rejectionReason = null;
+    
+    if (!isValid) {
+      status = 'analyzing'; // Will be reviewed manually
+      // Don't set rejection reason - let admin review without bias
+    }
 
     await base44.asServiceRole.entities.PointsPurchase.update(purchase_id, {
       status,
