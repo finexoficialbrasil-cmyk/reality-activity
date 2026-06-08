@@ -228,34 +228,25 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           {categoryLabels[ad.category]}
         </div>
 
-        {/* Share Buttons - Always visible on hover */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute bottom-3 left-3 right-3 z-20 flex items-center gap-2 justify-center bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-gold/20"
+        {/* Share Buttons - Always visible */}
+        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1 justify-center">
+          {SHARE_PLATFORMS.map((p) => (
+            <motion.button
+              key={p.id}
+              onClick={() => handleShare(p.id)}
+              disabled={isSharing}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+              title={p.name}
             >
-              {SHARE_PLATFORMS.map((p) => (
-                <motion.button
-                  key={p.id}
-                  onClick={() => handleShare(p.id)}
-                  disabled={isSharing}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 rounded-lg hover:bg-gold/10 transition-all cursor-pointer"
-                  title={p.name}
-                >
-                  <p.Icon className="w-5 h-5 text-foreground" />
-                  {sharedPlatform === p.id && (
-                    <CheckCircle className="w-3.5 h-3.5 text-green-500 absolute -top-1 -right-1" />
-                  )}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p.Icon className="w-4 h-4" />
+              {sharedPlatform === p.id && (
+                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+              )}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
