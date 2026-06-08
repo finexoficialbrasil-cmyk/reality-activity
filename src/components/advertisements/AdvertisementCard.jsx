@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Instagram, Facebook, Youtube } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
+  { id: 'facebook', name: 'Facebook', Icon: Facebook },
+  { id: 'instagram', name: 'Instagram', Icon: Instagram },
   { id: 'twitter', name: 'X', Icon: Twitter },
+  { id: 'youtube', name: 'YouTube', Icon: Youtube },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -45,13 +48,28 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
             : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
           break;
+        case 'facebook':
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(`Confira: ${ad.title}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`)}`;
+          break;
+        case 'instagram':
+          // Instagram não suporta deep linking direto, copia a mensagem
+          messageText = `Confira: ${ad.title}\n${productLink}\n\nEu tô ganhando pontos compartilhando isso! ${siteUrl}`;
+          navigator.clipboard.writeText(messageText);
+          toast.success('Mensagem copiada! Abra Instagram e cole nos comentários ou DM');
+          break;
         case 'twitter':
           messageText = `Achei esse produto incrível ${ad.title} e já tô ganhando pontos compartilhando! 💰 Você também pode ganhar pontos em ${siteUrl} ${productLink} #GanheComACommunity`;
           url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
           break;
+        case 'youtube':
+          messageText = `Confira este produto incrível: ${ad.title}\n${productLink}\n\nGanhe pontos compartilhando: ${siteUrl}`;
+          url = `https://www.youtube.com/`;
+          navigator.clipboard.writeText(messageText);
+          toast.success('Mensagem copiada! Compartilhe nos comentários do YouTube');
+          break;
       }
 
-      if (url) {
+      if (url && platform !== 'instagram' && platform !== 'youtube') {
         window.open(url, '_blank');
       }
 
