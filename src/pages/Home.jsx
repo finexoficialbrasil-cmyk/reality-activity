@@ -11,12 +11,14 @@ import AnimatedFooter from '@/components/home/AnimatedFooter';
 import BannerCarousel from '@/components/home/BannerCarousel';
 import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import CeoVideo from '@/components/home/CeoVideo';
+import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
+  const [advertisements, setAdvertisements] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,12 +37,14 @@ export default function Home() {
       console.error('Erro ao carregar via função, tentando direto:', e);
       // Fallback: carrega direto pelas entidades (RLS público)
       try {
-        const [vids, comps] = await Promise.all([
+        const [vids, comps, ads] = await Promise.all([
           base44.entities.Video.filter({ is_active: true }, '-order', 20),
-          base44.entities.Company.filter({ is_active: true }, 'order', 20)
+          base44.entities.Company.filter({ is_active: true }, 'order', 20),
+          base44.entities.Advertisement.filter({ status: 'approved', is_active: true }, '-created_date', 8)
         ]);
         setVideos(vids);
         setCompanies(comps);
+        setAdvertisements(ads);
       } catch (e2) {
         console.error('Fallback também falhou:', e2);
       }
@@ -243,6 +247,31 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Advertisements Section */}
+      {advertisements.length > 0 && (
+        <section className="px-4 pb-16 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/10 rounded-full blur-3xl opacity-30 pointer-events-none" />
+          <div className="max-w-7xl mx-auto relative">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Anúncios Compartilháveis</h2>
+                <p className="text-muted-foreground text-sm mt-1">💰 Compartilhe e ganhe pontos</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {advertisements.map((ad) => (
+                <AdvertisementCard
+                  key={ad.id}
+                  ad={ad}
+                  user={user}
+                  onPointsEarned={handlePointsEarned}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Companies Carousel */}
       {companies.length > 0 && (

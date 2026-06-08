@@ -13,6 +13,7 @@ import AdminProducts from '@/components/admin/AdminProducts';
 import AdminRedemptions from '@/components/admin/AdminRedemptions';
 import AdminUsers from '@/components/admin/AdminUsers';
 import AdminStats from '@/components/admin/AdminStats';
+import AdminAdvertisements from '@/components/admin/AdminAdvertisements';
 
 export default function Admin() {
   const [user, setUser] = useState(null);
@@ -33,6 +34,7 @@ export default function Admin() {
     { id: 'stats', label: 'Dashboard', icon: BarChart3 },
     { id: 'companies', label: 'Empresas', icon: Building2 },
     { id: 'videos', label: 'Vídeos', icon: Play },
+    { id: 'advertisements', label: 'Anúncios', icon: Star },
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'redemptions', label: 'Resgates', icon: Gift },
     { id: 'users', label: 'Usuários', icon: Users },
@@ -79,10 +81,11 @@ export default function Admin() {
       </div>
 
       {/* Content */}
-      <div className="pt-14">
+      <div className="pt-14 p-6">
         {activeTab === 'stats' && <AdminStats />}
         {activeTab === 'companies' && <AdminCompanies />}
         {activeTab === 'videos' && <AdminVideos />}
+        {activeTab === 'advertisements' && <AdminAdvertisements />}
         {activeTab === 'products' && <AdminProducts />}
         {activeTab === 'redemptions' && <AdminRedemptions />}
         {activeTab === 'users' && <AdminUsers />}
