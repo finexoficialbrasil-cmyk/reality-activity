@@ -116,60 +116,25 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           {categoryLabels[ad.category]}
         </div>
 
-        {/* Share Button Overlay */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute inset-0 flex items-center justify-center z-10"
+        {/* Share Buttons - Always visible */}
+        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1 justify-center">
+          {SHARE_PLATFORMS.map((p) => (
+            <motion.button
+              key={p.id}
+              onClick={() => handleShare(p.id)}
+              disabled={isSharing}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+              title={p.name}
             >
-              <motion.button
-                onClick={() => setShowShareMenu(!showShareMenu)}
-                className="w-14 h-14 rounded-full bg-gold/95 flex items-center justify-center glow-gold hover:bg-gold transition-all"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                disabled={isSharing}
-              >
-                {isSharing ? (
-                  <Loader2 className="w-6 h-6 text-background animate-spin" />
-                ) : (
-                  <Share2 className="w-6 h-6 text-background" />
-                )}
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Share Menu */}
-        <AnimatePresence>
-          {showShareMenu && isHovered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center z-20 gap-2 flex-wrap p-4"
-            >
-              {SHARE_PLATFORMS.map((p) => (
-                <motion.button
-                  key={p.id}
-                  onClick={() => handleShare(p.id)}
-                  disabled={isSharing}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gold/10 transition-all cursor-pointer"
-                >
-                  <p.Icon className="w-5 h-5 text-foreground" />
-                  <span className="text-xs font-semibold text-foreground">{p.name}</span>
-                  {sharedPlatform === p.id && (
-                    <CheckCircle className="w-3.5 h-3.5 text-green-500 absolute -top-1 -right-1" />
-                  )}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p.Icon className="w-4 h-4" />
+              {sharedPlatform === p.id && (
+                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+              )}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
