@@ -3,12 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, Save, Loader2 } from 'lucide-react';
+import { AlertCircle, Save, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
 export default function AdminAccountSettings({ user }) {
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [accountData, setAccountData] = useState({
     admin_name: '',
     pix_key_type: '',
@@ -37,31 +39,79 @@ export default function AdminAccountSettings({ user }) {
 
     setSaving(true);
     try {
-      await base44.auth.updateMe({
+      const response = await base44.auth.updateMe({
         admin_name: accountData.admin_name,
         pix_key_type: accountData.pix_key_type,
         pix_key: accountData.pix_key,
         bank_name: accountData.bank_name,
       });
-      
-      // Recarrega dados do usuário para confirmar salvamento
-      const updatedUser = await base44.auth.me();
-      if (updatedUser) {
-        setAccountData({
-          admin_name: updatedUser?.admin_name || updatedUser?.full_name || '',
-          pix_key_type: updatedUser?.pix_key_type || '',
-          pix_key: updatedUser?.pix_key || '',
-          bank_name: updatedUser?.bank_name || '',
-        });
+
+      if (response) {
+        setSaved(true);
+        setEditing(false);
       }
-      
-      toast.success('Configurações salvas com sucesso!');
     } catch (err) {
+      console.error('Erro ao salvar:', err);
       toast.error('Erro ao salvar: ' + (err.message || 'Tente novamente'));
-    } finally {
       setSaving(false);
     }
   };
+
+  // Tela de sucesso
+  if (saved && !editing) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
+        <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/40 rounded-2xl p-8">
+          <div className="text-center space-y-6">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </motion.div>
+            <div>
+              <h2 className="font-grotesk font-bold text-2xl text-foreground mb-2">Dados Salvos! ✓</h2>
+              <p className="text-muted-foreground">Suas informações de conta PIX foram atualizadas com sucesso.</p>
+            </div>
+
+            <div className="bg-background/40 rounded-xl p-6 space-y-4 text-left">
+              <div className="border-b border-border/30 pb-3">
+                <p className="text-xs text-muted-foreground mb-1">Nome do Proprietário</p>
+                <p className="font-semibold text-foreground">{accountData.admin_name}</p>
+              </div>
+              <div className="border-b border-border/30 pb-3">
+                <p className="text-xs text-muted-foreground mb-1">Banco</p>
+                <p className="font-semibold text-foreground capitalize">
+                  {accountData.bank_name === 'nubank' ? 'NuBank' :
+                   accountData.bank_name === 'itau' ? 'Itaú' :
+                   accountData.bank_name === 'bradesco' ? 'Bradesco' :
+                   accountData.bank_name === 'santander' ? 'Santander' :
+                   accountData.bank_name === 'bb' ? 'Banco do Brasil' :
+                   accountData.bank_name === 'caixa' ? 'Caixa Econômica' :
+                   accountData.bank_name === 'inter' ? 'Inter' :
+                   accountData.bank_name === 'c6' ? 'C6 Bank' :
+                   accountData.bank_name === 'xp' ? 'XP Investimentos' :
+                   'Outro'}
+                </p>
+              </div>
+              <div className="border-b border-border/30 pb-3">
+                <p className="text-xs text-muted-foreground mb-1">Tipo de Chave PIX</p>
+                <p className="font-semibold text-foreground uppercase">{accountData.pix_key_type}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Chave PIX</p>
+                <p className="font-semibold text-gold font-mono">{accountData.pix_key}</p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setEditing(true)}
+              className="bg-gold text-background hover:bg-gold-dark w-full"
+            >
+              Editar Informações
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
