@@ -18,10 +18,20 @@ const CATEGORIES = [
   { value: 'outros', label: '⭐ Outros' }
 ];
 
-export default function UserAdvertisementForm({ user, userPoints, onAdCreated }) {
+export default function UserAdvertisementForm({ user, userPoints, onAdCreated, ad }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(ad ? {
+    title: ad.title,
+    description: ad.description,
+    type: ad.type || 'image',
+    link: ad.link,
+    category: ad.category,
+    budget_total: ad.budget_total,
+    reward_per_share: ad.reward_per_share,
+    image_url: ad.image_url || '',
+    video_url: ad.video_url || ''
+  } : {
     title: '',
     description: '',
     type: 'image',
@@ -65,36 +75,76 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         return;
       }
 
-      // Cria o anúncio
-      const newAd = await base44.entities.Advertisement.create({
-        ...formData,
-        budget_remaining: formData.budget_total,
-        user_email: user.email,
-        user_name: user.full_name,
-        status: 'approved'
-      });
+      if (ad) {
+        // Edita anúncio existente
+        const budgetDifference = formData.budget_total - ad.budget_total;
+        
+        if (budgetDifference > 0 && userPoints.balance < budgetDifference) {
+          toast.error(`Saldo insuficiente para aumentar o orçamento. Você precisa de ${budgetDifference} pontos.`);
+          setSubmitting(false);
+          return;
+        }
 
-      // Debita pontos do orçamento
-      await base44.entities.UserPoints.update(userPoints.id, {
-        balance: userPoints.balance - formData.budget_total,
-        total_spent: (userPoints.total_spent || 0) + formData.budget_total
-      });
+        await base44.entities.Advertisement.update(ad.id, {
+          title: formData.title,
+          description: formData.description,
+          type: formData.type,
+          link: formData.link,
+          category: formData.category,
+          budget_total: formData.budget_total,
+          reward_per_share: formData.reward_per_share,
+          image_url: formData.image_url,
+          video_url: formData.video_url
+        });
 
-      // Registra transação
-      await base44.entities.PointsTransaction.create({
-        user_email: user.email,
-        user_name: user.full_name,
-        type: 'spent_redemption',
-        points: -formData.budget_total,
-        description: `Orçamento de anúncio: ${formData.title}`
-      });
+        if (budgetDifference !== 0) {
+          await base44.entities.UserPoints.update(userPoints.id, {
+            balance: userPoints.balance - budgetDifference,
+            total_spent: (userPoints.total_spent || 0) + budgetDifference
+          });
+
+          await base44.entities.PointsTransaction.create({
+            user_email: user.email,
+            user_name: user.full_name,
+            type: 'spent_redemption',
+            points: -budgetDifference,
+            description: `Ajuste de orçamento de anúncio: ${formData.title}`
+          });
+        }
+      } else {
+        // Cria novo anúncio
+        const newAd = await base44.entities.Advertisement.create({
+          ...formData,
+          budget_remaining: formData.budget_total,
+          user_email: user.email,
+          user_name: user.full_name,
+          status: 'approved'
+        });
+
+        // Debita pontos do orçamento
+        await base44.entities.UserPoints.update(userPoints.id, {
+          balance: userPoints.balance - formData.budget_total,
+          total_spent: (userPoints.total_spent || 0) + formData.budget_total
+        });
+
+        // Registra transação
+        await base44.entities.PointsTransaction.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          type: 'spent_redemption',
+          points: -formData.budget_total,
+          description: `Orçamento de anúncio: ${formData.title}`
+        });
+      }
 
       // Mostra tela de sucesso com relatório
+      const budgetDifference = ad ? formData.budget_total - ad.budget_total : formData.budget_total;
       setSuccess({
         title: formData.title,
-        cost: formData.cost_to_publish,
+        cost: budgetDifference,
         reward: formData.reward_per_share,
-        newBalance: userPoints.balance - formData.cost_to_publish
+        newBalance: userPoints.balance - budgetDifference,
+        isEdit: !!ad
       });
 
       // Limpa o formulário
@@ -132,8 +182,8 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mx-auto">
             <Check className="w-8 h-8 text-green-400" />
           </motion.div>
-          <h2 className="font-grotesk font-bold text-2xl text-foreground">Anúncio Publicado! 🎉</h2>
-          <p className="text-muted-foreground">Seu anúncio está ativo e pronto para compartilhar</p>
+          <h2 className="font-grotesk font-bold text-2xl text-foreground">{success.isEdit ? 'Anúncio Atualizado!' : 'Anúncio Publicado!'} 🎉</h2>
+          <p className="text-muted-foreground">{success.isEdit ? 'Suas alterações foram salvas' : 'Seu anúncio está ativo e pronto para compartilhar'}</p>
         </div>
 
         <div className="bg-background/40 rounded-lg p-6 space-y-4">
@@ -351,9 +401,9 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
           <Button
             type="submit"
             className="bg-gold text-background hover:bg-gold-dark flex-1"
-            disabled={submitting || !userPoints || userPoints.balance < formData.budget_total}
+            disabled={submitting || !userPoints || (ad ? userPoints.balance < (formData.budget_total - ad.budget_total) : userPoints.balance < formData.budget_total)}
           >
-            {submitting ? '⏳ Publicando...' : '🚀 Publicar Anúncio'}
+            {submitting ? (ad ? '⏳ Atualizando...' : '⏳ Publicando...') : (ad ? '✏️ Atualizar Anúncio' : '🚀 Publicar Anúncio')}
           </Button>
         </div>
       </form>
