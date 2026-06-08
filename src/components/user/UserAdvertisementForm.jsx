@@ -216,13 +216,27 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
 
         {formData.category === 'mercado_livre' ? (
           <div>
-            <label className="text-sm font-medium mb-2 block">Código Mercado Livre *</label>
+            <label className="text-sm font-medium mb-2 block">Código Mercado Livre * (imagem será obtida automaticamente)</label>
             <div className="flex gap-2 items-center">
               <span className="text-muted-foreground text-sm whitespace-nowrap">https://meli.la/</span>
               <Input
                 placeholder="1B6VAmR"
                 value={formData.link.replace('https://meli.la/', '')}
-                onChange={(e) => setFormData({ ...formData, link: `https://meli.la/${e.target.value}` })}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setFormData({ ...formData, link: `https://meli.la/${code}` });
+                  
+                  // Busca imagem automaticamente
+                  if (code) {
+                    base44.functions.invoke('extractMercadoLivreImage', {
+                      link: `https://meli.la/${code}`
+                    }).then(res => {
+                      if (res.data.image_url) {
+                        setFormData(prev => ({ ...prev, image_url: res.data.image_url }));
+                      }
+                    }).catch(() => {});
+                  }
+                }}
               />
             </div>
           </div>
