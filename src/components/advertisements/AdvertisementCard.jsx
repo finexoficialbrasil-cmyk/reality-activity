@@ -195,6 +195,11 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
               </motion.button>
             ))}
           </div>
+
+          {/* Advertiser Info */}
+          <div className="text-xs text-muted-foreground/70 pt-1 border-t border-border/40">
+            Anunciado por: <span className="font-medium text-foreground">{ad.user_name}</span>
+          </div>
         </div>
       </div>
     </motion.div>
