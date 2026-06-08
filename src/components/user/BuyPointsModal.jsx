@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Upload, Loader2, CheckCircle, XCircle, Star, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
 
 const PRICE_PER_POINT = 0.01; // 1 centavo por ponto
 
@@ -67,16 +68,19 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
         points_requested: points,
         amount_paid: parseFloat(price)
       });
-      setStep('result');
 
       if (analysisRes.data.is_valid) {
-        toast.success('✅ Comprovante validado! Pontos creditados!');
+        setStep('approved');
         setTimeout(() => {
-          if (onSuccess) onSuccess();
-          onClose();
-        }, 2000);
-      } else if (analysisRes.data.status === 'analyzing') {
-        toast.info('⏳ Comprovante em análise manual');
+          // Trigger confetti celebration
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }, 300);
+      } else {
+        setStep('analyzing');
       }
     } catch (err) {
       console.error('Erro:', err);
@@ -268,82 +272,168 @@ export default function BuyPointsModal({ user, isOpen, onClose, onSuccess }) {
             </motion.div>
           )}
 
-          {/* Step: Result */}
-          {step === 'result' && result && (
+          {/* Step: Analyzing */}
+          {step === 'analyzing' && result && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              {result.is_valid ? (
-                <>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                className="text-center space-y-4"
+              >
+                <motion.div className="w-20 h-20 rounded-full bg-blue-500/20 border-2 border-blue-400 flex items-center justify-center mx-auto">
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="text-center space-y-4"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                   >
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400 flex items-center justify-center mx-auto">
-                      <CheckCircle className="w-10 h-10 text-green-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-2xl text-foreground mb-2">Validado com sucesso! 🎉</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Seus <span className="text-gold font-bold">{result.points_requested?.toLocaleString('pt-BR')} pontos</span> foram creditados na sua conta.
-                      </p>
-                    </div>
+                    <Loader2 className="w-10 h-10 text-blue-400" />
                   </motion.div>
-                  <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-5">
-                    <p className="text-center text-sm font-medium text-green-400">
-                      ✓ Você pode usar seus pontos agora!
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
+                </motion.div>
+                <div>
+                  <h3 className="font-bold text-2xl text-foreground mb-2">Analisando Comprovante</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Nosso setor financeiro está verificando seus dados
+                  </p>
+                </div>
+              </motion.div>
+
+              <div className="bg-gradient-to-br from-blue-500/10 to-blue-400/10 border border-blue-500/30 rounded-2xl p-6 space-y-4">
+                <div className="space-y-3">
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="text-center space-y-4"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex items-center gap-3 p-3 bg-background/40 rounded-lg"
                   >
-                    <div className="w-20 h-20 rounded-full bg-blue-500/20 border-2 border-blue-400 flex items-center justify-center mx-auto animate-pulse">
-                      <Loader2 className="w-10 h-10 text-blue-400 animate-spin" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl text-foreground mb-1">Comprovante em Análise</h3>
-                      <p className="text-sm text-muted-foreground">Nosso setor financeiro está analisando seu comprovante</p>
-                    </div>
+                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    </motion.div>
+                    <span className="text-sm font-medium text-foreground">Verificando comprovante</span>
                   </motion.div>
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 space-y-3">
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-blue-400">⏳ O que esperar:</p>
-                      <ul className="text-xs text-muted-foreground space-y-1.5">
-                        <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-0.5">•</span>
-                          <span><span className="font-medium text-foreground">Análise manual:</span> Até 24 horas</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-0.5">•</span>
-                          <span><span className="font-medium text-foreground">Se aprovado:</span> Pontos creditados automaticamente</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-0.5">•</span>
-                          <span><span className="font-medium text-foreground">Se recusado:</span> Você será notificado do motivo</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="border-t border-blue-500/20 pt-3">
-                      <p className="text-xs text-muted-foreground text-center">
-                        Você receberá notificação no seu email quando a análise terminar
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
+
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center gap-3 p-3 bg-background/40 rounded-lg"
+                  >
+                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.1 }}>
+                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    </motion.div>
+                    <span className="text-sm font-medium text-foreground">Validando dados</span>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center gap-3 p-3 bg-background/40 rounded-lg"
+                  >
+                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}>
+                      <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    </motion.div>
+                    <span className="text-sm font-medium text-foreground">Processando análise</span>
+                  </motion.div>
+                </div>
+
+                <div className="border-t border-blue-500/20 pt-4 mt-4">
+                  <p className="text-xs text-muted-foreground text-center">
+                    ⏳ <span className="font-semibold">Tempo estimado:</span> até 24 horas
+                  </p>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Você será notificado assim que a análise terminar
+                  </p>
+                </div>
+              </div>
 
               <Button
                 onClick={onClose}
-                className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
+                className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-400 text-background hover:from-blue-600 hover:to-blue-500 font-bold rounded-xl"
               >
-                {result.is_valid ? 'Ir ao Dashboard' : 'Entendi'}
+                Entendi
               </Button>
+            </motion.div>
+          )}
+
+          {/* Step: Approved */}
+          {step === 'approved' && result && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                className="text-center space-y-4"
+              >
+                <motion.div 
+                  className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400 flex items-center justify-center mx-auto shadow-xl shadow-green-500/20"
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    boxShadow: ['0 0 0px rgba(34,197,94,0.2)', '0 0 30px rgba(34,197,94,0.5)', '0 0 0px rgba(34,197,94,0.2)']
+                  }}
+                  transition={{ duration: 0.6, repeat: 2 }}
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <CheckCircle className="w-12 h-12 text-green-400" />
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-2"
+                >
+                  <h3 className="font-grotesk font-bold text-3xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                    Parabéns! 🎉
+                  </h3>
+                  <p className="text-lg text-foreground font-semibold">
+                    Comprovante Validado!
+                  </p>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6 space-y-4"
+              >
+                <div className="text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">Seus pontos foram creditados:</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl font-grotesk font-bold text-green-400">
+                      +{result.points_requested?.toLocaleString('pt-BR')}
+                    </span>
+                    <span className="text-xl text-gold">pts</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-green-500/20 pt-4">
+                  <p className="text-xs text-muted-foreground text-center">
+                    ✨ Seu saldo foi atualizado e você já pode usar os pontos!
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="space-y-2"
+              >
+                <Button
+                  onClick={() => {
+                    if (onSuccess) onSuccess();
+                    onClose();
+                  }}
+                  className="w-full h-12 bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 font-bold rounded-xl shadow-lg shadow-green-500/20"
+                >
+                  Ir ao Dashboard
+                </Button>
+              </motion.div>
             </motion.div>
           )}
         </motion.div>
