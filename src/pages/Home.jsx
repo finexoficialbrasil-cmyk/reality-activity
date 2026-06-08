@@ -89,6 +89,8 @@ export default function Home() {
     if (!user) return;
     const pts = await base44.entities.UserPoints.filter({ user_email: user.email });
     if (pts.length > 0) setUserPoints(pts[0]);
+    // Recarrega anúncios para remover os com orçamento zerado
+    loadData();
   };
 
   return (
