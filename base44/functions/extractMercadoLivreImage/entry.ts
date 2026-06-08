@@ -8,20 +8,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Link é obrigatório' }, { status: 400 });
     }
 
-    // Extrai o ID do produto do link
-    let productId = link;
-    
-    // Se for um link curto (meli.la/)
+    // Resolve link curto meli.la para obter ID real
+    let realLink = link;
     if (link.includes('meli.la/')) {
-      productId = link.split('meli.la/')[1];
-    }
-    // Se for um link completo
-    else if (link.includes('mercadolivre.com.br')) {
-      const match = link.match(/MLB(\d+)/);
-      if (match) {
-        productId = match[1];
+      try {
+        const redirectResponse = await fetch(link, { redirect: 'follow' });
+        realLink = redirectResponse.url;
+      } catch (e) {
+        console.error('Erro ao resolver link curto:', e);
       }
     }
+
+    // Extrai o ID do produto (MLB + números)
+    const idMatch = realLink.match(/MLB(\d+)/);
+    if (!idMatch) {
+      return Response.json({ error: 'ID do produto não encontrado no link' }, { status: 400 });
+    }
+
+    const productId = idMatch[1];
 
     // Busca a imagem do produto via API do Mercado Livre
     const response = await fetch(`https://api.mercadolibre.com/items/MLB${productId}`);
