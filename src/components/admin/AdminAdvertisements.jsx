@@ -42,8 +42,8 @@ export default function AdminAdvertisements() {
   const loadData = async () => {
     try {
       const [adsRes, domainsRes] = await Promise.all([
-        base44.asServiceRole.entities.Advertisement.list('-created_date', 100),
-        base44.asServiceRole.entities.ApprovedDomain.list('domain', 100)
+        base44.entities.Advertisement.list('-created_date', 100),
+        base44.entities.ApprovedDomain.list('domain', 100)
       ]);
       setAds(adsRes);
       setDomains(domainsRes);
@@ -87,10 +87,10 @@ export default function AdminAdvertisements() {
       }
 
       if (editingAd) {
-        await base44.asServiceRole.entities.Advertisement.update(editingAd.id, formData);
+        await base44.entities.Advertisement.update(editingAd.id, formData);
         toast.success('Anúncio atualizado');
       } else {
-        await base44.asServiceRole.entities.Advertisement.create(formData);
+        await base44.entities.Advertisement.create(formData);
         toast.success('Anúncio criado');
       }
       
