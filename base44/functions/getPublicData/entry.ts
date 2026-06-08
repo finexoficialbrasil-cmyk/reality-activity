@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Advertisement.list('-created_date', 20)
     ]);
 
-    const advertisements = allAds.filter(a => a.status === 'approved' && a.is_active);
+    const advertisements = allAds.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
 
     return Response.json({ videos, companies, advertisements });
   } catch (error) {
