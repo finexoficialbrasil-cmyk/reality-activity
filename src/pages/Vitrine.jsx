@@ -33,11 +33,12 @@ export default function Vitrine() {
            const [comps, vids, ads] = await Promise.all([
              base44.entities.Company.filter({ is_active: true }, 'order', 20),
              base44.entities.Video.filter({ is_active: true }, '-order', 50),
-             base44.entities.Advertisement.filter({ status: 'approved', is_active: true }, '-created_date', 20)
+             base44.entities.Advertisement.list('-created_date', 50)
            ]);
+           const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active);
            setCompanies(comps);
            setVideos(vids);
-           setAdvertisements(ads);
+           setAdvertisements(approvedAds);
          } catch (e2) {
            console.error('Fallback também falhou:', e2);
          }
