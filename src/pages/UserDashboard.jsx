@@ -108,19 +108,29 @@ export default function UserDashboard() {
           </div>
 
           {activeTab === 'anuncios' ? (
-           <div className="space-y-8">
-             <div>
-               <h2 className="font-semibold text-lg mb-4">{editingAd ? 'Editar Anúncio' : 'Publicar Novo Anúncio'}</h2>
-               <UserAdvertisementForm
-                 user={user}
-                 userPoints={userPoints}
-                 onAdCreated={() => {
-                   setEditingAd(null);
-                   loadData();
-                 }}
-                 ad={editingAd}
-               />
-             </div>
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-lg">{editingAd ? 'Editar Anúncio' : 'Publicar Novo Anúncio'}</h2>
+                {editingAd && (
+                  <button
+                    onClick={() => setEditingAd(null)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ✕ Cancelar edição
+                  </button>
+                )}
+              </div>
+              <UserAdvertisementForm
+                user={user}
+                userPoints={userPoints}
+                onAdCreated={() => {
+                  setEditingAd(null);
+                  loadData();
+                }}
+                ad={editingAd}
+              />
+            </div>
              <div>
                <h2 className="font-semibold text-lg mb-4">Meus Anúncios</h2>
                <UserAdvertisementsManager user={user} onEditAd={setEditingAd} />
