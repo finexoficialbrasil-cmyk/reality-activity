@@ -192,15 +192,6 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">URL da Imagem</label>
-          <Input
-            placeholder="https://exemplo.com/imagem.jpg"
-            value={formData.image_url}
-            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          />
-        </div>
-
-        <div>
           <label className="text-sm font-medium mb-2 block">Categoria *</label>
           <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
             <SelectTrigger>
