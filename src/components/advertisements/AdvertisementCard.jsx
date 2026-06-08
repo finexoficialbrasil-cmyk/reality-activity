@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
-  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
-  { id: 'facebook', name: 'Facebook', Icon: Facebook },
-  { id: 'twitter', name: 'X', Icon: Twitter },
+  { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
+  { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
+  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -179,7 +179,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                 disabled={isSharing}
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
                 title={p.name}
               >
                 <p.Icon className="w-4 h-4" />
