@@ -22,6 +22,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Anúncio não encontrado ou não aprovado' }, { status: 400 });
     }
 
+    // Verifica se o usuário é o criador do anúncio
+    if (advertisement.user_email === user.email) {
+      return Response.json({ error: 'Você não pode ganhar pontos compartilhando seu próprio anúncio' }, { status: 403 });
+    }
+
     // Verifica se o anúncio ainda tem orçamento
     const budgetRemaining = advertisement.budget_remaining || 0;
     const pointsCost = advertisement.reward_per_share || 10;
