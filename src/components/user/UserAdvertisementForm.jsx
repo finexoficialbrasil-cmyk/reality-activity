@@ -232,14 +232,29 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
             </div>
           </div>
         ) : (
-          <div>
-            <label className="text-sm font-medium mb-2 block">Link do Anúncio *</label>
-            <Input
-              placeholder="https://exemplo.com/produto"
-              value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-            />
-          </div>
+          <>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Link do Anúncio *</label>
+              <Input
+                placeholder="https://exemplo.com/produto"
+                value={formData.link}
+                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">URL da Imagem</label>
+              <Input
+                placeholder="https://exemplo.com/imagem.jpg"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+              {formData.image_url && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-border h-32">
+                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         <div className="grid grid-cols-2 gap-4">
