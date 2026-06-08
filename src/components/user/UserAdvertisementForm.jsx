@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, Check, X } from 'lucide-react';
+import { AlertCircle, Check, X, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -20,6 +20,7 @@ const CATEGORIES = [
 
 export default function UserAdvertisementForm({ user, userPoints, onAdCreated }) {
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -85,7 +86,15 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         description: `Publicação de anúncio: ${formData.title}`
       });
 
-      toast.success('Anúncio enviado para aprovação!');
+      // Mostra tela de sucesso com relatório
+      setSuccess({
+        title: formData.title,
+        cost: formData.cost_to_publish,
+        reward: formData.reward_per_share,
+        newBalance: userPoints.balance - formData.cost_to_publish
+      });
+
+      // Limpa o formulário
       setFormData({
         title: '',
         description: '',
@@ -97,6 +106,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
       });
 
       if (onAdCreated) onAdCreated();
+
+      // Volta para o dashboard após 4 segundos
+      setTimeout(() => {
+        setSuccess(null);
+      }, 4000);
     } catch (err) {
       console.error('Erro ao criar anúncio:', err);
       toast.error('Erro ao criar anúncio: ' + (err.message || 'Tente novamente'));
@@ -104,6 +118,48 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
       setSubmitting(false);
     }
   };
+
+  // Tela de sucesso
+  if (success) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/40 rounded-xl p-8 space-y-6">
+        <div className="text-center space-y-2">
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mx-auto">
+            <Check className="w-8 h-8 text-green-400" />
+          </motion.div>
+          <h2 className="font-grotesk font-bold text-2xl text-foreground">Anúncio Publicado! 🎉</h2>
+          <p className="text-muted-foreground">Seu anúncio foi enviado para aprovação</p>
+        </div>
+
+        <div className="bg-background/40 rounded-lg p-6 space-y-4">
+          <div className="border-b border-border/30 pb-4">
+            <p className="text-sm text-muted-foreground mb-1">Título do Anúncio</p>
+            <p className="font-semibold text-foreground">{success.title}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-destructive/10 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground mb-1">Custo Debitado</p>
+              <p className="font-bold text-lg text-destructive">-{success.cost} pts</p>
+            </div>
+            <div className="bg-green-500/10 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground mb-1">Por Compartilhamento</p>
+              <p className="font-bold text-lg text-green-400">-{success.reward} pts</p>
+            </div>
+          </div>
+
+          <div className="bg-gold/10 rounded-lg p-4 border border-gold/20">
+            <p className="text-xs text-muted-foreground mb-1">Novo Saldo</p>
+            <p className="font-grotesk font-bold text-2xl text-gold">{success.newBalance} pts</p>
+          </div>
+        </div>
+
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-center text-xs text-muted-foreground">
+          Voltando para dashboard em alguns segundos...
+        </motion.p>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-xl p-6 space-y-4">
