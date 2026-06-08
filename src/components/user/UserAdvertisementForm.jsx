@@ -164,11 +164,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
 
   return (
     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-xl p-6 space-y-4">
-      <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-        <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-400">
+      <div className="flex items-start gap-3 p-4 bg-gold/10 border border-gold/20 rounded-lg">
+        <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-gold">
           <p className="font-semibold">💡 Como funciona</p>
-          <p className="mt-1 text-xs">Publique um anúncio gastando {formData.cost_to_publish} pontos. Ganhe {formData.reward_per_share} pts cada vez que alguém compartilhar.</p>
+          <p className="mt-1 text-xs">Você investe {formData.budget_total} pontos para publicar este anúncio. Cada pessoa que compartilhar ganha {formData.reward_per_share} pontos — você paga, seus amigos ganham! 🚀</p>
         </div>
       </div>
 
