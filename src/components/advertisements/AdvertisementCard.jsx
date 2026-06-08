@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Instagram, Facebook, Youtube } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle },
   { id: 'facebook', name: 'Facebook', Icon: Facebook },
-  { id: 'instagram', name: 'Instagram', Icon: Instagram },
   { id: 'twitter', name: 'X', Icon: Twitter },
-  { id: 'youtube', name: 'YouTube', Icon: Youtube },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -56,29 +54,13 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
           }
           break;
-        case 'instagram':
-          messageText = `Confira: ${ad.title}\n\n${productLink}\n\nEu tô ganhando pontos compartilhando isso!\n${siteUrl}`;
-          navigator.clipboard.writeText(messageText);
-          if (isMobile) {
-            url = `instagram://user?username=`;
-          } else {
-            url = `https://www.instagram.com/`;
-          }
-          toast.success('✅ Mensagem copiada! Cole no seu post ou stories do Instagram');
-          break;
         case 'twitter':
           messageText = `Achei esse produto incrível "${ad.title}" e já tô ganhando pontos compartilhando! 💰\n${productLink}\n\nVocê também pode ganhar pontos em ${siteUrl}\n#GanheComACommunity`;
           url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
           break;
-        case 'youtube':
-          messageText = `Confira este produto incrível: ${ad.title}\n${productLink}\n\nGanhe pontos compartilhando: ${siteUrl}`;
-          navigator.clipboard.writeText(messageText);
-          url = `https://www.youtube.com/`;
-          toast.success('✅ Mensagem copiada! Cole nos comentários do YouTube');
-          break;
       }
 
-      if (url && (platform === 'whatsapp' || platform === 'twitter' || platform === 'facebook' || (platform === 'instagram' && !isMobile) || (platform === 'youtube'))) {
+      if (url) {
         window.open(url, '_blank');
       }
 
