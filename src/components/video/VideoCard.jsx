@@ -157,21 +157,21 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   }, [user, video, onPointsEarned]);
 
   // --- Stop counting ---
-  const stopCounting = useCallback(async () => {
+  const stopCounting = useCallback(() => {
     if (!isCounting.current) return;
     isCounting.current = false;
     clearInterval(intervalRef.current);
     intervalRef.current = null;
-    
+
     const secs = Math.floor(secondsRef.current);
     const pts = Math.floor(pointsRef.current);
-    
+
     if (mountedRef.current) setIsWatching(false);
-    
+
     if (secs > 0 && pts > 0 && !savedRef.current) {
-      await savePoints(pts, secs);
+      savePoints(pts, secs);
     }
-    
+
     secondsRef.current = 0;
     pointsRef.current = 0;
   }, [savePoints]);
@@ -205,18 +205,18 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     if (user) startCounting();
     else setShowLoginPrompt(true);
   };
-  const handleMouseLeave = async () => {
+  const handleMouseLeave = () => {
     setIsHovered(false);
     if (videoRef.current) videoRef.current.pause();
-    await stopCounting();
+    stopCounting();
     setShowLoginPrompt(false);
   };
   
   const handleVideoPlay = () => {
     if (user && !isCounting.current) startCounting();
   };
-  const handleVideoPause = async () => {
-    if (isCounting.current) await stopCounting();
+  const handleVideoPause = () => {
+    if (isCounting.current) stopCounting();
   };
 
   // --- YouTube IFrame API setup ---
@@ -295,18 +295,20 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     }
     if (!user) setShowLoginPrompt(true);
   };
-  const handleYTLeave = async () => {
+  const handleYTLeave = () => {
     setIsHovered(false);
     if (playerReady) {
       try { playerRef.current?.pauseVideo(); } catch {}
     }
-    await stopCounting();
+    stopCounting();
     setShowLoginPrompt(false);
   };
   
   const handleYTStateChange = (state) => {
     if (state === 1 && user && !isCounting.current) startCounting();
-    if (state !== 1 && isCounting.current) stopCounting();
+    if (state !== 1 && isCounting.current) {
+      stopCounting();
+    }
   };
 
   // Shared overlays
