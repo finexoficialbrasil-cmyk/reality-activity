@@ -9,23 +9,50 @@ Deno.serve(async (req) => {
     }
 
     // Resolve link curto meli.la para obter ID real
-    let realLink = link;
+    let productId = null;
+
     if (link.includes('meli.la/')) {
       try {
-        const redirectResponse = await fetch(link, { redirect: 'follow' });
-        realLink = redirectResponse.url;
+        // Tenta fazer fetch direto do link com redirecionamento
+        const htmlResponse = await fetch(link, { 
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
+        
+        const html = await htmlResponse.text();
+        
+        // Procura pelo ID do produto na URL ou no HTML
+        let idMatch = html.match(/item_id["\s:]*(\d+)/);
+        if (!idMatch) {
+          idMatch = html.match(/MLB(\d+)/);
+        }
+        if (!idMatch) {
+          // Procura em padrões de metatags
+          idMatch = html.match(/item["\s:]+MLB(\d+)/);
+        }
+        
+        if (idMatch) {
+          productId = idMatch[1];
+          // Remove "MLB" se estiver incluído
+          if (productId.startsWith('MLB')) {
+            productId = productId.replace('MLB', '');
+          }
+        }
       } catch (e) {
         console.error('Erro ao resolver link curto:', e);
+        return Response.json({ error: 'Erro ao resolver link do Mercado Livre' }, { status: 400 });
+      }
+    } else {
+      // Extrai o ID do produto (MLB + números) de link completo
+      const idMatch = link.match(/MLB(\d+)/);
+      if (idMatch) {
+        productId = idMatch[1];
       }
     }
 
-    // Extrai o ID do produto (MLB + números)
-    const idMatch = realLink.match(/MLB(\d+)/);
-    if (!idMatch) {
+    if (!productId) {
+      console.error('Não conseguiu extrair ID do link:', link);
       return Response.json({ error: 'ID do produto não encontrado no link' }, { status: 400 });
     }
-
-    const productId = idMatch[1];
 
     // Busca a imagem do produto via API do Mercado Livre
     const response = await fetch(`https://api.mercadolibre.com/items/MLB${productId}`);

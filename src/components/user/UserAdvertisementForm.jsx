@@ -206,21 +206,20 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
         </div>
 
         {formData.category === 'mercado_livre' ? (
-          <div>
-            <label className="text-sm font-medium mb-2 block">Código Mercado Livre * (imagem será obtida automaticamente)</label>
-            <div className="flex gap-2 items-center">
-              <span className="text-muted-foreground text-sm whitespace-nowrap">https://meli.la/</span>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Link Mercado Livre *</label>
               <Input
-                placeholder="1B6VAmR"
-                value={formData.link.replace('https://meli.la/', '')}
+                placeholder="https://meli.la/1B6VAmR ou link completo"
+                value={formData.link}
                 onChange={(e) => {
-                  const code = e.target.value;
-                  setFormData({ ...formData, link: `https://meli.la/${code}` });
+                  const link = e.target.value;
+                  setFormData({ ...formData, link });
                   
-                  // Busca imagem automaticamente
-                  if (code) {
+                  // Busca imagem automaticamente se link foi preenchido
+                  if (link && !formData.image_url) {
                     base44.functions.invoke('extractMercadoLivreImage', {
-                      link: `https://meli.la/${code}`
+                      link
                     }).then(res => {
                       if (res.data.image_url) {
                         setFormData(prev => ({ ...prev, image_url: res.data.image_url }));
@@ -229,6 +228,19 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated })
                   }
                 }}
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">URL da Imagem (opcional - se automática não funcionar)</label>
+              <Input
+                placeholder="https://exemplo.com/imagem.jpg"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+              {formData.image_url && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-border h-32">
+                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
         ) : (
