@@ -362,12 +362,16 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
   };
 
   const PointsBar = () => (
-    <div className="pt-2 border-t border-border mt-2 space-y-2">
-      <div className="flex items-center gap-3">
-        <Star className="w-3.5 h-3.5 text-gold" />
-        <span className="text-xs font-medium text-gold">{pps} pt/s</span>
-        <span className="text-xs text-muted-foreground">+{bonus} bônus</span>
-        <span className="ml-auto text-xs font-semibold">até {maxPts} pts</span>
+    <div className="space-y-2 pt-2 border-t border-border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Star className="w-3.5 h-3.5 text-gold" />
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-gold">{pps} pt/s</span>
+            <span className="text-xs text-muted-foreground">por segundo assistido</span>
+          </div>
+        </div>
+        <span className="text-xs font-semibold">até {maxPts} pts</span>
       </div>
       {user && isWatching && (
         <div className="space-y-1.5">
@@ -386,24 +390,22 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
         </div>
       )}
       {/* Share Buttons */}
-      <div className="space-y-2 pt-2 border-t border-border">
-        <div className="flex items-center gap-1 justify-center">
-          {SHARE_PLATFORMS.map((p) => (
-            <motion.button
-              key={p.id}
-              onClick={() => handleShare(p.id)}
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
-              title={p.name}
-            >
-              <p.Icon className="w-4 h-4" />
-              {sharedPlatform === p.id && (
-                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-              )}
-            </motion.button>
-          ))}
-        </div>
+      <div className="flex items-center gap-1 justify-center">
+        {SHARE_PLATFORMS.map((p) => (
+          <motion.button
+            key={p.id}
+            onClick={() => handleShare(p.id)}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.95 }}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+            title={p.name}
+          >
+            <p.Icon className="w-4 h-4" />
+            {sharedPlatform === p.id && (
+              <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+            )}
+          </motion.button>
+        ))}
       </div>
     </div>
   );
