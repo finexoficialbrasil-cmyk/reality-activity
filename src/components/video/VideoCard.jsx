@@ -543,16 +543,6 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
           </p>
         )}
         <PointsBar />
-        {!isHovered && !user && (
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            🖱️ Passe o mouse para ver o vídeo
-          </p>
-        )}
-        {!isHovered && user && (
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            🖱️ Passe o mouse para ganhar pontos
-          </p>
-        )}
       </div>
     </motion.div>
   );
