@@ -111,8 +111,8 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         // Calcula novo budget_remaining adicionando a diferença
         const newBudgetRemaining = (ad.budget_remaining || 0) + Math.max(0, budgetDifference);
 
-        // Se orçamento foi adicionado e ad estava inativo/zerado, reativa
-        const shouldReactivate = budgetDifference > 0 && (ad.budget_remaining <= 0 || !ad.is_active || ad.status === 'inactive');
+        // Reativa sempre que o budget_remaining resultante for > 0
+        const shouldReactivate = newBudgetRemaining > 0;
 
         await base44.entities.Advertisement.update(ad.id, {
           title: formData.title,
