@@ -100,12 +100,19 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       if (ad) {
         // Edita anúncio existente
         const budgetDifference = formData.budget_total - ad.budget_total;
+        // (budgetDifference used below)
         
         if (budgetDifference > 0 && userPoints.balance < budgetDifference) {
           toast.error(`Saldo insuficiente para aumentar o orçamento. Você precisa de ${budgetDifference} pontos.`);
           setSubmitting(false);
           return;
         }
+
+        // Calcula novo budget_remaining adicionando a diferença
+        const newBudgetRemaining = (ad.budget_remaining || 0) + Math.max(0, budgetDifference);
+
+        // Se orçamento foi adicionado e ad estava inativo/zerado, reativa
+        const shouldReactivate = budgetDifference > 0 && (ad.budget_remaining <= 0 || !ad.is_active || ad.status === 'inactive');
 
         await base44.entities.Advertisement.update(ad.id, {
           title: formData.title,
@@ -114,9 +121,11 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           link: formData.link,
           category: formData.category,
           budget_total: formData.budget_total,
+          budget_remaining: newBudgetRemaining,
           reward_per_share: formData.reward_per_share,
           image_url: formData.image_url,
-          video_url: formData.video_url
+          video_url: formData.video_url,
+          ...(shouldReactivate ? { is_active: true, status: 'approved', cooldown_until: null } : {})
         });
 
         if (budgetDifference !== 0) {
