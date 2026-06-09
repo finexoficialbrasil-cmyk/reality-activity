@@ -42,7 +42,11 @@ export default function AdminVideos() {
 
   const handleDelete = async (id) => {
     if (!confirm('Excluir este vídeo?')) return;
-    await base44.entities.Video.delete(id);
+    try {
+      await base44.entities.Video.delete(id);
+    } catch (e) {
+      // já foi deletado ou não encontrado — ignora e recarrega
+    }
     load();
   };
 
