@@ -8,6 +8,7 @@ import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import UserCatalog from '@/components/user/UserCatalog';
 import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
 import BuyPointsModal from '@/components/user/BuyPointsModal';
+import EditAdModal from '@/components/user/EditAdModal';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -113,25 +114,11 @@ export default function UserDashboard() {
           {activeTab === 'anuncios' ? (
           <div className="space-y-8">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-lg">{editingAd ? 'Editar Anúncio' : 'Publicar Novo Anúncio'}</h2>
-                {editingAd && (
-                  <button
-                    onClick={() => setEditingAd(null)}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    ✕ Cancelar edição
-                  </button>
-                )}
-              </div>
+              <h2 className="font-semibold text-lg mb-4">Publicar Novo Anúncio</h2>
               <UserAdvertisementForm
                 user={user}
                 userPoints={userPoints}
-                onAdCreated={() => {
-                  setEditingAd(null);
-                  loadData();
-                }}
-                ad={editingAd}
+                onAdCreated={() => { loadData(); }}
               />
             </div>
              <div>
@@ -251,6 +238,13 @@ export default function UserDashboard() {
           </div>
           </div>
 
+          <EditAdModal
+            ad={editingAd}
+            user={user}
+            userPoints={userPoints}
+            onClose={() => setEditingAd(null)}
+            onSaved={loadData}
+          />
           <BuyPointsModal
           user={user}
           isOpen={showBuyPoints}
