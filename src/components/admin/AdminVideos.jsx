@@ -44,9 +44,9 @@ export default function AdminVideos() {
 
   const handleDelete = async () => {
     try {
-      await base44.entities.Video.delete(deletingId);
+      await base44.functions.invoke('deleteVideo', { video_id: deletingId });
     } catch (e) {
-      // já foi deletado ou não encontrado — ignora e recarrega
+      // ignora erro se já foi deletado
     }
     setDeletingId(null);
     load();
