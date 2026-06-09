@@ -135,19 +135,27 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          {user ? (
-            <>
-              <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 text-sm font-medium text-gold py-2">
-                <Star className="w-4 h-4" /> {userPoints?.balance?.toLocaleString() ?? 0} pontos
-              </Link>
-              <button onClick={handleLogout} className="text-sm text-destructive py-2">Sair</button>
-            </>
-          ) : (
-            <Button onClick={() => base44.auth.redirectToLogin()} className="w-full bg-gold text-background">
-              Entrar / Criar Conta
-            </Button>
-          )}
+          <div className="border-t border-border pt-3">
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gold/10 border border-gold/30 mb-2">
+                  <Star className="w-4 h-4 text-gold" />
+                  <span className="text-sm font-semibold text-gold">{userPoints?.balance?.toLocaleString() ?? 0} pontos</span>
+                </Link>
+                <div className="text-xs text-muted-foreground py-2">
+                  Olá, <span className="font-medium text-foreground">{user.full_name?.split(' ')[0]}</span>
+                </div>
+                <button onClick={handleLogout} className="w-full text-sm text-destructive hover:text-destructive/80 py-2 font-medium">
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Button onClick={() => base44.auth.redirectToLogin()} className="w-full bg-gold text-background">
+                Entrar / Criar Conta
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </nav>
