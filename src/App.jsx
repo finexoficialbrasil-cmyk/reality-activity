@@ -9,7 +9,7 @@ import Home from './pages/Home';
 import Vitrine from './pages/Vitrine';
 import Catalog from './pages/Catalog';
 import UserDashboard from './pages/UserDashboard';
-import Admin from './pages/Admin';
+import Admin from './pages/Admin.jsx';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
