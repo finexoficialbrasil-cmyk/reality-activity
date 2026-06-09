@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Plus, Pencil, Trash2, Play, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function AdminVideos() {
   const [videos, setVideos] = useState([]);
@@ -10,6 +11,7 @@ export default function AdminVideos() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => { load(); }, []);
 
@@ -40,13 +42,13 @@ export default function AdminVideos() {
     load();
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Excluir este vídeo?')) return;
+  const handleDelete = async () => {
     try {
-      await base44.entities.Video.delete(id);
+      await base44.entities.Video.delete(deletingId);
     } catch (e) {
       // já foi deletado ou não encontrado — ignora e recarrega
     }
+    setDeletingId(null);
     load();
   };
 
@@ -234,7 +236,7 @@ export default function AdminVideos() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(v)} className="h-7 w-7">
                       <Pencil className="w-3 h-3" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)} className="h-7 w-7 text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" onClick={() => setDeletingId(v.id)} className="h-7 w-7 text-destructive hover:text-destructive">
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -244,6 +246,18 @@ export default function AdminVideos() {
           </tbody>
         </table>
       </div>
+      <AlertDialog open={!!deletingId} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir vídeo?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-white hover:bg-destructive/90">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
