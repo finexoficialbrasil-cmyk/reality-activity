@@ -20,7 +20,11 @@ export default function AdminCompanies() {
 
   const handleDelete = async (id) => {
     if (!confirm('Excluir esta empresa?')) return;
-    await base44.entities.Company.delete(id);
+    try {
+      await base44.functions.invoke('deleteCompany', { company_id: id });
+    } catch (e) {
+      // ignora se já foi deletado
+    }
     load();
   };
 
