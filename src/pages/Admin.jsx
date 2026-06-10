@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, BarChart3, ShieldCheck, Settings, Coins, Target,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -17,6 +17,7 @@ import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
 import AdminPointsPurchases from '@/components/admin/AdminPointsPurchases';
 import AdminAdvertisersSpending from '@/components/admin/AdminAdvertisersSpending';
 import AdminCampaignsAnalytics from '@/components/admin/AdminCampaignsAnalytics';
+import AdminApprovedDomains from '@/components/admin/AdminApprovedDomains';
 
 const tabs = [
   { id: 'stats', label: 'Dashboard', icon: BarChart3 },
@@ -29,6 +30,7 @@ const tabs = [
   { id: 'purchases', label: 'Compras', icon: Coins },
   { id: 'redemptions', label: 'Resgates', icon: Gift },
   { id: 'users', label: 'Usuários', icon: Users },
+  { id: 'domains', label: 'Domínios', icon: Globe },
   { id: 'account', label: 'Conta', icon: Settings },
 ];
 
@@ -142,6 +144,7 @@ export default function Admin() {
           {activeTab === 'purchases' && <AdminPointsPurchases />}
           {activeTab === 'redemptions' && <AdminRedemptions />}
           {activeTab === 'users' && <AdminUsers />}
+          {activeTab === 'domains' && <AdminApprovedDomains />}
           {activeTab === 'account' && <AdminAccountSettings user={user} />}
         </div>
       </main>
