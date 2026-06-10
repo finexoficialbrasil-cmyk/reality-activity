@@ -254,29 +254,30 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     const productLink = ad.link;
     const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const shareText = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
 
-    let messageText = '';
-    let url = '';
-
-    const baseMessage = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
-
-    switch (platform) {
-      case 'whatsapp':
-        url = isMobile 
-          ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
-          : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
-        break;
-      case 'facebook':
-        const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
-        break;
-      case 'twitter':
-        messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
-        break;
+    // No celular, usa Web Share API nativa (funciona em todos os apps, incluindo Facebook)
+    if (isMobile && navigator.share) {
+      try {
+        await navigator.share({ title: ad.title, text: shareText, url: productLink });
+      } catch (e) {
+        return;
+      }
+    } else {
+      let url = '';
+      switch (platform) {
+        case 'whatsapp':
+          url = `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n' + productLink)}`;
+          break;
+        case 'facebook':
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&hashtag=%23GanheComACommunity`;
+          break;
+        case 'twitter':
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Achei esse produto incrível "${ad.title}"! 💰 #GanheComACommunity`)}&url=${encodeURIComponent(productLink)}`;
+          break;
+      }
+      if (url) window.open(url, '_blank');
     }
-
-    if (url) window.open(url, '_blank');
     
     setSharedPlatform(platform);
     setIsSharing(true);
