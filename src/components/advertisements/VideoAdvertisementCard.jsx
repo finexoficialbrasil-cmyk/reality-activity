@@ -121,6 +121,21 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     savedRef.current = true;
     
     try {
+      // Trava de 24h: verifica se já ganhou pontos neste anúncio nas últimas 24h
+      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const recentWatches = await base44.entities.PointsTransaction.filter({
+        user_email: user.email,
+        type: 'earned_watch'
+      });
+      const watchedRecently = recentWatches
+        .filter(t => t.description?.includes(ad.title))
+        .some(t => t.created_date > since24h);
+      if (watchedRecently) {
+        toast.info('Você já ganhou pontos com este anúncio nas últimas 24h. Volte amanhã! ⏳');
+        savedRef.current = false;
+        return;
+      }
+
       await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,

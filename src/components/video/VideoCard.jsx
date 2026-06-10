@@ -120,6 +120,20 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     savedRef.current = true;
     
     try {
+      // Trava de 24h: verifica se já assistiu esse vídeo nas últimas 24h
+      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const recentWatches = await base44.entities.PointsTransaction.filter({
+        user_email: user.email,
+        type: 'earned_watch',
+        video_id: video.id
+      });
+      const watchedRecently = recentWatches.some(t => t.created_date > since24h);
+      if (watchedRecently) {
+        toast.info('Você já ganhou pontos assistindo este vídeo nas últimas 24h. Volte amanhã! ⏳');
+        savedRef.current = false;
+        return;
+      }
+
       await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,
