@@ -72,36 +72,46 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
       return;
     }
 
-    const siteUrl = window.location.origin;
-    const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const shareText = `Oii! 👋 Assisti esse vídeo incrível e ganhei pontos! 🎁\n\n✨ ${video.title}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
-
-    // No celular, usa Web Share API nativa (funciona em todos os apps, incluindo Facebook)
-    if (isMobile && navigator.share) {
-      try {
-        await navigator.share({ title: video.title, text: shareText, url: siteUrl });
-      } catch (e) {
-        return;
-      }
-    } else {
+    try {
+      const siteUrl = window.location.origin;
+      let messageText = '';
       let url = '';
+
+      const baseMessage = `Oii! 👋 Assisti esse vídeo incrível e ganhei pontos! 🎁\n\n✨ ${video.title}\n${siteUrl}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
+      const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
       switch (platform) {
         case 'whatsapp':
-          url = `https://web.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+          url = isMobile 
+            ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
+            : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
           break;
         case 'facebook':
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&hashtag=%23GanheComACommunity`;
+          if (isMobile) {
+            url = `fb://page/${siteUrl}`;
+          } else {
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent(video.title)}`;
+          }
           break;
         case 'twitter':
-          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Assisti "${video.title}" e ganhei pontos! 💰 #GanheComACommunity`)}&url=${encodeURIComponent(siteUrl)}`;
+          messageText = `Assisti "${video.title}" e ganhei pontos! 💰 ${siteUrl}\n#GanheComACommunity`;
+          url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
           break;
       }
-      if (url) window.open(url, '_blank');
-    }
 
-    setSharedPlatform(platform);
-    toast.success('Compartilhado!');
-    setTimeout(() => setSharedPlatform(null), 1500);
+      if (url) {
+        window.open(url, '_blank');
+      }
+
+      setSharedPlatform(platform);
+      toast.success('Compartilhado!');
+      setTimeout(() => {
+        setSharedPlatform(null);
+      }, 1500);
+    } catch (err) {
+      toast.error('Erro ao compartilhar');
+    }
   };
 
   // --- Points saving logic ---
