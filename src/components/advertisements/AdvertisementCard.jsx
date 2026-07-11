@@ -64,13 +64,13 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
     switch (platform) {
       case 'whatsapp': {
         const msg = [
-          `encontrei isso aqui e lembrei de compartilhar:`,
+          `💰 Quer ganhar pontos compartilhando anúncios no WhatsApp?`,
           ``,
           `📌 ${ad.title}`,
           `${productLink}`,
           ``,
           `—`,
-          `ganhei pontos por compartilhar. se quiser fazer o mesmo: ${siteUrl}`
+          `Ganhei pontos por compartilhar. se quiser fazer o mesmo: ${siteUrl}`
         ].join('\n');
         url = isMobile 
           ? `whatsapp://send?text=${encodeURIComponent(msg)}`
