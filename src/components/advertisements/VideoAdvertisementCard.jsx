@@ -39,7 +39,7 @@ const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
   { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc] hover:bg-[#0088cc]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
-  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
+  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#FFFFFF] hover:bg-black/10' },
   { id: 'pinterest', name: 'Pinterest', Icon: PinterestIcon, color: 'text-[#E60023] hover:bg-[#E60023]/10' },
   { id: 'copy', name: 'Copiar Link', Icon: LinkIcon, color: 'text-muted-foreground hover:bg-secondary' },
 ];
@@ -307,13 +307,15 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
 
     switch (platform) {
       case 'whatsapp': {
-        // CORREÇÃO 3: Mensagem limpa no WhatsApp
-        const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
+        // Mensagem limpa (sem link do seu site para não gerar 2 previews feios no WhatsApp)
+        const msg = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
         url = isMobile 
           ? `whatsapp://send?text=${encodeURIComponent(msg)}`
           : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         break;
       }
+
 
       case 'telegram': {
         const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
