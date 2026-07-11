@@ -1,13 +1,29 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook, Gift } from 'lucide-react';
+import { Share2, ExternalLink, Copy, CheckCircle, Loader2, MessageCircle, Twitter, Facebook, Gift, Send, Pin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
+// Ícone customizado do Telegram (lucide não tem ícone de marca)
+const TelegramIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+);
+
+// Ícone customizado do Pinterest
+const PinterestIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z"/>
+  </svg>
+);
+
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
+  { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc] hover:bg-[#0088cc]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
-  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#FFFFFF] hover:bg-black/10' },
+  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
+  { id: 'pinterest', name: 'Pinterest', Icon: PinterestIcon, color: 'text-[#E60023] hover:bg-[#E60023]/10' },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -26,7 +42,6 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
     const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    let messageText = '';
     let url = '';
 
     const baseMessage = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
@@ -37,13 +52,23 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
           : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
         break;
+
+      case 'telegram':
+        url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(baseMessage)}`;
+        break;
+
       case 'facebook':
         const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
         break;
+
       case 'twitter':
-        messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+        const twitterMessage = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterMessage)}`;
+        break;
+
+      case 'pinterest':
+        url = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productLink)}&description=${encodeURIComponent(ad.title + ' - ' + productLink)}&media=${encodeURIComponent(ad.image_url || '')}`;
         break;
     }
 
@@ -106,8 +131,8 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           {categoryLabels[ad.category]}
         </div>
 
-        {/* Share Buttons - Always visible */}
-        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1 justify-center">
+        {/* Share Buttons - Sobre a imagem */}
+        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1.5 justify-center">
           {SHARE_PLATFORMS.map((p) => (
             <motion.button
               key={p.id}
@@ -115,7 +140,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
               disabled={isSharing}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold relative"
               title={p.name}
             >
               <p.Icon className="w-4 h-4" />
@@ -166,8 +191,9 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
               Ir
             </button>
           </div>
-          {/* Share Buttons */}
-          <div className="flex items-center gap-1 justify-center">
+
+          {/* Share Buttons - Rodapé com cores das marcas */}
+          <div className="flex items-center gap-1.5 justify-center">
             {SHARE_PLATFORMS.map((p) => (
               <motion.button
                 key={p.id}
@@ -175,7 +201,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                 disabled={isSharing}
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.95 }}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
                 title={p.name}
               >
                 <p.Icon className="w-4 h-4" />
