@@ -75,7 +75,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [sharedPlatform, setSharedPlatform] = useState(null);
-  const [copied, setCopied] = useState(false); // NOVO: Estado do botão copiar
+  const [copied, setCopied] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
@@ -155,35 +155,50 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     savedRef.current = true;
     
     try {
-      // Trava de 24h: verifica se já ganhou pontos neste anúncio nas últimas 24h
+      // ====================================================================
+      // CORREÇÃO 1: Trava de 24h funcionando de verdade
+      // ====================================================================
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const recentWatches = await base44.entities.PointsTransaction.filter({
-        user_email: user.email,
-        type: 'earned_watch'
+      
+      const recentWatches = await base44.entities.PointsTransaction.query({
+        filters: {
+          user_email: user.email,
+          type: 'earned_watch',
+          video_id: ad.id // Usa o ID do vídeo ao invés de procurar no texto
+        }
       });
-      const watchedRecently = recentWatches
-        .filter(t => t.description?.includes(ad.title))
-        .some(t => t.created_date > since24h);
+
+      const watchedRecently = (recentWatches.data || [])
+        .some(t => t.created_at && t.created_at > since24h);
+
       if (watchedRecently) {
         toast.info('Você já ganhou pontos com este anúncio nas últimas 24h. Volte amanhã! ⏳');
         savedRef.current = false;
         return;
       }
 
+      // Salva a transação
       await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,
         type: 'earned_watch',
         points: pts,
-        description: `Compartilhou anúncio "${ad.title}" por ${secs}s`,
-        watch_seconds: secs
+        description: `Assistiu anúncio "${ad.title}" por ${secs}s`,
+        watch_seconds: secs,
+        video_id: ad.id // Agora salva o ID do vídeo também
       });
       
-      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-      if (existing.length > 0) {
-        await base44.entities.UserPoints.update(existing[0].id, {
-          balance: (existing[0].balance || 0) + pts,
-          total_earned: (existing[0].total_earned || 0) + pts,
+      // ====================================================================
+      // CORREÇÃO 2: Atualizar saldo do usuário usando .query()
+      // ====================================================================
+      const existingPoints = await base44.entities.UserPoints.query({
+        filters: { user_email: user.email }
+      });
+
+      if (existingPoints.data && existingPoints.data.length > 0) {
+        await base44.entities.UserPoints.update(existingPoints.data[0].id, {
+          balance: (existingPoints.data[0].balance || 0) + pts,
+          total_earned: (existingPoints.data[0].total_earned || 0) + pts,
           last_activity: new Date().toISOString()
         });
       } else {
@@ -195,6 +210,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           last_activity: new Date().toISOString()
         });
       }
+
       if (onPointsEarned) onPointsEarned();
     } catch (err) {
       console.error('Erro ao salvar pontos:', err);
@@ -222,7 +238,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       pointsRef.current += pointsToAdd;
       if (mountedRef.current) setPointsEarned(prev => prev + pointsToAdd);
     }, 1000);
-  }, [user, pps, ad.budget_remaining]);
+  }, [user, pps, ad.budget_remaining, stopCounting]);
 
   // Stop counting points
   const stopCounting = useCallback(() => {
@@ -285,16 +301,14 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
 
     const productLink = ad.link;
-    const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     let url = '';
 
     switch (platform) {
       case 'whatsapp': {
-        // Mensagem limpa (sem link do seu site para não gerar 2 previews feios no WhatsApp)
-        const msg = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
-
+        // CORREÇÃO 3: Mensagem limpa no WhatsApp
+        const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
         url = isMobile 
           ? `whatsapp://send?text=${encodeURIComponent(msg)}`
           : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
@@ -308,7 +322,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        // Facebook puxa o preview automaticamente
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
         break;
       }
@@ -320,7 +333,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'pinterest': {
-        // Verifica se a imagem é válida antes de enviar para não dar erro
         const hasValidImage = ad.image_url && 
           /\.(jpg|jpeg|png|gif|webp|avif)(\?.*)?$/i.test(ad.image_url);
         
@@ -343,7 +355,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         } catch (err) {
           toast.error('Não foi possível copiar o link');
         }
-        return; // Interrompe a função para não abrir janela nem dar pontos
+        return; 
       }
     }
 
