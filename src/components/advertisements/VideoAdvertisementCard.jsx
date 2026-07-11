@@ -317,7 +317,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         break;
       }
 
-
       case 'telegram': {
         const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
         url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(msg)}`;
