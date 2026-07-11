@@ -303,6 +303,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     const productLink = ad.link;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+    const siteUrl = window.location.origin;
     let url = '';
 
     switch (platform) {
