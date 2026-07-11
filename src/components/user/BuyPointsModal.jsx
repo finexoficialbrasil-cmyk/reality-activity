@@ -700,6 +700,11 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                       </button>
                     </div>
 
+                    <div className="flex items-center justify-between bg-secondary/40 rounded-lg px-3 py-2">
+                      <span className="text-xs text-muted-foreground">Saldo disponível para vender</span>
+                      <span className="text-sm font-bold text-gold">{Number(userPoints || 0).toLocaleString('pt-BR')} pts</span>
+                    </div>
+
                     <div className="space-y-3">
                       <div>
                         <label className="block text-xs font-semibold text-muted-foreground mb-1">Quantidade de pontos</label>

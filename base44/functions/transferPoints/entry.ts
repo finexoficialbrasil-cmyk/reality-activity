@@ -123,6 +123,14 @@ Deno.serve(async (req) => {
 
     const newBalance = senderPoints.balance - points_amount;
 
+    // Cancela anúncios ativos do remetente que ele não consegue mais cumprir (saldo insuficiente)
+    const myListings = await base44.asServiceRole.entities.PointsListing.filter({ seller_email: sender_email, status: 'active' });
+    for (const l of myListings) {
+      if (l.points_amount > newBalance) {
+        await base44.asServiceRole.entities.PointsListing.update(l.id, { status: 'cancelled' });
+      }
+    }
+
     return Response.json({
       success: true,
       message: 'Transferência realizada com sucesso!',
