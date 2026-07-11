@@ -285,6 +285,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
 
     const productLink = ad.link;
+    const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     let url = '';
