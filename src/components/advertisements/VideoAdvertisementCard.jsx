@@ -292,7 +292,8 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     switch (platform) {
       case 'whatsapp': {
         // Mensagem limpa (sem link do seu site para não gerar 2 previews feios no WhatsApp)
-        const msg = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? ${productLink}`;
+        const msg = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
         url = isMobile 
           ? `whatsapp://send?text=${encodeURIComponent(msg)}`
           : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
