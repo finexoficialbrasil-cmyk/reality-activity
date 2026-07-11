@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Share2, ExternalLink, CheckCircle, Gift } from 'lucide-react';
+import { Share2, ExternalLink, CheckCircle, Gift, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -38,15 +38,16 @@ const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
   { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc] hover:bg-[#0088cc]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
-  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#FFFFFF] hover:bg-black/10' },
+  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
   { id: 'pinterest', name: 'Pinterest', Icon: PinterestIcon, color: 'text-[#E60023] hover:bg-[#E60023]/10' },
+  { id: 'copy', name: 'Copiar Link', Icon: LinkIcon, color: 'text-muted-foreground hover:bg-secondary' }, // NOVO BOTÃO AQUI
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [sharedPlatform, setSharedPlatform] = useState(null);
+  const [copied, setCopied] = useState(false); // Estado novo para o botão copiar
 
   const handleShare = async (platform) => {
     if (!user) {
@@ -108,6 +109,20 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         }
         break;
       }
+
+      // NOVO: Lógica do botão Copiar Link
+      case 'copy': {
+        try {
+          await navigator.clipboard.writeText(productLink);
+          setCopied(true);
+          toast.success('Link copiado! Cole onde quiser 📋');
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          toast.error('Não foi possível copiar o link');
+        }
+        // Não continua para o resto da função (abrir janela / dar pontos)
+        return; 
+      }
     }
 
     if (url) window.open(url, '_blank');
@@ -125,7 +140,6 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       toast.error(err.message || 'Erro ao processar compartilhamento');
     }).finally(() => {
       setTimeout(() => {
-        setShowShareMenu(false);
         setSharedPlatform(null);
         setIsSharing(false);
       }, 1000);
@@ -242,8 +256,14 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                 className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
                 title={p.name}
               >
-                <p.Icon className="w-4 h-4" />
-                {sharedPlatform === p.id && (
+                {/* Se for o botão de copiar e já tiver copiado, muda o ícone para check */}
+                {p.id === 'copy' && copied ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <p.Icon className="w-4 h-4" />
+                )}
+                
+                {sharedPlatform === p.id && p.id !== 'copy' && (
                   <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
                 )}
               </motion.button>
