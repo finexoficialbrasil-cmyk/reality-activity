@@ -59,17 +59,8 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
 
     setSearching(true);
     try {
-      const results = await base44.entities.User.query({
-        filters: {
-          $or: [
-            { email: { $contains: query } },
-            { full_name: { $contains: query } }
-          ],
-          email: { $ne: user.email } // Não mostrar o próprio usuário
-        },
-        limit: 8
-      });
-      setSearchResults(results.data || []);
+      const res = await base44.functions.invoke('searchUsers', { query });
+      setSearchResults(res.data?.users || []);
     } catch (err) {
       console.error('Erro ao buscar usuários:', err);
       setSearchResults([]);
@@ -89,16 +80,9 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
   const loadListings = useCallback(async () => {
     setLoadingListings(true);
     try {
-      const results = await base44.entities.PointsListing.query({
-        filters: {
-          status: 'active',
-          seller_email: { $ne: user.email }
-        },
-        sort: { created_at: 'desc' },
-        limit: 50
-      });
+      const all = await base44.entities.PointsListing.filter({ status: 'active' }, '-created_date', 50);
 
-      let filtered = results.data || [];
+      let filtered = all.filter(l => l.seller_email !== user.email);
 
       if (filterMinPts) {
         filtered = filtered.filter(l => l.points_amount >= parseInt(filterMinPts));
@@ -120,17 +104,14 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
     try {
-      const results = await base44.entities.PointsTransfer.query({
-        filters: {
-          $or: [
-            { sender_email: user.email },
-            { receiver_email: user.email }
-          ]
-        },
-        sort: { created_at: 'desc' },
-        limit: 30
-      });
-      setTransfers(results.data || []);
+      const [sent, received] = await Promise.all([
+        base44.entities.PointsTransfer.filter({ sender_email: user.email }, '-created_date', 30),
+        base44.entities.PointsTransfer.filter({ receiver_email: user.email }, '-created_date', 30)
+      ]);
+      const merged = [...sent, ...received]
+        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+        .slice(0, 30);
+      setTransfers(merged);
     } catch (err) {
       console.error('Erro ao carregar histórico:', err);
       setTransfers([]);
@@ -163,7 +144,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
   const confirmTransfer = async () => {
     setStep('processing');
     try {
-      await base44.functions.invoke('transferPoints', {
+      const res = await base44.functions.invoke('transferPoints', {
         sender_email: user.email,
         sender_name: user.full_name,
         receiver_email: selectedUser.email,
@@ -173,6 +154,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
         note: transferNote,
         type: 'direct'
       });
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao transferir');
 
       setStep('success');
       confetti({
@@ -198,7 +180,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
 
     setBuyingListing(listing);
     try {
-      await base44.functions.invoke('transferPoints', {
+      const buyRes = await base44.functions.invoke('transferPoints', {
         sender_email: user.email,
         sender_name: user.full_name,
         receiver_email: listing.seller_email,
@@ -208,14 +190,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
         listing_id: listing.id,
         type: 'marketplace'
       });
-
-      // Desativar listing
-      await base44.entities.PointsListing.update(listing.id, {
-        status: 'sold',
-        buyer_email: user.email,
-        buyer_name: user.full_name,
-        sold_at: new Date().toISOString()
-      });
+      if (!buyRes.data?.success) throw new Error(buyRes.data?.error || 'Erro ao comprar');
 
       toast.success(`Você comprou ${listing.points_amount} pontos de ${listing.seller_name}!`);
       confetti({
@@ -427,6 +402,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-foreground truncate">{u.full_name}</p>
                               <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                              <p className="text-xs text-gold truncate">Saldo: {(u.balance || 0).toLocaleString('pt-BR')} pts</p>
                             </div>
                           </button>
                         ))}
@@ -448,6 +424,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">{selectedUser.full_name}</p>
                           <p className="text-xs text-muted-foreground truncate">{selectedUser.email}</p>
+                          <p className="text-xs text-gold">Saldo: {(selectedUser.balance || 0).toLocaleString('pt-BR')} pts</p>
                         </div>
                       </div>
                       <button
@@ -863,7 +840,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground truncate">{listing.seller_name}</p>
                               <p className="text-xs text-muted-foreground">
-                                {formatDate(listing.created_at)}
+                                {formatDate(listing.created_date)}
                               </p>
                             </div>
                           </div>
@@ -934,7 +911,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                             {isSender ? `Para: ${t.receiver_name}` : `De: ${t.sender_name}`}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDate(t.created_at)}
+                            {formatDate(t.created_date)}
                             {t.type === 'marketplace' && (
                               <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0 border-gold/30 text-gold">
                                 Marketplace

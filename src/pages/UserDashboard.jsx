@@ -49,6 +49,10 @@ export default function UserDashboard() {
     earned_bonus: { label: 'Bônus completou', color: 'text-gold', icon: Star },
     spent_redemption: { label: 'Resgatou produto', color: 'text-destructive', icon: ArrowDownRight },
     manual_adjust: { label: 'Ajuste manual', color: 'text-muted-foreground', icon: TrendingUp },
+    transfer_sent: { label: 'Transferiu pontos', color: 'text-destructive', icon: ArrowDownRight },
+    transfer_received: { label: 'Recebeu pontos', color: 'text-green-400', icon: ArrowUpRight },
+    marketplace_bought: { label: 'Comprou no mercado', color: 'text-destructive', icon: ShoppingCart },
+    marketplace_sold: { label: 'Vendeu no mercado', color: 'text-gold', icon: Star },
   };
 
   const statusColors = {
@@ -247,6 +251,7 @@ export default function UserDashboard() {
           />
           <BuyPointsModal
           user={user}
+          userPoints={userPoints?.balance || 0}
           isOpen={showBuyPoints}
           onClose={() => setShowBuyPoints(false)}
           onSuccess={() => loadData()}

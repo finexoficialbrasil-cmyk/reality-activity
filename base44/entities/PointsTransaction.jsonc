@@ -14,7 +14,11 @@
         "earned_watch",
         "earned_bonus",
         "spent_redemption",
-        "manual_adjust"
+        "manual_adjust",
+        "transfer_sent",
+        "transfer_received",
+        "marketplace_bought",
+        "marketplace_sold"
       ],
       "description": "Tipo de transa\u00e7\u00e3o"
     },
@@ -37,6 +41,23 @@
     "watch_seconds": {
       "type": "number",
       "description": "Segundos assistidos nessa sess\u00e3o"
+    },
+    "transfer_email": {
+      "type": "string",
+      "description": "Email da contraparte na transfer\u00eancia"
+    },
+    "transfer_name": {
+      "type": "string",
+      "description": "Nome da contraparte"
+    },
+    "transaction_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor financeiro da transa\u00e7\u00e3o (R$)"
+    },
+    "listing_id": {
+      "type": "string",
+      "description": "ID do listing do marketplace"
     }
   },
   "required": [
