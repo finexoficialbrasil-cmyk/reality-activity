@@ -3,7 +3,7 @@ import { MessageCircle, ShieldAlert, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SELLER_MESSAGE = 'Olá! Vi seu anúncio de venda de pontos na RealityActivity e gostaria de obter mais informações sobre a compra.';
+const SELLER_MESSAGE = 'Olá! Vi seu anúncio de venda de pontos na https://realityactivityhub.base44.app/ e gostaria de obter mais informações sobre a compra.';
 
 const DISCLAIMER = 'A RealityActivity é apenas uma plataforma de intermediação entre usuários. A negociação, pagamento, entrega dos pontos e qualquer acordo realizado são de inteira responsabilidade do comprador e do vendedor. A RealityActivity não participa da negociação e não se responsabiliza por eventuais prejuízos, golpes ou descumprimento do acordo.';
 
