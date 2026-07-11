@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart } from 'lucide-react';
+import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart, MessageCircle, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
@@ -10,6 +10,9 @@ import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManag
 import BuyPointsModal from '@/components/user/BuyPointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
 import { Link } from 'react-router-dom';
+
+const COMMERCIAL_WHATSAPP = '5500000000000'; // ← Atualize com o número da equipe comercial RealityActivity
+const COMMERCIAL_MESSAGE = 'Olá! Vi que é possível adquirir pontos na plataforma RealityActivity e gostaria de comprar pontos para anunciar meus produtos e serviços. Poderiam me informar os planos e as formas de pagamento?';
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
@@ -20,6 +23,11 @@ export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [editingAd, setEditingAd] = useState(null);
   const [showBuyPoints, setShowBuyPoints] = useState(false);
+
+  const openCommercialWhatsApp = () => {
+    const num = COMMERCIAL_WHATSAPP.replace(/\D/g, '');
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(COMMERCIAL_MESSAGE)}`, '_blank');
+  };
 
   useEffect(() => {
     loadData();
@@ -139,13 +147,20 @@ export default function UserDashboard() {
           ) : (
             <>
           {/* Buy Points Button */}
-          <div className="mb-8">
+          <div className="mb-8 flex gap-3 flex-wrap">
+            <Button
+              onClick={openCommercialWhatsApp}
+              className="bg-[#25D366] text-white hover:bg-[#1ebe5d] border border-[#25D366]/40"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Comprar Pontos
+            </Button>
             <Button
               onClick={() => setShowBuyPoints(true)}
               className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Comprar Pontos
+              <ArrowRightLeft className="w-4 h-4 mr-2" />
+              Mercado de Pontos
             </Button>
           </div>
 

@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import {
   AlertCircle, ArrowRightLeft, Store, Search, Loader2,
   CheckCircle, XCircle, Star, Zap, Send, Tag, Clock,
-  User, TrendingUp, ShieldCheck, ChevronRight, Filter
+  User, TrendingUp, ShieldCheck, ChevronRight, Filter, MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+import ContactSellerDialog from '@/components/user/ContactSellerDialog';
 
 const DEFAULT_PRICE_PER_POINT = 0.01; // R$ 0,01 por ponto (preço sugerido)
 
@@ -43,7 +44,9 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
   const [showSellForm, setShowSellForm] = useState(false);
   const [sellPoints, setSellPoints] = useState('');
   const [sellPrice, setSellPrice] = useState('');
+  const [sellWhatsapp, setSellWhatsapp] = useState('');
   const [creatingListing, setCreatingListing] = useState(false);
+  const [contactListing, setContactListing] = useState(null);
 
   const points = parseInt(transferPoints) || 0;
   const calculatedPrice = useDefaultPrice
@@ -171,44 +174,6 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
     }
   };
 
-  // Comprar do marketplace
-  const handleBuyFromMarketplace = async (listing) => {
-    if (listing.points_amount > userPoints) {
-      toast.error('Você não tem pontos suficientes');
-      return;
-    }
-
-    setBuyingListing(listing);
-    try {
-      const buyRes = await base44.functions.invoke('transferPoints', {
-        sender_email: user.email,
-        sender_name: user.full_name,
-        receiver_email: listing.seller_email,
-        receiver_name: listing.seller_name,
-        points_amount: listing.points_amount,
-        transaction_value: listing.total_price,
-        listing_id: listing.id,
-        type: 'marketplace'
-      });
-      if (!buyRes.data?.success) throw new Error(buyRes.data?.error || 'Erro ao comprar');
-
-      toast.success(`Você comprou ${listing.points_amount} pontos de ${listing.seller_name}!`);
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#FFD700', '#00FF88', '#00BFFF']
-      });
-      loadListings();
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      console.error('Erro ao comprar:', err);
-      toast.error(err.message || 'Erro ao realizar compra');
-    } finally {
-      setBuyingListing(null);
-    }
-  };
-
   // Criar listing de venda
   const handleCreateListing = async () => {
     const pts = parseInt(sellPoints) || 0;
@@ -226,6 +191,11 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
       toast.error('Digite o valor da venda');
       return;
     }
+    const whatsappDigits = (sellWhatsapp || '').replace(/\D/g, '');
+    if (whatsappDigits.length < 10) {
+      toast.error('Informe um número de WhatsApp válido (com DDD)');
+      return;
+    }
 
     setCreatingListing(true);
     try {
@@ -235,6 +205,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
         points_amount: pts,
         price_per_point: price / pts,
         total_price: price,
+        whatsapp_number: whatsappDigits,
         status: 'active'
       });
 
@@ -242,6 +213,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
       setShowSellForm(false);
       setSellPoints('');
       setSellPrice('');
+      setSellWhatsapp('');
       loadListings();
       if (onSuccess) onSuccess();
     } catch (err) {
@@ -763,6 +735,20 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                           </p>
                         )}
                       </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1">WhatsApp para contato *</label>
+                        <div className="relative">
+                          <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#25D366]" />
+                          <Input
+                            type="tel"
+                            value={sellWhatsapp}
+                            onChange={(e) => setSellWhatsapp(e.target.value)}
+                            placeholder="(11) 99999-9999"
+                            className="h-11 pl-10 bg-secondary/50 border-gold/20 focus:border-gold"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Os interesses falarão com você por este número.</p>
+                      </div>
 
                       <Button
                         onClick={handleCreateListing}
@@ -853,18 +839,11 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                         </div>
 
                         <Button
-                          onClick={() => handleBuyFromMarketplace(listing)}
-                          disabled={buyingListing?.id === listing.id || listing.points_amount > userPoints}
-                          className="w-full h-10 mt-3 bg-gradient-to-r from-gold/80 to-yellow-300/80 text-background hover:from-gold hover:to-yellow-300 font-semibold rounded-xl text-sm disabled:opacity-40"
+                          onClick={() => setContactListing(listing)}
+                          className="w-full h-10 mt-3 bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm"
                           size="sm"
                         >
-                          {buyingListing?.id === listing.id ? (
-                            <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processando...</>
-                          ) : listing.points_amount > userPoints ? (
-                            'Saldo insuficiente'
-                          ) : (
-                            <><Zap className="w-4 h-4 mr-2" /> Comprar Pontos</>
-                          )}
+                          <MessageCircle className="w-4 h-4 mr-2" /> Conversar no WhatsApp
                         </Button>
                       </motion.div>
                     ))}
@@ -937,6 +916,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
           </div>
         </motion.div>
       </motion.div>
+      <ContactSellerDialog listing={contactListing} onClose={() => setContactListing(null)} />
     </AnimatePresence>
   );
 }
