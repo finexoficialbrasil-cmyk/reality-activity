@@ -199,17 +199,16 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
 
     setCreatingListing(true);
     try {
-      await base44.entities.PointsListing.create({
-        seller_email: user.email,
+      const res = await base44.functions.invoke('createPointsListing', {
         seller_name: user.full_name,
         points_amount: pts,
         price_per_point: price / pts,
         total_price: price,
-        whatsapp_number: whatsappDigits,
-        status: 'active'
+        whatsapp_number: whatsappDigits
       });
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao criar anúncio');
 
-      toast.success('Seus pontos foram colocados à venda!');
+      toast.success('Pontos descontados e anúncio publicado!');
       setShowSellForm(false);
       setSellPoints('');
       setSellPrice('');
@@ -218,7 +217,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Erro ao criar listing:', err);
-      toast.error('Erro ao criar anúncio de venda');
+      toast.error(err.message || 'Erro ao criar anúncio de venda');
     } finally {
       setCreatingListing(false);
     }
