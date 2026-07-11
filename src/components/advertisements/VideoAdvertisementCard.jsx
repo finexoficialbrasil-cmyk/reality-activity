@@ -218,6 +218,26 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
   }, [user, ad, onPointsEarned]);
 
+  // Stop counting points
+  const stopCounting = useCallback(() => {
+    if (!isCounting.current) return;
+    isCounting.current = false;
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+
+    const secs = Math.floor(secondsRef.current);
+    const pts = Math.floor(pointsRef.current);
+
+    if (mountedRef.current) setIsWatching(false);
+
+    if (secs > 0 && pts > 0 && !savedRef.current) {
+      savePoints(pts, secs);
+    }
+
+    secondsRef.current = 0;
+    pointsRef.current = 0;
+  }, [savePoints]);
+
   // Start counting points
   const startCounting = useCallback(() => {
     if (!user) return;
@@ -239,26 +259,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       if (mountedRef.current) setPointsEarned(prev => prev + pointsToAdd);
     }, 1000);
   }, [user, pps, ad.budget_remaining, stopCounting]);
-
-  // Stop counting points
-  const stopCounting = useCallback(() => {
-    if (!isCounting.current) return;
-    isCounting.current = false;
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-
-    const secs = Math.floor(secondsRef.current);
-    const pts = Math.floor(pointsRef.current);
-
-    if (mountedRef.current) setIsWatching(false);
-
-    if (secs > 0 && pts > 0 && !savedRef.current) {
-      savePoints(pts, secs);
-    }
-
-    secondsRef.current = 0;
-    pointsRef.current = 0;
-  }, [savePoints]);
 
   useEffect(() => {
     mountedRef.current = true;
