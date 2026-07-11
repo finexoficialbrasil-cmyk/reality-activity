@@ -53,7 +53,6 @@ export default function UserDashboard() {
     transfer_received: { label: 'Recebeu pontos', color: 'text-green-400', icon: ArrowUpRight },
     marketplace_bought: { label: 'Comprou no mercado', color: 'text-destructive', icon: ShoppingCart },
     marketplace_sold: { label: 'Vendeu no mercado', color: 'text-gold', icon: Star },
-    marketplace_listed: { label: 'Anunciou no mercado', color: 'text-destructive', icon: ArrowDownRight },
   };
 
   const statusColors = {
