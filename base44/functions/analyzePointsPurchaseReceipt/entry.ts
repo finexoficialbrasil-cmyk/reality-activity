@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     }
 
     // Verifica se o comprovante pertence ao usuário autenticado
-    if (purchase.user_email !== user.email) {
+    if (purchase.user_email !== user.email && user.role !== 'admin') {
       return Response.json({ error: 'Acesso negado a este comprovante' }, { status: 403 });
     }
 
