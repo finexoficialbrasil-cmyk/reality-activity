@@ -16,10 +16,16 @@ Deno.serve(async (req) => {
     }
 
     // Get the purchase record
-    const purchase = await base44.asServiceRole.entities.PointsPurchase.read(purchase_id);
+    const purchases = await base44.asServiceRole.entities.PointsPurchase.filter({ id: purchase_id });
+    const purchase = purchases[0];
 
     if (!purchase) {
       return Response.json({ error: 'Purchase not found' }, { status: 404 });
+    }
+
+    // Verifica se o comprovante pertence ao usuário autenticado
+    if (purchase.user_email !== user.email) {
+      return Response.json({ error: 'Acesso negado a este comprovante' }, { status: 403 });
     }
 
     // Update status to analyzing

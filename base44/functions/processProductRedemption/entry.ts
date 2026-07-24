@@ -15,6 +15,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'product_id e redemption_id são obrigatórios' }, { status: 400 });
     }
 
+    // Busca o resgate e valida propriedade antes de qualquer ação
+    const redemptions = await base44.asServiceRole.entities.Redemption.filter({ id: redemption_id });
+    const redemption = redemptions[0];
+    if (!redemption) {
+      return Response.json({ error: 'Resgate não encontrado' }, { status: 404 });
+    }
+
+    // Verifica se o resgate pertence ao usuário autenticado
+    if (redemption.user_email !== user.email) {
+      return Response.json({ error: 'Acesso negado a este resgate' }, { status: 403 });
+    }
+
+    // Verifica se o product_id informado corresponde ao resgate original
+    if (redemption.product_id !== product_id) {
+      return Response.json({ error: 'Produto não corresponde ao resgate' }, { status: 403 });
+    }
+
     // Busca o produto
     const products = await base44.asServiceRole.entities.Product.filter({ id: product_id });
     if (products.length === 0) {

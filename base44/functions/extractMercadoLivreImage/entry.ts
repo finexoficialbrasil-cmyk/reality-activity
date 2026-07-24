@@ -11,10 +11,22 @@ Deno.serve(async (req) => {
     // Resolve link curto meli.la para obter ID real
     let productId = null;
 
-    if (link.includes('meli.la/')) {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(link);
+    } catch {
+      return Response.json({ error: 'URL inválida' }, { status: 400 });
+    }
+
+    const hostname = parsedUrl.hostname.replace(/^www\./, '');
+    const isMeliLa = hostname === 'meli.la' || hostname.endsWith('.meli.la');
+    const isMercadoLivre = hostname === 'mercadolivre.com.br' || hostname.endsWith('.mercadolivre.com.br') ||
+                           hostname === 'mercadolibre.com' || hostname.endsWith('.mercadolibre.com');
+
+    if (isMeliLa) {
       try {
         // Tenta fazer fetch direto do link com redirecionamento
-        const htmlResponse = await fetch(link, { 
+        const htmlResponse = await fetch(parsedUrl.href, { 
           headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
         });
         
@@ -41,12 +53,14 @@ Deno.serve(async (req) => {
         console.error('Erro ao resolver link curto:', e);
         return Response.json({ error: 'Erro ao resolver link do Mercado Livre' }, { status: 400 });
       }
-    } else {
+    } else if (isMercadoLivre) {
       // Extrai o ID do produto (MLB + números) de link completo
       const idMatch = link.match(/MLB(\d+)/);
       if (idMatch) {
         productId = idMatch[1];
       }
+    } else {
+      return Response.json({ error: 'Domínio não autorizado' }, { status: 400 });
     }
 
     if (!productId) {
