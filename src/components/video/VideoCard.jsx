@@ -114,56 +114,25 @@ export default function VideoCard({ video, company, user, onPointsEarned }) {
     }
   };
 
-  // --- Points saving logic ---
+  // --- Points saving logic (server-side validation via backend function) ---
   const savePoints = useCallback(async (pts, secs) => {
-    if (pts <= 0 || !user || savedRef.current) return;
+    if (secs <= 0 || !user || savedRef.current) return;
     savedRef.current = true;
-    
-    try {
-      // Trava de 24h: verifica se já assistiu esse vídeo nas últimas 24h
-      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const recentWatches = await base44.entities.PointsTransaction.filter({
-        user_email: user.email,
-        type: 'earned_watch',
-        video_id: video.id
-      });
-      const watchedRecently = recentWatches.some(t => t.created_date > since24h);
-      if (watchedRecently) {
-        toast.info('Você já ganhou pontos assistindo este vídeo nas últimas 24h. Volte amanhã! ⏳');
-        savedRef.current = false;
-        return;
-      }
 
-      await base44.entities.PointsTransaction.create({
-        user_email: user.email,
-        user_name: user.full_name,
-        type: 'earned_watch',
-        points: pts,
+    try {
+      const res = await base44.functions.invoke('awardVideoPoints', {
         video_id: video.id,
-        company_id: video.company_id,
-        description: `Assistiu "${video.title}" por ${secs}s`,
         watch_seconds: secs
       });
-      
-      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-      if (existing.length > 0) {
-        await base44.entities.UserPoints.update(existing[0].id, {
-          balance: (existing[0].balance || 0) + pts,
-          total_earned: (existing[0].total_earned || 0) + pts,
-          videos_watched: (existing[0].videos_watched || 0) + 1,
-          last_activity: new Date().toISOString()
-        });
+      const result = await res.json();
+
+      if (result.success) {
+        if (onPointsEarned) onPointsEarned(result.points);
+      } else if (result.reason === 'cooldown') {
+        toast.info(result.message || 'Você já ganhou pontos neste vídeo nas últimas 24h.');
       } else {
-        await base44.entities.UserPoints.create({
-          user_email: user.email,
-          user_name: user.full_name,
-          balance: pts,
-          total_earned: pts,
-          videos_watched: 1,
-          last_activity: new Date().toISOString()
-        });
+        savedRef.current = false;
       }
-      if (onPointsEarned) onPointsEarned(pts);
     } catch (err) {
       console.error('Erro ao salvar pontos:', err);
       savedRef.current = false;
