@@ -3,9 +3,31 @@
   "type": "object",
   "rls": {
     "create": false,
-    "read": true,
-    "update": false,
-    "delete": true
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
   },
   "properties": {
     "title": {
