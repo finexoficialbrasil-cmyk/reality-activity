@@ -1,13 +1,47 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { ExternalLink, CheckCircle, MessageCircle, Twitter, Facebook, Play, Gift } from 'lucide-react';
+import { ExternalLink, CheckCircle, Play, Gift, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
+// Ícones customizados das marcas (lucide não tem ícones oficiais de redes sociais)
+const TelegramIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+);
+
+const PinterestIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z"/>
+  </svg>
+);
+
+const MessageCircle = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+  </svg>
+);
+
+const Facebook = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
+const Twitter = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
+
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
+  { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc] hover:bg-[#0088cc]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
-  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#000000] hover:bg-black/10' },
+  { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#FFFFFF] hover:bg-black/10' },
+  { id: 'pinterest', name: 'Pinterest', Icon: PinterestIcon, color: 'text-[#E60023] hover:bg-[#E60023]/10' },
+  { id: 'copy', name: 'Copiar Link', Icon: LinkIcon, color: 'text-muted-foreground hover:bg-secondary' },
 ];
 
 // Extract YouTube video ID
@@ -39,9 +73,9 @@ function loadYTApi() {
 
 export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [sharedPlatform, setSharedPlatform] = useState(null);
+  const [copied, setCopied] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
@@ -121,35 +155,50 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     savedRef.current = true;
     
     try {
-      // Trava de 24h: verifica se já ganhou pontos neste anúncio nas últimas 24h
+      // ====================================================================
+      // CORREÇÃO 1: Trava de 24h funcionando de verdade
+      // ====================================================================
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const recentWatches = await base44.entities.PointsTransaction.filter({
-        user_email: user.email,
-        type: 'earned_watch'
+      
+      const recentWatches = await base44.entities.PointsTransaction.query({
+        filters: {
+          user_email: user.email,
+          type: 'earned_watch',
+          video_id: ad.id // Usa o ID do vídeo ao invés de procurar no texto
+        }
       });
-      const watchedRecently = recentWatches
-        .filter(t => t.description?.includes(ad.title))
-        .some(t => t.created_date > since24h);
+
+      const watchedRecently = (recentWatches.data || [])
+        .some(t => t.created_at && t.created_at > since24h);
+
       if (watchedRecently) {
         toast.info('Você já ganhou pontos com este anúncio nas últimas 24h. Volte amanhã! ⏳');
         savedRef.current = false;
         return;
       }
 
+      // Salva a transação
       await base44.entities.PointsTransaction.create({
         user_email: user.email,
         user_name: user.full_name,
         type: 'earned_watch',
         points: pts,
-        description: `Compartilhou anúncio "${ad.title}" por ${secs}s`,
-        watch_seconds: secs
+        description: `Assistiu anúncio "${ad.title}" por ${secs}s`,
+        watch_seconds: secs,
+        video_id: ad.id // Agora salva o ID do vídeo também
       });
       
-      const existing = await base44.entities.UserPoints.filter({ user_email: user.email });
-      if (existing.length > 0) {
-        await base44.entities.UserPoints.update(existing[0].id, {
-          balance: (existing[0].balance || 0) + pts,
-          total_earned: (existing[0].total_earned || 0) + pts,
+      // ====================================================================
+      // CORREÇÃO 2: Atualizar saldo do usuário usando .query()
+      // ====================================================================
+      const existingPoints = await base44.entities.UserPoints.query({
+        filters: { user_email: user.email }
+      });
+
+      if (existingPoints.data && existingPoints.data.length > 0) {
+        await base44.entities.UserPoints.update(existingPoints.data[0].id, {
+          balance: (existingPoints.data[0].balance || 0) + pts,
+          total_earned: (existingPoints.data[0].total_earned || 0) + pts,
           last_activity: new Date().toISOString()
         });
       } else {
@@ -161,35 +210,13 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           last_activity: new Date().toISOString()
         });
       }
+
       if (onPointsEarned) onPointsEarned();
     } catch (err) {
       console.error('Erro ao salvar pontos:', err);
       savedRef.current = false;
     }
   }, [user, ad, onPointsEarned]);
-
-  // Start counting points
-  const startCounting = useCallback(() => {
-    if (!user) return;
-    if (isCounting.current) return;
-    isCounting.current = true;
-    if (mountedRef.current) setIsWatching(true);
-
-    intervalRef.current = setInterval(() => {
-      const budgetRemaining = ad.budget_remaining || 0;
-      const pointsToAdd = Math.min(pps, budgetRemaining);
-      
-      if (pointsToAdd <= 0) {
-        // Orçamento zerado, parar de contar
-        stopCounting();
-        return;
-      }
-      
-      secondsRef.current += 1;
-      pointsRef.current += pointsToAdd;
-      if (mountedRef.current) setPointsEarned(prev => prev + pointsToAdd);
-    }, 1000);
-  }, [user, pps, ad.budget_remaining]);
 
   // Stop counting points
   const stopCounting = useCallback(() => {
@@ -210,6 +237,28 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     secondsRef.current = 0;
     pointsRef.current = 0;
   }, [savePoints]);
+
+  // Start counting points
+  const startCounting = useCallback(() => {
+    if (!user) return;
+    if (isCounting.current) return;
+    isCounting.current = true;
+    if (mountedRef.current) setIsWatching(true);
+
+    intervalRef.current = setInterval(() => {
+      const budgetRemaining = ad.budget_remaining || 0;
+      const pointsToAdd = Math.min(pps, budgetRemaining);
+      
+      if (pointsToAdd <= 0) {
+        stopCounting();
+        return;
+      }
+      
+      secondsRef.current += 1;
+      pointsRef.current += pointsToAdd;
+      if (mountedRef.current) setPointsEarned(prev => prev + pointsToAdd);
+    }, 1000);
+  }, [user, pps, ad.budget_remaining, stopCounting]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -252,28 +301,65 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
 
     const productLink = ad.link;
-    const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    let messageText = '';
+    const siteUrl = window.location.origin;
     let url = '';
 
-    const baseMessage = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
-
     switch (platform) {
-      case 'whatsapp':
+      case 'whatsapp': {
+        // Mensagem limpa (sem link do seu site para não gerar 2 previews feios no WhatsApp)
+        const msg = `Oii! 👋 Tô compartilhando esse produto incrível! 🎁\n\n✨ Confira: ${ad.title}\n${productLink}\n\nQuer ganhar pontos como eu? Acessa: ${siteUrl}`;
+
         url = isMobile 
-          ? `whatsapp://send?text=${encodeURIComponent(baseMessage)}`
-          : `https://web.whatsapp.com/send?text=${encodeURIComponent(baseMessage)}`;
+          ? `whatsapp://send?text=${encodeURIComponent(msg)}`
+          : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         break;
-      case 'facebook':
-        const facebookMessage = `Confira: ${ad.title} - ${productLink}`;
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(facebookMessage)}`;
+      }
+
+
+      case 'telegram': {
+        const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
+        url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(msg)}`;
         break;
-      case 'twitter':
-        messageText = `Achei esse produto incrível "${ad.title}"! 💰 ${productLink} #GanheComACommunity`;
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(messageText)}`;
+      }
+
+      case 'facebook': {
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
         break;
+      }
+
+      case 'twitter': {
+        const msg = `${ad.title}\n\n${productLink}`;
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
+        break;
+      }
+
+      case 'pinterest': {
+        const hasValidImage = ad.image_url && 
+          /\.(jpg|jpeg|png|gif|webp|avif)(\?.*)?$/i.test(ad.image_url);
+        
+        const msg = `${ad.title} - ${productLink}`;
+        
+        if (hasValidImage) {
+          url = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productLink)}&description=${encodeURIComponent(msg)}&media=${encodeURIComponent(ad.image_url)}`;
+        } else {
+          url = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productLink)}&description=${encodeURIComponent(msg)}`;
+        }
+        break;
+      }
+
+      case 'copy': {
+        try {
+          await navigator.clipboard.writeText(productLink);
+          setCopied(true);
+          toast.success('Link copiado! Cole onde quiser 📋');
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          toast.error('Não foi possível copiar o link');
+        }
+        return; 
+      }
     }
 
     if (url) window.open(url, '_blank');
@@ -291,7 +377,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       toast.error(err.message || 'Erro ao processar compartilhamento');
     }).finally(() => {
       setTimeout(() => {
-        setShowShareMenu(false);
         setSharedPlatform(null);
         setIsSharing(false);
       }, 1000);
@@ -351,8 +436,8 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
           {categoryLabels[ad.category]}
         </div>
 
-        {/* Share Buttons - Always visible */}
-        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1 justify-center">
+        {/* Share Buttons - Sobre o vídeo */}
+        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1.5 justify-center">
           {SHARE_PLATFORMS.map((p) => (
             <motion.button
               key={p.id}
@@ -360,11 +445,11 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
               disabled={isSharing}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold"
+              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold relative"
               title={p.name}
             >
               <p.Icon className="w-4 h-4" />
-              {sharedPlatform === p.id && (
+              {sharedPlatform === p.id && p.id !== 'copy' && (
                 <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
               )}
             </motion.button>
@@ -412,8 +497,8 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
-          {/* Share Buttons */}
-          <div className="flex items-center gap-1 justify-center">
+          {/* Share Buttons - Rodapé com cores das marcas */}
+          <div className="flex items-center gap-1.5 justify-center">
             {SHARE_PLATFORMS.map((p) => (
               <motion.button
                 key={p.id}
@@ -421,11 +506,16 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
                 disabled={isSharing}
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.95 }}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${p.color}`}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
                 title={p.name}
               >
-                <p.Icon className="w-4 h-4" />
-                {sharedPlatform === p.id && (
+                {p.id === 'copy' && copied ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <p.Icon className="w-4 h-4" />
+                )}
+                
+                {sharedPlatform === p.id && p.id !== 'copy' && (
                   <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
                 )}
               </motion.button>

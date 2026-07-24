@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart } from 'lucide-react';
+import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
@@ -49,6 +49,10 @@ export default function UserDashboard() {
     earned_bonus: { label: 'Bônus completou', color: 'text-gold', icon: Star },
     spent_redemption: { label: 'Resgatou produto', color: 'text-destructive', icon: ArrowDownRight },
     manual_adjust: { label: 'Ajuste manual', color: 'text-muted-foreground', icon: TrendingUp },
+    transfer_sent: { label: 'Transferiu pontos', color: 'text-destructive', icon: ArrowDownRight },
+    transfer_received: { label: 'Recebeu pontos', color: 'text-green-400', icon: ArrowUpRight },
+    marketplace_bought: { label: 'Comprou no mercado', color: 'text-destructive', icon: ShoppingCart },
+    marketplace_sold: { label: 'Vendeu no mercado', color: 'text-gold', icon: Star },
   };
 
   const statusColors = {
@@ -140,8 +144,8 @@ export default function UserDashboard() {
               onClick={() => setShowBuyPoints(true)}
               className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Comprar Pontos
+              <ArrowRightLeft className="w-4 h-4 mr-2" />
+              Mercado de Pontos
             </Button>
           </div>
 
@@ -247,6 +251,7 @@ export default function UserDashboard() {
           />
           <BuyPointsModal
           user={user}
+          userPoints={userPoints?.balance || 0}
           isOpen={showBuyPoints}
           onClose={() => setShowBuyPoints(false)}
           onSuccess={() => loadData()}
