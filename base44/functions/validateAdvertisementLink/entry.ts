@@ -33,9 +33,11 @@ Deno.serve(async (req) => {
       is_active: true
     });
 
-    const isDomainApproved = approvedDomains.some(ad => 
-      domain.includes(ad.domain) || ad.domain.includes(domain)
-    );
+    const isDomainApproved = approvedDomains.some(ad => {
+      const approved = ad.domain.toLowerCase().replace(/^www\./, '');
+      const host = domain.toLowerCase().replace(/^www\./, '');
+      return host === approved || host.endsWith('.' + approved);
+    });
 
     if (!isDomainApproved) {
       // Registra tentativa de uso de link inválido
