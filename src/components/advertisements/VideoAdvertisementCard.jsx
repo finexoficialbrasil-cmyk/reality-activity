@@ -303,7 +303,6 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     const productLink = ad.link;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    const siteUrl = window.location.origin;
     let url = '';
 
     switch (platform) {
@@ -317,8 +316,9 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         break;
       }
 
+
       case 'telegram': {
-        const msg = `Vi isso e achei muito bom 👇\n\n${productLink}`;
+        const msg = `vi isso e achei muito bom 👇\n\n${productLink}`;
         url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(msg)}`;
         break;
       }

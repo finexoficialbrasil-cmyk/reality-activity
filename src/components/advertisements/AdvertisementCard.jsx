@@ -64,7 +64,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
     switch (platform) {
       case 'whatsapp': {
         const msg = [
-          `Oii! 👋 Tô compartilhando esse produto incrível! 🎁`,
+          `💰 Quer ganhar pontos compartilhando anúncios no WhatsApp?`,
           ``,
           `📌 ${ad.title}`,
           `${productLink}`,
