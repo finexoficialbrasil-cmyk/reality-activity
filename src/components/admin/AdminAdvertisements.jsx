@@ -87,8 +87,24 @@ export default function AdminAdvertisements() {
       }
 
       if (editingAd) {
-        await base44.entities.Advertisement.update(editingAd.id, formData);
-        toast.success('Anúncio atualizado');
+        const currentBudgetTotal = editingAd.budget_total || 0;
+        const budgetDifference = formData.budget_total - currentBudgetTotal;
+        const newBudgetRemaining = Math.max(0, (editingAd.budget_remaining || 0) + Math.max(0, budgetDifference));
+
+        const updatePayload = {
+          ...formData,
+          budget_remaining: newBudgetRemaining
+        };
+
+        // Reativa o anúncio automaticamente quando há saldo disponível
+        if (newBudgetRemaining > 0) {
+          updatePayload.status = 'approved';
+          updatePayload.is_active = true;
+          updatePayload.cooldown_until = null;
+        }
+
+        await base44.entities.Advertisement.update(editingAd.id, updatePayload);
+        toast.success(newBudgetRemaining > 0 ? 'Anúncio atualizado e reativado!' : 'Anúncio atualizado');
       } else {
         const newAd = await base44.entities.Advertisement.create({
           ...formData,
@@ -154,7 +170,13 @@ export default function AdminAdvertisements() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await base44.entities.Advertisement.update(id, { status: newStatus });
+      const updateData = { status: newStatus };
+      // Ao aprovar, limpa o cooldown e reativa a exibição
+      if (newStatus === 'approved') {
+        updateData.is_active = true;
+        updateData.cooldown_until = null;
+      }
+      await base44.entities.Advertisement.update(id, updateData);
       toast.success(`Status alterado para ${newStatus}`);
       loadData();
     } catch (err) {
