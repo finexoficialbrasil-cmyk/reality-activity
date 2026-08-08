@@ -62,6 +62,10 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
       {ads.map((ad) => {
         const status = statusConfig[ad.status] || statusConfig.pending;
         const StatusIcon = status.icon;
+        const budgetTotal = ad.budget_total || 0;
+        const budgetRemaining = ad.budget_remaining || 0;
+        const budgetSpent = Math.max(0, budgetTotal - budgetRemaining);
+        const spentPct = budgetTotal > 0 ? Math.min(100, (budgetSpent / budgetTotal) * 100) : 0;
         return (
           <div key={ad.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-4">
             {ad.image_url && (
@@ -76,9 +80,21 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{ad.description}</p>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 <span>{ad.shares_count || 0} compartilhamentos</span>
                 <span className="text-gold">Custo: {ad.cost_to_publish}pts / Recompensa: +{ad.reward_per_share}pts</span>
+              </div>
+              <div className="mb-3">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">Crédito gasto: <span className="text-destructive font-semibold">{budgetSpent} pts</span></span>
+                  <span className="text-muted-foreground">Restante: <span className={`font-semibold ${budgetRemaining > 0 ? 'text-green-400' : 'text-destructive'}`}>{budgetRemaining} pts</span></span>
+                </div>
+                <div className="w-full bg-secondary/60 rounded-full h-2 overflow-hidden border border-border">
+                  <div
+                    className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full transition-all"
+                    style={{ width: `${spentPct}%` }}
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <a
