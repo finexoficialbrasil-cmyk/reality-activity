@@ -25,11 +25,16 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Deletar este anúncio?')) return;
+  const handleDelete = async (ad) => {
+    const remaining = ad.budget_remaining || 0;
+    const msg = remaining > 0
+      ? `Deletar este anúncio? ${remaining} pts do saldo restante serão devolvidos à sua conta.`
+      : 'Deletar este anúncio?';
+    if (!confirm(msg)) return;
     try {
-      await base44.entities.Advertisement.delete(id);
-      toast.success('Anúncio deletado');
+      const res = await base44.functions.invoke('deleteAdvertisementAndRefundPoints', { advertisement_id: ad.id });
+      const refunded = res.data?.refunded || 0;
+      toast.success(refunded > 0 ? `Anúncio deletado. ${refunded} pts devolvidos ao seu saldo.` : 'Anúncio deletado');
       loadAds();
     } catch (err) {
       console.error('Erro ao deletar:', err);
@@ -119,7 +124,7 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => handleDelete(ad.id)}
+                onClick={() => handleDelete(ad)}
                 className="text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="w-4 h-4" />
