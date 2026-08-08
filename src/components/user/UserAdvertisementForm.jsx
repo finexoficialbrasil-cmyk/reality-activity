@@ -98,10 +98,15 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       }
 
       if (ad) {
-        // Edita anúncio existente
+        // Edita anúncio existente — só permite AUMENTAR o orçamento
         const budgetDifference = formData.budget_total - ad.budget_total;
-        // (budgetDifference used below)
-        
+
+        if (budgetDifference < 0) {
+          toast.error('Não é possível reduzir o orçamento de um anúncio já publicado.');
+          setSubmitting(false);
+          return;
+        }
+
         if (budgetDifference > 0 && userPoints.balance < budgetDifference) {
           toast.error(`Saldo insuficiente para aumentar o orçamento. Você precisa de ${budgetDifference} pontos.`);
           setSubmitting(false);
@@ -109,7 +114,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         }
 
         // Calcula novo budget_remaining adicionando a diferença
-        const newBudgetRemaining = (ad.budget_remaining || 0) + Math.max(0, budgetDifference);
+        const newBudgetRemaining = (ad.budget_remaining || 0) + budgetDifference;
 
         // Reativa sempre que o budget_remaining resultante for > 0
         const shouldReactivate = newBudgetRemaining > 0;
@@ -128,7 +133,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           ...(shouldReactivate ? { is_active: true, status: 'approved', cooldown_until: null } : {})
         });
 
-        if (budgetDifference !== 0) {
+        if (budgetDifference > 0) {
           await base44.entities.UserPoints.update(userPoints.id, {
             balance: userPoints.balance - budgetDifference,
             total_spent: (userPoints.total_spent || 0) + budgetDifference
@@ -137,7 +142,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           await base44.entities.PointsTransaction.create({
             user_email: user.email,
             user_name: user.full_name,
-            type: 'spent_redemption',
+            type: 'manual_adjust',
             points: -budgetDifference,
             description: `Ajuste de orçamento de anúncio: ${formData.title}`
           });
@@ -162,7 +167,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         await base44.entities.PointsTransaction.create({
           user_email: user.email,
           user_name: user.full_name,
-          type: 'spent_redemption',
+          type: 'manual_adjust',
           points: -formData.budget_total,
           description: `Orçamento de anúncio: ${formData.title}`
         });
