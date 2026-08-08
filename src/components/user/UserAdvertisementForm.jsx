@@ -28,7 +28,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
     type: ad.type || 'image',
     link: ad.link,
     category: ad.category,
-    budget_total: ad.budget_total,
+    add_credit: 0,
     reward_per_share: ad.reward_per_share,
     image_url: ad.image_url || '',
     video_url: ad.video_url || ''
@@ -52,7 +52,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         type: ad.type || 'image',
         link: ad.link,
         category: ad.category,
-        budget_total: ad.budget_total,
+        add_credit: 0,
         reward_per_share: ad.reward_per_share,
         image_url: ad.image_url || '',
         video_url: ad.video_url || ''
@@ -83,9 +83,17 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       return;
     }
 
-    if (!userPoints || userPoints.balance < formData.cost_to_publish) {
-      toast.error(`Saldo insuficiente. Você precisa de ${formData.cost_to_publish} pontos.`);
-      return;
+    if (ad) {
+      const addAmount = Math.max(0, parseInt(formData.add_credit) || 0);
+      if (addAmount > 0 && userPoints.balance < addAmount) {
+        toast.error(`Saldo insuficiente. Você precisa de ${addAmount} pontos.`);
+        return;
+      }
+    } else {
+      if (!userPoints || userPoints.balance < formData.budget_total) {
+        toast.error(`Saldo insuficiente. Você precisa de ${formData.budget_total} pontos.`);
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -98,23 +106,17 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       }
 
       if (ad) {
-        // Edita anúncio existente — só permite AUMENTAR o orçamento
-        const budgetDifference = formData.budget_total - ad.budget_total;
+        // Edita anúncio existente — adiciona créditos ao saldo atual
+        const addAmount = Math.max(0, parseInt(formData.add_credit) || 0);
 
-        if (budgetDifference < 0) {
-          toast.error('Não é possível reduzir o orçamento de um anúncio já publicado.');
+        if (addAmount > 0 && userPoints.balance < addAmount) {
+          toast.error(`Saldo insuficiente. Você precisa de ${addAmount} pontos.`);
           setSubmitting(false);
           return;
         }
 
-        if (budgetDifference > 0 && userPoints.balance < budgetDifference) {
-          toast.error(`Saldo insuficiente para aumentar o orçamento. Você precisa de ${budgetDifference} pontos.`);
-          setSubmitting(false);
-          return;
-        }
-
-        // Calcula novo budget_remaining adicionando a diferença
-        const newBudgetRemaining = (ad.budget_remaining || 0) + budgetDifference;
+        const newBudgetTotal = (ad.budget_total || 0) + addAmount;
+        const newBudgetRemaining = (ad.budget_remaining || 0) + addAmount;
 
         // Reativa sempre que o budget_remaining resultante for > 0
         const shouldReactivate = newBudgetRemaining > 0;
@@ -125,7 +127,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           type: formData.type,
           link: formData.link,
           category: formData.category,
-          budget_total: formData.budget_total,
+          budget_total: newBudgetTotal,
           budget_remaining: newBudgetRemaining,
           reward_per_share: formData.reward_per_share,
           image_url: formData.image_url,
@@ -133,18 +135,18 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           ...(shouldReactivate ? { is_active: true, status: 'approved', cooldown_until: null } : {})
         });
 
-        if (budgetDifference > 0) {
+        if (addAmount > 0) {
           await base44.entities.UserPoints.update(userPoints.id, {
-            balance: userPoints.balance - budgetDifference,
-            total_spent: (userPoints.total_spent || 0) + budgetDifference
+            balance: userPoints.balance - addAmount,
+            total_spent: (userPoints.total_spent || 0) + addAmount
           });
 
           await base44.entities.PointsTransaction.create({
             user_email: user.email,
             user_name: user.full_name,
             type: 'manual_adjust',
-            points: -budgetDifference,
-            description: `Ajuste de orçamento de anúncio: ${formData.title}`
+            points: -addAmount,
+            description: `Crédito adicionado ao anúncio: ${formData.title}`
           });
         }
       } else {
@@ -174,7 +176,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       }
 
       // Mostra tela de sucesso com relatório
-      const budgetDifference = ad ? formData.budget_total - ad.budget_total : formData.budget_total;
+      const budgetDifference = ad ? (Math.max(0, parseInt(formData.add_credit) || 0)) : formData.budget_total;
       setSuccess({
         title: formData.title,
         cost: budgetDifference,
@@ -184,17 +186,31 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       });
 
       // Limpa o formulário
-      setFormData({
-        title: '',
-        description: '',
-        type: 'image',
-        link: '',
-        category: 'outros',
-        budget_total: 100,
-        reward_per_share: 10,
-        image_url: '',
-        video_url: ''
-      });
+      if (ad) {
+        setFormData({
+          title: ad.title,
+          description: ad.description,
+          type: ad.type || 'image',
+          link: ad.link,
+          category: ad.category,
+          add_credit: 0,
+          reward_per_share: ad.reward_per_share,
+          image_url: ad.image_url || '',
+          video_url: ad.video_url || ''
+        });
+      } else {
+        setFormData({
+          title: '',
+          description: '',
+          type: 'image',
+          link: '',
+          category: 'outros',
+          budget_total: 100,
+          reward_per_share: 10,
+          image_url: '',
+          video_url: ''
+        });
+      }
 
       if (onAdCreated) onAdCreated();
 
@@ -419,15 +435,31 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         ) }
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Orçamento Total (pts)</label>
-            <Input
-              type="number"
-              value={formData.budget_total}
-              onChange={(e) => setFormData({ ...formData, budget_total: parseInt(e.target.value) })}
-              min="1"
-            />
-          </div>
+          {ad ? (
+            <div>
+              <label className="text-sm font-medium mb-2 block">Adicionar Créditos (pts)</label>
+              <Input
+                type="number"
+                value={formData.add_credit}
+                onChange={(e) => setFormData({ ...formData, add_credit: parseInt(e.target.value) || 0 })}
+                min="0"
+                placeholder="0"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Saldo atual do anúncio: <span className="text-gold font-semibold">{ad.budget_remaining || 0} pts</span>
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className="text-sm font-medium mb-2 block">Orçamento Total (pts)</label>
+              <Input
+                type="number"
+                value={formData.budget_total}
+                onChange={(e) => setFormData({ ...formData, budget_total: parseInt(e.target.value) })}
+                min="1"
+              />
+            </div>
+          )}
           <div>
             <label className="text-sm font-medium mb-2 block">Pagamento por Compartilhamento (pts)</label>
             <Input
@@ -441,7 +473,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
 
         <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
           <div className="flex items-center gap-2">
-            {userPoints && userPoints.balance >= formData.budget_total ? (
+            {userPoints && userPoints.balance >= (ad ? (Math.max(0, parseInt(formData.add_credit) || 0)) : formData.budget_total) ? (
               <>
                 <Check className="w-4 h-4 text-green-400" />
                 <span className="text-sm font-medium">Saldo suficiente</span>
@@ -455,7 +487,10 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           </div>
           <p className="text-xs text-muted-foreground">
             Seu saldo: <span className="text-gold font-semibold">{userPoints?.balance || 0} pts</span>
-            {' '} | Orçamento: <span className="font-semibold">{formData.budget_total} pts</span>
+            {ad
+              ? <> {' | '} Crédito a adicionar: <span className="font-semibold">{Math.max(0, parseInt(formData.add_credit) || 0)} pts</span></>
+              : <> {' | '} Orçamento: <span className="font-semibold">{formData.budget_total} pts</span></>
+            }
           </p>
         </div>
 
@@ -463,7 +498,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           <Button
             type="submit"
             className="bg-gold text-background hover:bg-gold-dark flex-1"
-            disabled={submitting || !userPoints || (ad ? userPoints.balance < (formData.budget_total - ad.budget_total) : userPoints.balance < formData.budget_total)}
+            disabled={submitting || !userPoints || (ad ? userPoints.balance < (Math.max(0, parseInt(formData.add_credit) || 0)) : userPoints.balance < formData.budget_total)}
           >
             {submitting ? (ad ? '⏳ Atualizando...' : '⏳ Publicando...') : (ad ? '✏️ Atualizar Anúncio' : '🚀 Publicar Anúncio')}
           </Button>
