@@ -97,73 +97,98 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero - Clean & Simple */}
-      <section className="pt-20 pb-10 px-4">
-        <div className="max-w-6xl mx-auto">
+      {/* Hero - Premium Design */}
+      <section className="relative pt-24 pb-12 px-4 overflow-hidden">
+        {/* Radial glow background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gold/10 rounded-full blur-[120px]" />
+          <div className="absolute top-10 left-1/4 w-[300px] h-[300px] bg-purple/10 rounded-full blur-[100px]" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-10"
           >
-            <h1 className="font-grotesk font-bold text-3xl md:text-4xl leading-tight mb-3">
-              Compartilhe e Ganhe <span className="text-gold">Pontos</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-5 rounded-full glass border border-gold/20 text-xs font-medium text-gold/90">
+              <Zap className="w-3.5 h-3.5" />
+              Plataforma de Recompensas
+            </div>
+            <h1 className="font-grotesk font-bold text-4xl md:text-6xl leading-tight mb-4 tracking-tight">
+              Compartilhe e Ganhe{' '}
+              <span className="text-gold drop-shadow-[0_0_20px_hsl(45_100%_55%/0.5)]">Pontos</span>
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               Descubra produtos incríveis, compartilhe com seus amigos e ganhe recompensas
             </p>
           </motion.div>
 
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
             {user ? (
-              <Link to="/dashboard" className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-3 rounded-lg hover:bg-gold-dark transition-all glow-gold">
-                <Star className="w-4 h-4" />
-                {userPoints?.balance?.toLocaleString() ?? 0} pts
+              <Link
+                to="/dashboard"
+                className="group inline-flex items-center gap-3 glass border border-gold/30 px-7 py-3.5 rounded-2xl hover:border-gold/60 transition-all hover:scale-105"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gold/20 flex items-center justify-center">
+                  <Star className="w-5 h-5 text-gold" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs text-muted-foreground leading-none mb-0.5">Seu saldo</div>
+                  <div className="font-grotesk font-bold text-lg text-gold leading-none">
+                    {userPoints?.balance?.toLocaleString() ?? 0} pts
+                  </div>
+                </div>
               </Link>
             ) : (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-3 rounded-lg hover:bg-gold-dark transition-all glow-gold"
+                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-7 py-3.5 rounded-2xl hover:bg-gold-dark transition-all glow-gold hover:scale-105"
               >
                 <Zap className="w-4 h-4" />
                 Começar Grátis
               </button>
             )}
             {user && (
-              <Link to="/dashboard?tab=anuncios" className="inline-flex items-center gap-2 border border-border text-foreground font-semibold px-6 py-3 rounded-lg hover:bg-secondary transition-all">
-                <Megaphone className="w-4 h-4" />
+              <Link
+                to="/dashboard?tab=anuncios"
+                className="group inline-flex items-center gap-2 bg-gradient-to-r from-purple/20 to-purple/5 border border-purple/40 text-foreground font-semibold px-7 py-3.5 rounded-2xl hover:border-purple/70 transition-all hover:scale-105 neon-glow-purple"
+              >
+                <Megaphone className="w-4 h-4 text-purple group-hover:scale-110 transition-transform" />
                 Publicar Anúncio
+                <ArrowRight className="w-4 h-4 text-purple group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
           </div>
         </div>
       </section>
 
-      {/* Search & Filter - Mobile optimized */}
-      <section className="px-4 pb-8 sticky top-16 bg-background/95 backdrop-blur z-40">
-        <div className="max-w-6xl mx-auto space-y-3">
+      {/* Search & Filter - Premium */}
+      <section className="px-4 pb-8 sticky top-16 bg-background/80 backdrop-blur-xl z-40 border-b border-border/50">
+        <div className="max-w-6xl mx-auto space-y-4 pt-4">
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-gold transition-colors" />
             <input
               type="text"
-              placeholder="Buscar anúncios..."
+              placeholder="Buscar anúncios incríveis..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold"
+              className="w-full pl-12 pr-4 py-3.5 bg-card/80 backdrop-blur border border-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20 transition-all"
             />
           </div>
 
-          {/* Categories - Horizontal Scroll */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {/* Categories - Chips */}
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
             {CATEGORIES.map(cat => (
               <button
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                   selectedCategory === cat.value
-                    ? 'bg-gold text-background'
-                    : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+                    ? 'bg-gold text-background border-gold glow-gold scale-105'
+                    : 'bg-card/60 border-border text-muted-foreground hover:text-foreground hover:border-gold/40 hover:bg-card'
                 }`}
               >
                 {cat.label}
