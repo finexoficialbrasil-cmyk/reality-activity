@@ -22,8 +22,8 @@ export default function AdminCampaignsAnalytics() {
 
   const loadCampaignsData = async () => {
     try {
-      const allAds = await base44.asServiceRole.entities.Advertisement.list('-created_date', 1000);
-      const allShares = await base44.asServiceRole.entities.AdvertisementShare.list('-created_date', 10000);
+      const allAds = await base44.entities.Advertisement.list('-created_date', 1000);
+      const allShares = await base44.entities.AdvertisementShare.list('-created_date', 10000);
 
       // Agrupar shares por anúncio
       const sharesByAd = {};

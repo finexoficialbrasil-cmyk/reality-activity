@@ -14,7 +14,7 @@ export default function AdminAdvertisersSpending() {
 
   const loadAdvertisersData = async () => {
     try {
-      const allAds = await base44.asServiceRole.entities.Advertisement.list('-created_date', 1000);
+      const allAds = await base44.entities.Advertisement.list('-created_date', 1000);
       
       // Agrupar por anunciante
       const grouped = {};
