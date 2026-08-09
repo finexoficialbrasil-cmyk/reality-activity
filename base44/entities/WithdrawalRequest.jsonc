@@ -22,9 +22,19 @@
       ],
       "description": "M\u00e9todo de saque"
     },
+    "pix_key_type": {
+      "type": "string",
+      "enum": [
+        "cpf",
+        "telefone",
+        "email",
+        "aleatoria"
+      ],
+      "description": "Tipo de chave PIX (quando m\u00e9todo = pix)"
+    },
     "payment_data": {
       "type": "string",
-      "description": "Chave PIX ou endere\u00e7o da carteira BCH"
+      "description": "Chave PIX (valor limpo) ou endere\u00e7o da carteira BCH"
     },
     "buyback_rate": {
       "type": "number",

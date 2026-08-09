@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, X, DollarSign, FileText, Bitcoin, Wallet, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Check, X, DollarSign, FileText, Bitcoin, Wallet, Clock, CheckCircle, XCircle, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
@@ -102,6 +102,8 @@ export default function AdminWithdrawals() {
 
   const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
 
+  const pixKeyTypeLabels = { cpf: 'CPF', telefone: 'Telefone', email: 'E-mail', aleatoria: 'Chave Aleatória' };
+
   const statusConfig = {
     pending: { label: 'Aguardando', color: 'text-yellow-400 bg-yellow-500/10', icon: Clock },
     processing: { label: 'Processando', color: 'text-blue-400 bg-blue-500/10', icon: Clock },
@@ -173,7 +175,19 @@ export default function AdminWithdrawals() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-xs font-mono max-w-[150px] truncate" title={w.payment_data}>{w.payment_data}</p>
+                        {w.method === 'pix' && w.pix_key_type && (
+                          <span className="text-xs text-muted-foreground block mb-0.5">{pixKeyTypeLabels[w.pix_key_type]}</span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <p className="text-xs font-mono max-w-[130px] truncate" title={w.payment_data}>{w.payment_data}</p>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(w.payment_data); toast.success('Copiado!'); }}
+                            className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-gold flex-shrink-0"
+                            title="Copiar"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <p className="font-semibold text-sm text-green-400">R$ {w.final_value.toFixed(2).replace('.', ',')}</p>

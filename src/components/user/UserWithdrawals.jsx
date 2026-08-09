@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Wallet, Bitcoin, AlertCircle, CheckCircle, Clock, XCircle, FileText, History } from 'lucide-react';
 import { toast } from 'sonner';
@@ -16,7 +15,8 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
   const [formData, setFormData] = useState({
     points_amount: '',
     method: '',
-    payment_data: ''
+    payment_data: '',
+    pix_key_type: ''
   });
 
   useEffect(() => {
@@ -42,6 +42,20 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
   if (settings?.bch_enabled) availableMethods.push({ value: 'bitcoin_cash', label: 'Bitcoin Cash (BCH)', icon: Bitcoin });
   if (settings?.pix_enabled) availableMethods.push({ value: 'pix', label: 'PIX', icon: Wallet });
 
+  const pixKeyTypeLabel = {
+    cpf: 'CPF',
+    telefone: 'Telefone',
+    email: 'E-mail',
+    aleatoria: 'Chave Aleatória'
+  }[formData.pix_key_type] || '';
+
+  const pixKeyPlaceholder = {
+    cpf: 'Apenas números, ex: 12345678901',
+    telefone: 'DDD + número, ex: 11987654321',
+    email: 'seu@email.com',
+    aleatoria: 'Cole sua chave aleatória aqui'
+  }[formData.pix_key_type] || '';
+
   const currentRate = formData.method === 'bitcoin_cash'
     ? settings?.bch_buyback_rate || 0
     : formData.method === 'pix'
@@ -55,6 +69,7 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
     e.preventDefault();
 
     if (!formData.method) { toast.error('Selecione um método de saque'); return; }
+    if (formData.method === 'pix' && !formData.pix_key_type) { toast.error('Selecione o tipo de chave PIX'); return; }
     if (!formData.payment_data) { toast.error('Informe os dados para pagamento'); return; }
     if (pointsAmount < 100) { toast.error('Valor mínimo para saque: 100 pontos'); return; }
     if (pointsAmount > (userPoints?.balance || 0)) { toast.error('Saldo insuficiente'); return; }
@@ -72,6 +87,7 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
         points_amount: pointsAmount,
         method: formData.method,
         payment_data: formData.payment_data,
+        pix_key_type: formData.method === 'pix' ? formData.pix_key_type : undefined,
         buyback_rate: currentRate,
         final_value: finalValue,
         status: 'pending'
@@ -86,7 +102,7 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
       });
 
       toast.success('Solicitação de saque enviada! Aguarde aprovação.');
-      setFormData({ points_amount: '', method: '', payment_data: '' });
+      setFormData({ points_amount: '', method: '', payment_data: '', pix_key_type: '' });
       if (onWithdrawal) onWithdrawal();
       loadData();
     } catch (err) {
@@ -177,16 +193,40 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
             </motion.div>
           )}
 
-          {formData.method && (
+          {formData.method === 'pix' && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Tipo de Chave PIX *</label>
+                <Select value={formData.pix_key_type} onValueChange={(value) => setFormData({ ...formData, pix_key_type: value })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o tipo de chave" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cpf">📋 CPF</SelectItem>
+                    <SelectItem value="telefone">📱 Telefone</SelectItem>
+                    <SelectItem value="email">✉️ E-mail</SelectItem>
+                    <SelectItem value="aleatoria">🔑 Chave Aleatória</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.pix_key_type && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{pixKeyTypeLabel} *</label>
+                  <Input
+                    placeholder={pixKeyPlaceholder}
+                    value={formData.payment_data}
+                    onChange={(e) => setFormData({ ...formData, payment_data: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {formData.method === 'bitcoin_cash' && (
             <div>
-              <label className="text-sm font-medium mb-2 block">
-                {formData.method === 'pix' ? 'Chave PIX *' : 'Endereço da Carteira BCH *'}
-              </label>
-              <Textarea
-                placeholder={formData.method === 'pix' ? 'CPF, email, telefone ou chave aleatória' : 'Endereço da sua carteira Bitcoin Cash'}
+              <label className="text-sm font-medium mb-2 block">Endereço da Carteira BCH *</label>
+              <Input
+                placeholder="Endereço da sua carteira Bitcoin Cash"
                 value={formData.payment_data}
                 onChange={(e) => setFormData({ ...formData, payment_data: e.target.value })}
-                rows={2}
               />
             </div>
           )}
@@ -219,7 +259,7 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
           <Button
             type="submit"
             className="w-full bg-gold text-background hover:bg-gold-dark"
-            disabled={submitting || !formData.method || !formData.payment_data || pointsAmount < 100 || pointsAmount > (userPoints?.balance || 0)}
+            disabled={submitting || !formData.method || !formData.payment_data || (formData.method === 'pix' && !formData.pix_key_type) || pointsAmount < 100 || pointsAmount > (userPoints?.balance || 0)}
           >
             {submitting ? '⏳ Enviando...' : '💰 Solicitar Resgate'}
           </Button>
