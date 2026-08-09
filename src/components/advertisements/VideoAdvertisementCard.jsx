@@ -325,7 +325,12 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        const msg = `${ad.title}\n\n${productLink}`;
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
+        } else {
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        }
         break;
       }
 

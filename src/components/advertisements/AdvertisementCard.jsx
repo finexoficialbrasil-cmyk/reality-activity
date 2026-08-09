@@ -86,7 +86,11 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
       case 'facebook': {
         const msg = `${ad.title}\n\n${productLink}`;
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(msg)}`;
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
+        } else {
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(msg)}`;
+        }
         break;
       }
 
