@@ -28,6 +28,33 @@
       "type": "number",
       "default": 0,
       "description": "Volume total movimentado"
+    },
+    "pending_2fa_code": {
+      "type": "string",
+      "description": "C\u00f3digo 2FA pendente para confirma\u00e7\u00e3o"
+    },
+    "pending_2fa_expiry": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expira\u00e7\u00e3o do c\u00f3digo 2FA"
+    },
+    "pending_transfer_data": {
+      "type": "object",
+      "description": "Dados da transfer\u00eancia pendente de 2FA",
+      "properties": {
+        "receiver_key": {
+          "type": "string"
+        },
+        "points_amount": {
+          "type": "number"
+        },
+        "sender_ip": {
+          "type": "string"
+        },
+        "sender_user_agent": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [

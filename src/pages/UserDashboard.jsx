@@ -10,6 +10,7 @@ import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManag
 import BuyPointsModal from '@/components/user/BuyPointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
 import UserWithdrawals from '@/components/user/UserWithdrawals';
+import UserTransfer from '@/components/user/UserTransfer';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -124,6 +125,16 @@ export default function UserDashboard() {
             >
               <Wallet className="w-4 h-4" /> Saque
             </button>
+            <button
+              onClick={() => setActiveTab('transferir')}
+              className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'transferir'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <ArrowRightLeft className="w-4 h-4" /> Transferir
+            </button>
           </div>
 
           {activeTab === 'anuncios' ? (
@@ -152,6 +163,12 @@ export default function UserDashboard() {
               user={user}
               userPoints={userPoints}
               onWithdrawal={loadData}
+            />
+          ) : activeTab === 'transferir' ? (
+            <UserTransfer
+              user={user}
+              userPoints={userPoints}
+              onTransferComplete={loadData}
             />
           ) : (
             <>

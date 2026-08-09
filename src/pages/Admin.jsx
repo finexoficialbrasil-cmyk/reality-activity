@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, BarChart3, ShieldCheck, Settings, Coins, Target,
-  ChevronLeft, ChevronRight, Globe, Tags, Banknote, SlidersHorizontal
+  ChevronLeft, ChevronRight, Globe, Tags, Banknote, SlidersHorizontal, ArrowRightLeft
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -21,6 +21,8 @@ import AdminApprovedDomains from '@/components/admin/AdminApprovedDomains';
 import AdminCategories from '@/components/admin/AdminCategories';
 import AdminWithdrawals from '@/components/admin/AdminWithdrawals';
 import AdminWithdrawalSettings from '@/components/admin/AdminWithdrawalSettings';
+import AdminTransfers from '@/components/admin/AdminTransfers';
+import AdminTransferSettings from '@/components/admin/AdminTransferSettings';
 
 const tabs = [
   { id: 'stats', label: 'Dashboard', icon: BarChart3 },
@@ -37,6 +39,8 @@ const tabs = [
   { id: 'categories', label: 'Categorias', icon: Tags },
   { id: 'withdrawals', label: 'Saques', icon: Banknote },
   { id: 'withdrawal_settings', label: 'Saque Config', icon: SlidersHorizontal },
+  { id: 'transfers', label: 'Transferências', icon: ArrowRightLeft },
+  { id: 'transfer_settings', label: 'Transf. Config', icon: SlidersHorizontal },
   { id: 'account', label: 'Conta', icon: Settings },
 ];
 
@@ -154,6 +158,8 @@ export default function Admin() {
           {activeTab === 'categories' && <AdminCategories />}
           {activeTab === 'withdrawals' && <AdminWithdrawals />}
           {activeTab === 'withdrawal_settings' && <AdminWithdrawalSettings />}
+          {activeTab === 'transfers' && <AdminTransfers />}
+          {activeTab === 'transfer_settings' && <AdminTransferSettings />}
           {activeTab === 'account' && <AdminAccountSettings user={user} />}
         </div>
       </main>
