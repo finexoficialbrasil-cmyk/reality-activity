@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Zap, Star, ArrowRight, Search, Share2, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
+import BurnedBalanceCounter from '@/components/home/BurnedBalanceCounter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
 import { useCategories } from '@/hooks/useCategories';
@@ -18,6 +19,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [burnedBalance, setBurnedBalance] = useState(0);
 
   const { activeCategories } = useCategories();
   const CATEGORIES = [{ value: 'all', label: 'Todos' }, ...activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }))];
@@ -54,6 +56,7 @@ export default function Home() {
         const ads = res.data.advertisements || [];
         const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
         setAdvertisements(approvedAds);
+        setBurnedBalance(res.data.burnedBalance || 0);
       } catch (e) {
         try {
           const ads = await base44.entities.Advertisement.list('-created_date', 50);
@@ -165,6 +168,11 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4 text-purple group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
+          </div>
+
+          {/* Burned Balance Counter */}
+          <div className="flex justify-center mt-8">
+            <BurnedBalanceCounter burnedBalance={burnedBalance} />
           </div>
         </div>
       </section>

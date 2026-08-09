@@ -4,15 +4,21 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req, { allowPublic: true });
 
-    const [videos, companies, allAds] = await Promise.all([
+    const [videos, companies, allAds, withdrawals] = await Promise.all([
       base44.asServiceRole.entities.Video.filter({ is_active: true }, '-order', 12),
       base44.asServiceRole.entities.Company.filter({ is_active: true }, 'order', 20),
-      base44.asServiceRole.entities.Advertisement.list('-created_date', 20)
+      base44.asServiceRole.entities.Advertisement.list('-created_date', 20),
+      base44.asServiceRole.entities.WithdrawalRequest.list('-created_date', 500)
     ]);
 
     const advertisements = allAds.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
 
-    return Response.json({ videos, companies, advertisements });
+    // Saldo queimado = soma de pontos de todos os saques não rejeitados
+    const burnedBalance = withdrawals
+      .filter(w => w.status !== 'rejected')
+      .reduce((sum, w) => sum + (w.points_amount || 0), 0);
+
+    return Response.json({ videos, companies, advertisements, burnedBalance });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
