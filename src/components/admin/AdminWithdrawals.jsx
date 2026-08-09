@@ -80,13 +80,16 @@ export default function AdminWithdrawals() {
   };
 
   const handlePay = async () => {
-    if (!receiptFile) { toast.error('Anexe o comprovante'); return; }
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: receiptFile });
+      let file_url = null;
+      if (receiptFile) {
+        const uploaded = await base44.integrations.Core.UploadFile({ file: receiptFile });
+        file_url = uploaded.file_url;
+      }
       await base44.entities.WithdrawalRequest.update(payModal.id, {
         status: 'paid',
-        receipt_url: file_url,
+        receipt_url: file_url || undefined,
         processed_date: new Date().toISOString()
       });
       toast.success('Saque marcado como pago!');
@@ -276,7 +279,7 @@ export default function AdminWithdrawals() {
               </div>
             )}
             <div>
-              <label className="text-sm font-medium mb-2 block">Anexar Comprovante *</label>
+              <label className="text-sm font-medium mb-2 block">Anexar Comprovante <span className="text-muted-foreground font-normal">(opcional)</span></label>
               <input
                 type="file"
                 accept="image/*,application/pdf"
@@ -287,7 +290,7 @@ export default function AdminWithdrawals() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPayModal(null)}>Cancelar</Button>
-            <Button onClick={handlePay} disabled={uploading || !receiptFile} className="bg-gold text-background hover:bg-gold-dark">
+            <Button onClick={handlePay} disabled={uploading} className="bg-gold text-background hover:bg-gold-dark">
               {uploading ? '⏳ Enviando...' : '💰 Confirmar Pagamento'}
             </Button>
           </DialogFooter>
