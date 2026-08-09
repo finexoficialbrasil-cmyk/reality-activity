@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Search, AlertTriangle, ShieldCheck, ArrowLeft, Wallet, KeyRound } from 'lucide-react';
+import { Send, Search, AlertTriangle, ShieldCheck, ArrowLeft, Wallet, KeyRound, QrCode } from 'lucide-react';
+import QrScanner from './QrScanner';
 import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
@@ -19,6 +20,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
   const [result, setResult] = useState(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const balance = userPoints?.balance || 0;
   const amt = Number(amount) || 0;
@@ -32,6 +34,24 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
       const data = response.data;
       if (data.error) { toast.error(data.error); return; }
       setReceiverInfo({ receiver_name: data.receiver_name, receiver_key: data.receiver_key });
+    } catch (e) {
+      toast.error('Erro ao buscar chave');
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  const handleScan = async (data) => {
+    setShowScanner(false);
+    const key = data.trim().toUpperCase();
+    setReceiverKey(key);
+    setResolving(true);
+    setReceiverInfo(null);
+    try {
+      const response = await base44.functions.invoke('resolveTransferKey', { transfer_key: key });
+      const result = response.data;
+      if (result.error) { toast.error(result.error); return; }
+      setReceiverInfo({ receiver_name: result.receiver_name, receiver_key: result.receiver_key });
     } catch (e) {
       toast.error('Erro ao buscar chave');
     } finally {
@@ -194,6 +214,9 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
               className="pl-9 font-mono"
             />
           </div>
+          <Button onClick={() => setShowScanner(true)} variant="outline" title="Escanear QR Code">
+            <QrCode className="w-4 h-4" />
+          </Button>
           <Button onClick={handleResolve} disabled={resolving} variant="outline">
             {resolving ? <span className="w-4 h-4 border-2 border-border border-t-gold rounded-full animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
@@ -259,6 +282,10 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showScanner && (
+        <QrScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+      )}
     </motion.div>
   );
 }
