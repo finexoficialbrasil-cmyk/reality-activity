@@ -72,16 +72,7 @@
     },
     "category": {
       "type": "string",
-      "enum": [
-        "mercado_livre",
-        "shopee",
-        "tiktok_shop",
-        "amazon",
-        "produtos_digitais",
-        "servicos",
-        "outros"
-      ],
-      "description": "Categoria do an\u00fancio"
+      "description": "Categoria do an\u00fancio (gerenciada dinamicamente pela entidade Category)"
     },
     "budget_total": {
       "type": "number",
