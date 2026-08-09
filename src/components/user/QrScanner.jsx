@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
+import jsQR from 'jsqr';
 import { X, Camera, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function QrScanner({ onScan, onClose }) {
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const scanningRef = useRef(true);
   const [error, setError] = useState('');
 
@@ -12,8 +14,8 @@ export default function QrScanner({ onScan, onClose }) {
     let animationFrame = null;
 
     const startScanner = async () => {
-      if (!('BarcodeDetector' in window)) {
-        setError('Seu navegador não suporta leitura de QR Code pela câmera. Use o Chrome ou Safari, ou digite a chave manualmente.');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Seu navegador não suporta acesso à câmera. Digite a chave manualmente.');
         return;
       }
 
@@ -24,28 +26,39 @@ export default function QrScanner({ onScan, onClose }) {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.setAttribute('playsinline', 'true');
+          videoRef.current.muted = true;
           await videoRef.current.play();
-          const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-          scanLoop(detector);
+          scanLoop();
         }
       } catch (e) {
         setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
       }
     };
 
-    const scanLoop = async (detector) => {
-      if (!scanningRef.current || !videoRef.current) return;
-      try {
-        const codes = await detector.detect(videoRef.current);
-        if (codes.length > 0 && codes[0].rawValue) {
+    const scanLoop = () => {
+      if (!scanningRef.current || !videoRef.current || !canvasRef.current) return;
+
+      if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert',
+        });
+
+        if (code && code.data) {
           scanningRef.current = false;
-          onScan(codes[0].rawValue);
+          onScan(code.data);
           return;
         }
-      } catch (e) {
-        // continue scanning
       }
-      animationFrame = requestAnimationFrame(() => scanLoop(detector));
+
+      animationFrame = requestAnimationFrame(scanLoop);
     };
 
     startScanner();
@@ -82,6 +95,7 @@ export default function QrScanner({ onScan, onClose }) {
         <>
           <div className="flex-1 relative flex items-center justify-center overflow-hidden">
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+            <canvas ref={canvasRef} className="hidden" />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-64 h-64 max-w-[70vw] max-h-[70vw] relative">
                 <div className="absolute inset-0 border-2 border-white/30 rounded-2xl" />
