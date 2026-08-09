@@ -1,0 +1,66 @@
+{
+  "name": "UserTransferKey",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio (chave \u00fanica)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "transfer_key": {
+      "type": "string",
+      "description": "Chave p\u00fablica de recebimento (formato: FCP-XXXX-XXXX-XXXX)"
+    },
+    "is_blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Chave bloqueada para transfer\u00eancias"
+    },
+    "transfers_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de transfer\u00eancias realizadas"
+    },
+    "total_volume": {
+      "type": "number",
+      "default": 0,
+      "description": "Volume total movimentado"
+    }
+  },
+  "required": [
+    "user_email",
+    "transfer_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

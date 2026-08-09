@@ -1,0 +1,70 @@
+{
+  "name": "TransferSettings",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Transfer\u00eancia entre usu\u00e1rios ativa"
+    },
+    "min_per_transfer": {
+      "type": "number",
+      "default": 100,
+      "description": "Quantidade m\u00ednima por transfer\u00eancia"
+    },
+    "max_per_transfer": {
+      "type": "number",
+      "default": 10000,
+      "description": "Limite m\u00e1ximo por transfer\u00eancia"
+    },
+    "daily_limit": {
+      "type": "number",
+      "default": 50000,
+      "description": "Limite total de pontos por dia"
+    },
+    "daily_max_transfers": {
+      "type": "number",
+      "default": 10,
+      "description": "N\u00famero m\u00e1ximo de transfer\u00eancias por dia"
+    },
+    "risk_threshold": {
+      "type": "number",
+      "default": 5000,
+      "description": "Transfer\u00eancias acima deste valor exigem confirma\u00e7\u00e3o por e-mail"
+    },
+    "new_account_threshold": {
+      "type": "number",
+      "default": 3000,
+      "description": "Contas novas transferindo acima deste valor s\u00e3o marcadas para an\u00e1lise"
+    },
+    "new_account_days": {
+      "type": "number",
+      "default": 7,
+      "description": "Dias para considerar uma conta como nova"
+    },
+    "block_message": {
+      "type": "string",
+      "default": "Transfer\u00eancias temporariamente bloqueadas por seguran\u00e7a. Tente novamente mais tarde ou entre em contato com o suporte.",
+      "description": "Mensagem exibida quando transfer\u00eancias est\u00e3o bloqueadas"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
