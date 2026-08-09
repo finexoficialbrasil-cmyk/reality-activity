@@ -103,7 +103,9 @@ export default function AdminWithdrawalSettings() {
                   value={settings.bch_buyback_rate}
                   onChange={(e) => setSettings({ ...settings, bch_buyback_rate: parseFloat(e.target.value) || 0 })}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Ex: R$ 0,80 por ponto → 500 pts = R$ 400,00</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ex: R$ {(settings.bch_buyback_rate || 0).toFixed(2).replace('.', ',')} por ponto → 1000 pts = R$ {((settings.bch_buyback_rate || 0) * 1000).toFixed(2).replace('.', ',')}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Aviso exibido ao usuário</label>
@@ -148,7 +150,9 @@ export default function AdminWithdrawalSettings() {
                 value={settings.pix_buyback_rate}
                 onChange={(e) => setSettings({ ...settings, pix_buyback_rate: parseFloat(e.target.value) || 0 })}
               />
-              <p className="text-xs text-muted-foreground mt-1">Ex: R$ 0,80 por ponto → 500 pts = R$ 400,00</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ex: R$ {(settings.pix_buyback_rate || 0).toFixed(2).replace('.', ',')} por ponto → 1000 pts = R$ {((settings.pix_buyback_rate || 0) * 1000).toFixed(2).replace('.', ',')}
+              </p>
             </motion.div>
           )}
         </div>
