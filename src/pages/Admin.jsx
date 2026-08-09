@@ -49,6 +49,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState('stats');
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (auth) => {
@@ -57,6 +58,11 @@ export default function Admin() {
       if (me.role !== 'admin') { window.location.href = '/'; return; }
       setUser(me);
       setLoading(false);
+
+      try {
+        const pending = await base44.entities.WithdrawalRequest.filter({ status: 'pending' });
+        setPendingWithdrawals(pending.length);
+      } catch (e) { console.error('Erro ao buscar saques pendentes:', e); }
     });
   }, []);
 
@@ -91,7 +97,7 @@ export default function Admin() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               title={collapsed ? tab.label : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-gold/10 text-gold border border-gold/30'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -99,6 +105,14 @@ export default function Admin() {
             >
               <tab.icon className="w-4 h-4 flex-shrink-0" />
               {!collapsed && <span>{tab.label}</span>}
+              {tab.id === 'withdrawals' && pendingWithdrawals > 0 && (
+                <span className={`ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${collapsed ? 'hidden' : ''}`}>
+                  {pendingWithdrawals}
+                </span>
+              )}
+              {tab.id === 'withdrawals' && pendingWithdrawals > 0 && collapsed && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+              )}
             </button>
           ))}
         </nav>
@@ -144,6 +158,20 @@ export default function Admin() {
 
         {/* Page Content */}
         <div className="p-6">
+          {pendingWithdrawals > 0 && activeTab !== 'withdrawals' && (
+            <button
+              onClick={() => setActiveTab('withdrawals')}
+              className="w-full mb-4 flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-left hover:bg-red-500/20 transition-all"
+            >
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <Banknote className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-red-400">⚠️ {pendingWithdrawals} saque{pendingWithdrawals > 1 ? 's' : ''} aguardando aprovação</p>
+                <p className="text-sm text-muted-foreground">Clique aqui para revisar e processar as solicitações pendentes.</p>
+              </div>
+            </button>
+          )}
           {activeTab === 'stats' && <AdminStats />}
           {activeTab === 'spending' && <AdminAdvertisersSpending />}
           {activeTab === 'campaigns' && <AdminCampaignsAnalytics />}
