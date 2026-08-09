@@ -4,6 +4,7 @@ import { Trash2, Edit2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import LowBalanceAdsAlert from './LowBalanceAdsAlert';
 
 export default function UserAdvertisementsManager({ user, onEditAd }) {
   const [ads, setAds] = useState([]);
@@ -64,6 +65,7 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+      <LowBalanceAdsAlert ads={ads} onReplenish={onEditAd} />
       {ads.map((ad) => {
         const status = statusConfig[ad.status] || statusConfig.pending;
         const StatusIcon = status.icon;
