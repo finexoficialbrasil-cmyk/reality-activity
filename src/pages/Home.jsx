@@ -14,6 +14,7 @@ export default function Home() {
   const [advertisements, setAdvertisements] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -37,34 +38,43 @@ export default function Home() {
   }, [searchQuery, selectedCategory, advertisements]);
 
   const loadData = async () => {
-    try {
-      const res = await base44.functions.invoke('getPublicData', {});
-      const ads = res.data.advertisements || [];
-      const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
-      setAdvertisements(approvedAds);
-    } catch (e) {
+    // Auth check e dados públicos rodam em paralelo
+    const authPromise = (async () => {
       try {
-        const ads = await base44.entities.Advertisement.list('-created_date', 50);
+        const auth = await base44.auth.isAuthenticated();
+        if (auth) {
+          const me = await base44.auth.me();
+          setUser(me);
+          const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
+          if (pts.length > 0) setUserPoints(pts[0]);
+        }
+      } catch (e) {
+        // não logado
+      } finally {
+        setAuthLoading(false);
+      }
+    })();
+
+    const dataPromise = (async () => {
+      try {
+        const res = await base44.functions.invoke('getPublicData', {});
+        const ads = res.data.advertisements || [];
         const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
         setAdvertisements(approvedAds);
-      } catch (e2) {
-        console.error('Erro ao carregar anúncios:', e2);
+      } catch (e) {
+        try {
+          const ads = await base44.entities.Advertisement.list('-created_date', 50);
+          const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
+          setAdvertisements(approvedAds);
+        } catch (e2) {
+          console.error('Erro ao carregar anúncios:', e2);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
+    })();
 
-    try {
-      const auth = await base44.auth.isAuthenticated();
-      if (auth) {
-        const me = await base44.auth.me();
-        setUser(me);
-        const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
-        if (pts.length > 0) setUserPoints(pts[0]);
-      }
-    } catch (e) {
-      // não logado
-    }
+    await Promise.all([authPromise, dataPromise]);
   };
 
   const filterAds = () => {
@@ -126,7 +136,9 @@ export default function Home() {
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-            {user ? (
+            {authLoading ? (
+              <div className="h-14 w-48 rounded-2xl bg-card/60 border border-border animate-pulse" />
+            ) : user ? (
               <Link
                 to="/dashboard"
                 className="group inline-flex items-center gap-3 glass border border-gold/30 px-7 py-3.5 rounded-2xl hover:border-gold/60 transition-all hover:scale-105"
