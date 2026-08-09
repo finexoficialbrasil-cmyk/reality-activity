@@ -12,16 +12,7 @@
     },
     "category": {
       "type": "string",
-      "enum": [
-        "mercado_livre",
-        "shopee",
-        "tiktok_shop",
-        "amazon",
-        "produtos_digitais",
-        "servicos",
-        "outros"
-      ],
-      "description": "Categoria associada"
+      "description": "Categoria associada (gerenciada dinamicamente pela entidade Category)"
     },
     "is_active": {
       "type": "boolean",

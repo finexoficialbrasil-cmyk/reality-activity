@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
+import { useCategories } from '@/hooks/useCategories';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -18,16 +19,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const CATEGORIES = [
-    { value: 'all', label: 'Todos' },
-    { value: 'mercado_livre', label: '💰 Mercado Livre' },
-    { value: 'shopee', label: '🛒 Shopee' },
-    { value: 'tiktok_shop', label: '🎵 TikTok Shop' },
-    { value: 'amazon', label: '📦 Amazon' },
-    { value: 'produtos_digitais', label: '💻 Produtos Digitais' },
-    { value: 'servicos', label: '🔧 Serviços' },
-    { value: 'outros', label: '⭐ Outros' }
-  ];
+  const { activeCategories } = useCategories();
+  const CATEGORIES = [{ value: 'all', label: 'Todos' }, ...activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }))];
 
   useEffect(() => {
     loadData();

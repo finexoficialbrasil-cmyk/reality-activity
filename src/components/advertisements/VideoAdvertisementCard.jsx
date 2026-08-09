@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { ExternalLink, CheckCircle, Play, Gift, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useCategories } from '@/hooks/useCategories';
 
 // Ícones customizados das marcas (lucide não tem ícones oficiais de redes sociais)
 const TelegramIcon = ({ className }) => (
@@ -388,15 +389,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     });
   };
 
-  const categoryLabels = {
-    mercado_livre: '💰 Mercado Livre',
-    shopee: '🛒 Shopee',
-    tiktok_shop: '🎵 TikTok Shop',
-    amazon: '📦 Amazon',
-    produtos_digitais: '💻 Produtos Digitais',
-    servicos: '🔧 Serviços',
-    outros: '⭐ Outros'
-  };
+  const { getCategoryLabel } = useCategories();
 
   const budgetPercentage = ad.budget_total ? (ad.budget_remaining / ad.budget_total) * 100 : 0;
   const thumbnail = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : null;
@@ -438,7 +431,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
 
         {/* Category Badge */}
         <div className="absolute top-2 left-2 bg-gold/90 rounded-full px-2 py-1 text-xs font-bold text-background z-10">
-          {categoryLabels[ad.category]}
+          {getCategoryLabel(ad.category)}
         </div>
 
         {/* Share Buttons - Sobre o vídeo */}

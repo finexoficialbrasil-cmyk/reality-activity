@@ -7,19 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle, XCircle, Edit2, Trash2, Plus, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-
-const CATEGORIES = [
-  { value: 'mercado_livre', label: '💰 Mercado Livre' },
-  { value: 'shopee', label: '🛒 Shopee' },
-  { value: 'tiktok_shop', label: '🎵 TikTok Shop' },
-  { value: 'amazon', label: '📦 Amazon' },
-  { value: 'produtos_digitais', label: '💻 Produtos Digitais' },
-  { value: 'servicos', label: '🔧 Serviços' },
-  { value: 'outros', label: '⭐ Outros' }
-];
+import { useCategories } from '@/hooks/useCategories';
 
 export default function AdminAdvertisements() {
   const [ads, setAds] = useState([]);
+  const { activeCategories } = useCategories();
+  const CATEGORIES = activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }));
   const [domains, setDomains] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
