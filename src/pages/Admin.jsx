@@ -52,18 +52,27 @@ export default function Admin() {
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
 
   useEffect(() => {
+    const loadPending = async () => {
+      try {
+        const pending = await base44.entities.WithdrawalRequest.filter({ status: 'pending' });
+        setPendingWithdrawals(pending.length);
+      } catch (e) { console.error('Erro ao buscar saques pendentes:', e); }
+    };
+
     base44.auth.isAuthenticated().then(async (auth) => {
       if (!auth) { base44.auth.redirectToLogin('/admin'); return; }
       const me = await base44.auth.me();
       if (me.role !== 'admin') { window.location.href = '/'; return; }
       setUser(me);
       setLoading(false);
-
-      try {
-        const pending = await base44.entities.WithdrawalRequest.filter({ status: 'pending' });
-        setPendingWithdrawals(pending.length);
-      } catch (e) { console.error('Erro ao buscar saques pendentes:', e); }
+      loadPending();
     });
+
+    const unsubscribe = base44.entities.WithdrawalRequest.subscribe(() => {
+      loadPending();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   if (loading) return (
