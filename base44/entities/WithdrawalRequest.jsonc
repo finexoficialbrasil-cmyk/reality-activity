@@ -1,0 +1,96 @@
+{
+  "name": "WithdrawalRequest",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "points_amount": {
+      "type": "number",
+      "description": "Quantidade de pontos para resgate"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "pix",
+        "bitcoin_cash"
+      ],
+      "description": "M\u00e9todo de saque"
+    },
+    "payment_data": {
+      "type": "string",
+      "description": "Chave PIX ou endere\u00e7o da carteira BCH"
+    },
+    "buyback_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Taxa de recompra em R$ por ponto no momento da solicita\u00e7\u00e3o"
+    },
+    "final_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor final em R$ a receber"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "paid",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Status da solicita\u00e7\u00e3o"
+    },
+    "receipt_url": {
+      "type": "string",
+      "description": "URL do comprovante de pagamento"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Motivo da recusa"
+    },
+    "processed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de processamento"
+    }
+  },
+  "required": [
+    "user_email",
+    "points_amount",
+    "method",
+    "payment_data",
+    "final_value"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

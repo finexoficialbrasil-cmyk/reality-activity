@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart, ArrowRightLeft } from 'lucide-react';
+import { Star, TrendingUp, Gift, History, ArrowUpRight, ArrowDownRight, Megaphone, ShoppingCart, ArrowRightLeft, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
@@ -9,6 +9,7 @@ import UserCatalog from '@/components/user/UserCatalog';
 import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
 import BuyPointsModal from '@/components/user/BuyPointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
+import UserWithdrawals from '@/components/user/UserWithdrawals';
 import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -113,6 +114,16 @@ export default function UserDashboard() {
             >
               <Gift className="w-4 h-4" /> Resgatar
             </button>
+            <button
+              onClick={() => setActiveTab('saque')}
+              className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                activeTab === 'saque'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Wallet className="w-4 h-4" /> Saque
+            </button>
           </div>
 
           {activeTab === 'anuncios' ? (
@@ -135,6 +146,12 @@ export default function UserDashboard() {
               user={user}
               userPoints={userPoints}
               onRedeemed={loadData}
+            />
+          ) : activeTab === 'saque' ? (
+            <UserWithdrawals
+              user={user}
+              userPoints={userPoints}
+              onWithdrawal={loadData}
             />
           ) : (
             <>

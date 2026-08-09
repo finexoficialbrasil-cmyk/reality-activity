@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, BarChart3, ShieldCheck, Settings, Coins, Target,
-  ChevronLeft, ChevronRight, Globe, Tags
+  ChevronLeft, ChevronRight, Globe, Tags, Banknote, SlidersHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -19,6 +19,8 @@ import AdminAdvertisersSpending from '@/components/admin/AdminAdvertisersSpendin
 import AdminCampaignsAnalytics from '@/components/admin/AdminCampaignsAnalytics';
 import AdminApprovedDomains from '@/components/admin/AdminApprovedDomains';
 import AdminCategories from '@/components/admin/AdminCategories';
+import AdminWithdrawals from '@/components/admin/AdminWithdrawals';
+import AdminWithdrawalSettings from '@/components/admin/AdminWithdrawalSettings';
 
 const tabs = [
   { id: 'stats', label: 'Dashboard', icon: BarChart3 },
@@ -33,6 +35,8 @@ const tabs = [
   { id: 'users', label: 'Usuários', icon: Users },
   { id: 'domains', label: 'Domínios', icon: Globe },
   { id: 'categories', label: 'Categorias', icon: Tags },
+  { id: 'withdrawals', label: 'Saques', icon: Banknote },
+  { id: 'withdrawal_settings', label: 'Saque Config', icon: SlidersHorizontal },
   { id: 'account', label: 'Conta', icon: Settings },
 ];
 
@@ -148,6 +152,8 @@ export default function Admin() {
           {activeTab === 'users' && <AdminUsers />}
           {activeTab === 'domains' && <AdminApprovedDomains />}
           {activeTab === 'categories' && <AdminCategories />}
+          {activeTab === 'withdrawals' && <AdminWithdrawals />}
+          {activeTab === 'withdrawal_settings' && <AdminWithdrawalSettings />}
           {activeTab === 'account' && <AdminAccountSettings user={user} />}
         </div>
       </main>

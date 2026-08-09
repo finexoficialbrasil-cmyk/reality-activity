@@ -1,0 +1,50 @@
+{
+  "name": "WithdrawalSettings",
+  "type": "object",
+  "properties": {
+    "bch_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Saque via Bitcoin Cash ativo"
+    },
+    "pix_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Saque via PIX ativo"
+    },
+    "bch_buyback_rate": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Valor de recompra BCH em R$ por ponto"
+    },
+    "pix_buyback_rate": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Valor de recompra PIX em R$ por ponto"
+    },
+    "bch_warning": {
+      "type": "string",
+      "default": "Seu saldo ser\u00e1 recomprado pela empresa pelo valor definido pelo administrador.",
+      "description": "Aviso exibido para saque via BCH"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
