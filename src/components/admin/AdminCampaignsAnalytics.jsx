@@ -6,6 +6,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { useCategories } from '@/hooks/useCategories';
 
 const CHART_COLORS = ['#hsl(45 100% 55%)', '#hsl(270 80% 65%)', '#hsl(190 80% 50%)', '#hsl(340 75% 60%)', '#hsl(130 60% 50%)', '#hsl(20 80% 55%)', '#hsl(160 60% 45%)'];
 
@@ -15,6 +16,7 @@ export default function AdminCampaignsAnalytics() {
   const [loading, setLoading] = useState(true);
   const [filterAdvertiser, setFilterAdvertiser] = useState('all');
   const [advertisers, setAdvertisers] = useState([]);
+  const { getCategoryLabel } = useCategories();
 
   useEffect(() => {
     loadCampaignsData();
@@ -155,19 +157,6 @@ export default function AdminCampaignsAnalytics() {
       outros: 'text-gray-500 bg-gray-500/10'
     };
     return colors[category] || 'text-gray-500 bg-gray-500/10';
-  };
-
-  const getCategoryLabel = (category) => {
-    const labels = {
-      mercado_livre: '💰 Mercado Livre',
-      shopee: '🛒 Shopee',
-      tiktok_shop: '🎵 TikTok Shop',
-      amazon: '📦 Amazon',
-      produtos_digitais: '💻 Digital',
-      servicos: '🔧 Serviços',
-      outros: '⭐ Outros'
-    };
-    return labels[category] || category;
   };
 
   return (
