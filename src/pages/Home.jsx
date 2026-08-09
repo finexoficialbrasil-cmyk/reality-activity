@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, Star, ArrowRight, Search, Share2, Megaphone } from 'lucide-react';
+import { Zap, ArrowRight, Search, Share2, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
-import BurnedBalanceCounter from '@/components/home/BurnedBalanceCounter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
 import { useCategories } from '@/hooks/useCategories';
@@ -19,7 +18,6 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [burnedBalance, setBurnedBalance] = useState(0);
 
   const { activeCategories } = useCategories();
   const CATEGORIES = [{ value: 'all', label: 'Todos' }, ...activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }))];
@@ -56,7 +54,6 @@ export default function Home() {
         const ads = res.data.advertisements || [];
         const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
         setAdvertisements(approvedAds);
-        setBurnedBalance(res.data.burnedBalance || 0);
       } catch (e) {
         try {
           const ads = await base44.entities.Advertisement.list('-created_date', 50);
@@ -134,22 +131,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
             {authLoading ? (
               <div className="h-14 w-48 rounded-2xl bg-card/60 border border-border animate-pulse" />
-            ) : user ? (
-              <Link
-                to="/dashboard"
-                className="group inline-flex items-center gap-3 glass border border-gold/30 px-7 py-3.5 rounded-2xl hover:border-gold/60 transition-all hover:scale-105"
-              >
-                <div className="w-9 h-9 rounded-xl bg-gold/20 flex items-center justify-center">
-                  <Star className="w-5 h-5 text-gold" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs text-muted-foreground leading-none mb-0.5">Seu saldo</div>
-                  <div className="font-grotesk font-bold text-lg text-gold leading-none">
-                    {userPoints?.balance?.toLocaleString() ?? 0} pts
-                  </div>
-                </div>
-              </Link>
-            ) : (
+            ) : !user ? (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
                 className="inline-flex items-center gap-2 bg-gold text-background font-bold px-7 py-3.5 rounded-2xl hover:bg-gold-dark transition-all glow-gold hover:scale-105"
@@ -157,7 +139,7 @@ export default function Home() {
                 <Zap className="w-4 h-4" />
                 Começar Grátis
               </button>
-            )}
+            ) : null}
             {user && (
               <Link
                 to="/dashboard?tab=anuncios"
@@ -168,11 +150,6 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4 text-purple group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
-          </div>
-
-          {/* Burned Balance Counter */}
-          <div className="flex justify-center mt-8">
-            <BurnedBalanceCounter burnedBalance={burnedBalance} />
           </div>
         </div>
       </section>
