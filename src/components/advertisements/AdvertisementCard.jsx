@@ -180,25 +180,6 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           {getCategoryLabel(ad.category)}
         </div>
 
-        {/* Share Buttons - Sobre a imagem */}
-        <div className="absolute bottom-2 left-0 right-0 z-20 flex items-center gap-1.5 justify-center">
-          {SHARE_PLATFORMS.map((p) => (
-            <motion.button
-              key={p.id}
-              onClick={() => handleShare(p.id)}
-              disabled={isSharing}
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer text-muted-foreground hover:text-gold relative"
-              title={p.name}
-            >
-              <p.Icon className="w-4 h-4" />
-              {sharedPlatform === p.id && (
-                <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-              )}
-            </motion.button>
-          ))}
-        </div>
       </div>
 
       {/* Content */}
