@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle, Edit2, Trash2, Plus, Upload } from 'lucide-react';
+import { CheckCircle, XCircle, Edit2, Trash2, Plus, Upload, Eye, Image as ImageIcon, Video, Power } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/useCategories';
+import AdminAdDetailsModal from '@/components/admin/AdminAdDetailsModal';
 
 export default function AdminAdvertisements() {
   const [ads, setAds] = useState([]);
@@ -18,6 +19,9 @@ export default function AdminAdvertisements() {
   const [editingAd, setEditingAd] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [detailsAd, setDetailsAd] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -178,6 +182,31 @@ export default function AdminAdvertisements() {
     }
   };
 
+  const handleToggleActive = async (ad) => {
+    try {
+      await base44.entities.Advertisement.update(ad.id, { is_active: !ad.is_active });
+      toast.success(ad.is_active ? 'Anúncio desativado' : 'Anúncio ativado');
+      loadData();
+    } catch (err) {
+      console.error('Erro ao alternar status:', err);
+      toast.error('Erro ao alternar status');
+    }
+  };
+
+  const filteredAds = ads.filter(ad => {
+    const matchSearch = !searchQuery ||
+      ad.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ad.user_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ad.user_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus = statusFilter === 'all' || ad.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-96"><div className="animate-spin w-8 h-8 border-4 border-gold border-t-transparent rounded-full" /></div>;
   }
@@ -269,57 +298,130 @@ export default function AdminAdvertisements() {
         </motion.div>
       )}
 
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Input
+          placeholder="Buscar por título, usuário ou email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="sm:max-w-xs"
+        />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="pending">Pendente</SelectItem>
+            <SelectItem value="approved">Aprovado</SelectItem>
+            <SelectItem value="rejected">Rejeitado</SelectItem>
+            <SelectItem value="inactive">Inativo</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground self-center">{filteredAds.length} de {ads.length} anúncios</span>
+      </div>
+
       {/* Lista de Anúncios */}
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden overflow-x-auto">
         <table className="w-full">
           <thead className="bg-secondary/50">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-semibold">Título</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Publicado por</th>
               <th className="px-4 py-3 text-left text-sm font-semibold">Categoria</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Tipo</th>
               <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold">Compartilhamentos</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold">Shares</th>
               <th className="px-4 py-3 text-center text-sm font-semibold">Custo/Recompensa</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold">Orçamento</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Data</th>
               <th className="px-4 py-3 text-right text-sm font-semibold">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {ads.map((ad) => (
-              <tr key={ad.id} className="hover:bg-secondary/30 transition-colors">
-                <td className="px-4 py-3 text-sm font-medium text-foreground">{ad.title}</td>
-                <td className="px-4 py-3 text-sm text-muted-foreground">{ad.category}</td>
-                <td className="px-4 py-3">
-                  <Select value={ad.status} onValueChange={(value) => handleStatusChange(ad.id, value)}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">⏳ Pendente</SelectItem>
-                      <SelectItem value="approved">✅ Aprovado</SelectItem>
-                      <SelectItem value="rejected">❌ Rejeitado</SelectItem>
-                      <SelectItem value="inactive">⊘ Inativo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </td>
-                <td className="px-4 py-3 text-center text-sm font-semibold text-gold">{ad.shares_count}</td>
-                <td className="px-4 py-3 text-center text-sm">
-                  <span className={ad.budget_remaining <= 0 ? 'text-destructive font-semibold' : 'text-gold font-semibold'}>
-                    {ad.budget_remaining || 0}/{ad.budget_total || 0} pts
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => handleEdit(ad)}>
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleDelete(ad.id)} className="text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </td>
+            {filteredAds.map((ad) => {
+              return (
+                <tr key={ad.id} className="hover:bg-secondary/30 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 max-w-[280px]">
+                      {ad.image_url ? (
+                        <img src={ad.image_url} alt={ad.title} className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-secondary flex items-center justify-center flex-shrink-0">
+                          {ad.type === 'video' ? <Video className="w-4 h-4 text-muted-foreground" /> : <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                        </div>
+                      )}
+                      <span className="text-sm font-medium text-foreground truncate">{ad.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm font-medium text-foreground">{ad.user_name || '—'}</div>
+                    <div className="text-xs text-muted-foreground">{ad.user_email || '—'}</div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{ad.category}</td>
+                  <td className="px-4 py-3">
+                    {ad.type === 'video' ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-purple-400"><Video className="w-3.5 h-3.5" /> Vídeo</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-blue-400"><ImageIcon className="w-3.5 h-3.5" /> Imagem</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Select value={ad.status} onValueChange={(value) => handleStatusChange(ad.id, value)}>
+                      <SelectTrigger className="w-36">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">⏳ Pendente</SelectItem>
+                        <SelectItem value="approved">✅ Aprovado</SelectItem>
+                        <SelectItem value="rejected">❌ Rejeitado</SelectItem>
+                        <SelectItem value="inactive">⊘ Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-4 py-3 text-center text-sm font-semibold text-gold">{ad.shares_count || 0}</td>
+                  <td className="px-4 py-3 text-center text-sm">
+                    <span className={ad.budget_remaining <= 0 ? 'text-destructive font-semibold' : 'text-gold font-semibold'}>
+                      {ad.budget_remaining || 0}/{ad.budget_total || 0} pts
+                    </span>
+                    <div className="text-xs text-muted-foreground">{ad.reward_per_share || 0}/share</div>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDate(ad.created_date)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => setDetailsAd(ad)} title="Ver detalhes">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleToggleActive(ad)} title={ad.is_active ? 'Desativar' : 'Ativar'}>
+                        <Power className={`w-4 h-4 ${ad.is_active ? 'text-green-500' : 'text-muted-foreground'}`} />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleEdit(ad)} title="Editar">
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(ad.id)} className="text-destructive" title="Deletar">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {filteredAds.length === 0 && (
+              <tr>
+                <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">Nenhum anúncio encontrado</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
+
+      {/* Modal de Detalhes */}
+      <AdminAdDetailsModal
+        ad={detailsAd}
+        onClose={() => setDetailsAd(null)}
+        onEdit={(ad) => { handleEdit(ad); setDetailsAd(null); }}
+        onToggleActive={handleToggleActive}
+        onDelete={(id) => { handleDelete(id); setDetailsAd(null); }}
+      />
 
       {/* Domínios Aprovados */}
       <div className="bg-card border border-border rounded-xl p-6">
