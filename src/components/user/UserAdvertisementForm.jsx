@@ -98,83 +98,30 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         return;
       }
 
-      if (ad) {
-        // Edita anúncio existente — adiciona créditos ao saldo atual
-        const addAmount = Math.max(0, parseInt(formData.add_credit) || 0);
+      // Processa create/edit no servidor (valida saldo, propriedade e debita pontos de forma segura)
+      const response = await base44.functions.invoke('saveAdvertisement', {
+        mode: ad ? 'edit' : 'create',
+        ad_id: ad?.id,
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        link: formData.link,
+        category: formData.category,
+        budget_total: parseInt(formData.budget_total) || 0,
+        add_credit: Math.max(0, parseInt(formData.add_credit) || 0),
+        reward_per_share: parseInt(formData.reward_per_share) || 10,
+        image_url: formData.image_url,
+        video_url: formData.video_url
+      });
 
-        if (addAmount > 0 && userPoints.balance < addAmount) {
-          toast.error(`Saldo insuficiente. Você precisa de ${addAmount} pontos.`);
-          setSubmitting(false);
-          return;
-        }
-
-        const newBudgetTotal = (ad.budget_total || 0) + addAmount;
-        const newBudgetRemaining = (ad.budget_remaining || 0) + addAmount;
-
-        // Reativa sempre que o budget_remaining resultante for > 0
-        const shouldReactivate = newBudgetRemaining > 0;
-
-        await base44.entities.Advertisement.update(ad.id, {
-          title: formData.title,
-          description: formData.description,
-          type: formData.type,
-          link: formData.link,
-          category: formData.category,
-          budget_total: newBudgetTotal,
-          budget_remaining: newBudgetRemaining,
-          reward_per_share: formData.reward_per_share,
-          image_url: formData.image_url,
-          video_url: formData.video_url,
-          ...(shouldReactivate ? { is_active: true, status: 'approved', cooldown_until: null } : {})
-        });
-
-        if (addAmount > 0) {
-          await base44.entities.UserPoints.update(userPoints.id, {
-            balance: userPoints.balance - addAmount,
-            total_spent: (userPoints.total_spent || 0) + addAmount
-          });
-
-          await base44.entities.PointsTransaction.create({
-            user_email: user.email,
-            user_name: user.full_name,
-            type: 'manual_adjust',
-            points: -addAmount,
-            description: `Crédito adicionado ao anúncio: ${formData.title}`
-          });
-        }
-      } else {
-        // Cria novo anúncio
-        const newAd = await base44.entities.Advertisement.create({
-          ...formData,
-          budget_remaining: formData.budget_total,
-          user_email: user.email,
-          user_name: user.full_name,
-          status: 'approved'
-        });
-
-        // Debita pontos do orçamento
-        await base44.entities.UserPoints.update(userPoints.id, {
-          balance: userPoints.balance - formData.budget_total,
-          total_spent: (userPoints.total_spent || 0) + formData.budget_total
-        });
-
-        // Registra transação
-        await base44.entities.PointsTransaction.create({
-          user_email: user.email,
-          user_name: user.full_name,
-          type: 'manual_adjust',
-          points: -formData.budget_total,
-          description: `Orçamento de anúncio: ${formData.title}`
-        });
-      }
+      const result = response.data;
 
       // Mostra tela de sucesso com relatório
-      const budgetDifference = ad ? (Math.max(0, parseInt(formData.add_credit) || 0)) : formData.budget_total;
       setSuccess({
         title: formData.title,
-        cost: budgetDifference,
+        cost: result.cost,
         reward: formData.reward_per_share,
-        newBalance: userPoints.balance - budgetDifference,
+        newBalance: result.new_balance,
         isEdit: !!ad
       });
 
