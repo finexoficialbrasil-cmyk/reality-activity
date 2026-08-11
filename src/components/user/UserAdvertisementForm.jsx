@@ -152,11 +152,10 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         });
       }
 
-      if (onAdCreated) onAdCreated();
-
-      // Volta para o dashboard após 10 segundos
+      // Volta para o dashboard após 10 segundos e então notifica o parent
       setTimeout(() => {
         setSuccess(null);
+        if (onAdCreated) onAdCreated();
       }, 10000);
     } catch (err) {
       console.error('Erro ao criar anúncio:', err);
@@ -172,7 +171,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-gradient-to-br from-gold/15 via-card to-emerald-600/10 border-2 border-gold/40 rounded-2xl p-8 space-y-6 overflow-hidden">
         {/* Botão fechar X */}
         <button
-          onClick={() => setSuccess(null)}
+          onClick={() => { setSuccess(null); if (onAdCreated) onAdCreated(); }}
           className="absolute top-4 right-4 w-9 h-9 rounded-full bg-secondary/80 hover:bg-destructive/20 border border-border flex items-center justify-center transition-colors z-20"
           title="Fechar"
         >
