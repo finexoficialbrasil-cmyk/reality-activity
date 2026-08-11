@@ -78,6 +78,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
   const [sharedPlatform, setSharedPlatform] = useState(null);
   const [copied, setCopied] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [playerInit, setPlayerInit] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
 
@@ -94,9 +95,9 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
   const pps = ad.reward_per_share || 1;
   const maxPts = pps * 30; // Assume 30 segundos máximo
 
-  // YouTube IFrame API setup
+  // YouTube IFrame API setup — só carrega quando o usuário interage (lazy)
   useEffect(() => {
-    if (!youtubeId || !ytWrapperRef.current) return;
+    if (!playerInit || !youtubeId || !ytWrapperRef.current) return;
     mountedRef.current = true;
 
     const ytDiv = document.createElement('div');
@@ -148,7 +149,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
     };
-  }, [youtubeId]);
+  }, [playerInit, youtubeId]);
 
   // Save points to database
   const savePoints = useCallback(async (pts, secs) => {
@@ -279,6 +280,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
 
   const handleYTEnter = () => {
     setIsHovered(true);
+    if (!playerInit) setPlayerInit(true);
     if (playerReady) {
       try { 
         playerRef.current?.playVideo();
@@ -408,7 +410,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       onMouseLeave={handleYTLeave}
     >
       {/* Video Container */}
-      <div className="relative aspect-video bg-muted overflow-hidden">
+      <div className="relative aspect-video bg-muted overflow-hidden" onClick={() => { if (!playerInit) setPlayerInit(true); }}>
         {/* YouTube IFrame API container */}
         <div ref={ytWrapperRef} className="absolute inset-0 w-full h-full" style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s' }} />
 
@@ -416,7 +418,7 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
         {!isHovered && (
           <div className="absolute inset-0">
             {thumbnail
-              ? <img src={thumbnail} alt={ad.title} className="w-full h-full object-cover" />
+              ? <img src={thumbnail} alt={ad.title} loading="lazy" className="w-full h-full object-cover" />
               : <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
                   <Play className="w-12 h-12 text-muted-foreground opacity-40" />
                 </div>

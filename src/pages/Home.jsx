@@ -8,31 +8,24 @@ import AnimatedFooter from '@/components/home/AnimatedFooter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
 import { useCategories } from '@/hooks/useCategories';
+import { usePublicData } from '@/hooks/usePublicData';
 
 export default function Home() {
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
-  const [advertisements, setAdvertisements] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const { activeCategories } = useCategories();
+  const { data: publicData, isLoading: dataLoading } = usePublicData();
   const CATEGORIES = [{ value: 'all', label: 'Todos' }, ...activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }))];
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const advertisements = (publicData?.advertisements || []).filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
 
   useEffect(() => {
-    filterAds();
-  }, [searchQuery, selectedCategory, advertisements]);
-
-  const loadData = async () => {
-    // Auth check e dados públicos rodam em paralelo
-    const authPromise = (async () => {
+    (async () => {
       try {
         const auth = await base44.auth.isAuthenticated();
         if (auth) {
@@ -47,36 +40,13 @@ export default function Home() {
         setAuthLoading(false);
       }
     })();
+  }, []);
 
-    const dataPromise = (async () => {
-      try {
-        const res = await base44.functions.invoke('getPublicData', {});
-        const ads = res.data.advertisements || [];
-        const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
-        setAdvertisements(approvedAds);
-      } catch (e) {
-        try {
-          const ads = await base44.entities.Advertisement.list('-created_date', 50);
-          const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
-          setAdvertisements(approvedAds);
-        } catch (e2) {
-          console.error('Erro ao carregar anúncios:', e2);
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
-
-    await Promise.all([authPromise, dataPromise]);
-  };
-
-  const filterAds = () => {
+  useEffect(() => {
     let filtered = advertisements;
-
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(ad => ad.category === selectedCategory);
     }
-
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ad =>
@@ -84,16 +54,13 @@ export default function Home() {
         ad.description?.toLowerCase().includes(query)
       );
     }
-
     setFilteredAds(filtered);
-  };
+  }, [searchQuery, selectedCategory, advertisements]);
 
   const handlePointsEarned = async () => {
     if (!user) return;
     const pts = await base44.entities.UserPoints.filter({ user_email: user.email });
     if (pts.length > 0) setUserPoints(pts[0]);
-    // Recarrega anúncios para remover os com orçamento zerado
-    loadData();
   };
 
   return (
@@ -191,7 +158,7 @@ export default function Home() {
       {/* Advertisements Grid */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
-          {loading ? (
+          {dataLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array(6).fill(0).map((_, i) => (
                 <div key={i} className="rounded-lg bg-card border border-border animate-pulse">

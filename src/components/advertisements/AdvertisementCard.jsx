@@ -167,7 +167,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       {/* Image */}
       <div className="relative aspect-video bg-muted overflow-hidden">
         {ad.image_url ? (
-          <img src={ad.image_url} alt={ad.title} className="w-full h-full object-cover" />
+          <img src={ad.image_url} alt={ad.title} loading="lazy" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
             <Share2 className="w-8 h-8 text-muted-foreground opacity-40" />

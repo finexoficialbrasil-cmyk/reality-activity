@@ -3,11 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame } from 'lucide-react';
+import { usePublicData } from '@/hooks/usePublicData';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
-  const [burnedBalance, setBurnedBalance] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -18,11 +18,8 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    base44.functions.invoke('getPublicData', {})
-      .then(res => setBurnedBalance(res.data.burnedBalance || 0))
-      .catch(() => {});
-  }, []);
+  const { data: publicData } = usePublicData();
+  const burnedBalance = publicData?.burnedBalance || 0;
 
   useEffect(() => {
     const loadUserData = async () => {
