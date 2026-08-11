@@ -76,29 +76,12 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
 
     setSubmitting(true);
     try {
-      await base44.entities.UserPoints.update(userPoints.id, {
-        balance: userPoints.balance - pointsAmount,
-        total_spent: (userPoints.total_spent || 0) + pointsAmount
-      });
-
-      await base44.entities.WithdrawalRequest.create({
-        user_email: user.email,
-        user_name: user.full_name,
+      // Processa saque no servidor (valida saldo, taxa e deduz pontos de forma segura)
+      const response = await base44.functions.invoke('processWithdrawal', {
         points_amount: pointsAmount,
         method: formData.method,
         payment_data: formData.payment_data,
-        pix_key_type: formData.method === 'pix' ? formData.pix_key_type : undefined,
-        buyback_rate: currentRate,
-        final_value: finalValue,
-        status: 'pending'
-      });
-
-      await base44.entities.PointsTransaction.create({
-        user_email: user.email,
-        user_name: user.full_name,
-        type: 'manual_adjust',
-        points: -pointsAmount,
-        description: `Solicitação de saque via ${formData.method === 'bitcoin_cash' ? 'Bitcoin Cash' : 'PIX'}`
+        pix_key_type: formData.method === 'pix' ? formData.pix_key_type : undefined
       });
 
       toast.success('Solicitação de saque enviada! Aguarde aprovação.');
@@ -107,7 +90,8 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
       loadData();
     } catch (err) {
       console.error('Erro ao solicitar saque:', err);
-      toast.error('Erro ao solicitar saque: ' + (err.message || 'Tente novamente'));
+      const errorMsg = err?.response?.data?.error || err?.message || 'Tente novamente';
+      toast.error('Erro ao solicitar saque: ' + errorMsg);
     } finally {
       setSubmitting(false);
     }

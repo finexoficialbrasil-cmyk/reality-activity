@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Orçamento do anúncio esgotado' }, { status: 400 });
     }
 
-    // Cria registro de compartilhamento
-    await base44.entities.AdvertisementShare.create({
+    // Cria registro de compartilhamento (service role — bypassa RLS admin-only)
+    await base44.asServiceRole.entities.AdvertisementShare.create({
       advertisement_id,
       user_email: user.email,
       user_name: user.full_name,
@@ -66,17 +66,17 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.Advertisement.update(advertisement_id, updateData);
 
-    // Credita pontos para quem compartilhou
-    const userPoints = await base44.entities.UserPoints.filter({ user_email: user.email });
+    // Credita pontos para quem compartilhou (service role — bypassa RLS admin-only)
+    const userPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: user.email });
     if (userPoints.length > 0) {
-      await base44.entities.UserPoints.update(userPoints[0].id, {
+      await base44.asServiceRole.entities.UserPoints.update(userPoints[0].id, {
         balance: (userPoints[0].balance || 0) + pointsCost,
         total_earned: (userPoints[0].total_earned || 0) + pointsCost,
         last_activity: new Date().toISOString()
       });
     } else {
       // Se não existe, cria novo registro
-      await base44.entities.UserPoints.create({
+      await base44.asServiceRole.entities.UserPoints.create({
         user_email: user.email,
         user_name: user.full_name,
         total_earned: pointsCost,
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     }
 
     // Registra transação para quem compartilhou
-    await base44.entities.PointsTransaction.create({
+    await base44.asServiceRole.entities.PointsTransaction.create({
      user_email: user.email,
      user_name: user.full_name,
      type: 'earned_bonus',
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
     });
 
     // Registra transação de gasto para o anunciante
-    await base44.entities.PointsTransaction.create({
+    await base44.asServiceRole.entities.PointsTransaction.create({
      user_email: advertisement.user_email,
      user_name: advertisement.user_name,
      type: 'spent_redemption',

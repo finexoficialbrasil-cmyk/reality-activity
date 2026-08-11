@@ -202,7 +202,7 @@ export default async function(req) {
         total_earned: (rp.total_earned || 0) + amount
       });
     } else {
-      await base44.entities.UserPoints.create({
+      await base44.asServiceRole.entities.UserPoints.create({
         user_email: receiverKeyRecord.user_email,
         user_name: receiverKeyRecord.user_name,
         balance: amount,
@@ -229,8 +229,8 @@ export default async function(req) {
       processed_date: now.toISOString()
     });
 
-    // 4. Create points transactions (ledger)
-    await base44.entities.PointsTransaction.create({
+    // 4. Create points transactions (ledger) — service role para bypassar RLS admin-only
+    await base44.asServiceRole.entities.PointsTransaction.create({
       user_email: user.email,
       user_name: user.full_name,
       type: 'transfer_sent',
@@ -240,7 +240,7 @@ export default async function(req) {
       description: `Transferência ${transferId} para ${receiverKeyRecord.user_name}`
     });
 
-    await base44.entities.PointsTransaction.create({
+    await base44.asServiceRole.entities.PointsTransaction.create({
       user_email: receiverKeyRecord.user_email,
       user_name: receiverKeyRecord.user_name,
       type: 'transfer_received',
