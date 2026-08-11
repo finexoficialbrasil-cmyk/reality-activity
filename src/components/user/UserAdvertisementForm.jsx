@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, Check, X, CheckCircle } from 'lucide-react';
+import { AlertCircle, Check, X, CheckCircle, PartyPopper, Sparkles, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/useCategories';
@@ -154,10 +154,10 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
 
       if (onAdCreated) onAdCreated();
 
-      // Volta para o dashboard após 3 segundos
+      // Volta para o dashboard após 10 segundos
       setTimeout(() => {
         setSuccess(null);
-      }, 3000);
+      }, 10000);
     } catch (err) {
       console.error('Erro ao criar anúncio:', err);
       toast.error('Erro ao criar anúncio: ' + (err.message || 'Tente novamente'));
@@ -166,44 +166,97 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
     }
   };
 
-  // Tela de sucesso
+  // Tela de sucesso — parabéns com investimento destacado
   if (success) {
     return (
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/40 rounded-xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mx-auto">
-            <Check className="w-8 h-8 text-green-400" />
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-gradient-to-br from-gold/15 via-card to-emerald-600/10 border-2 border-gold/40 rounded-2xl p-8 space-y-6 overflow-hidden">
+        {/* Botão fechar X */}
+        <button
+          onClick={() => setSuccess(null)}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-secondary/80 hover:bg-destructive/20 border border-border flex items-center justify-center transition-colors z-20"
+          title="Fechar"
+        >
+          <X className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
+        </button>
+
+        {/* Decorações animadas */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: [0, 1, 0], y: [-10, 0, -10] }}
+          transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
+          className="absolute top-10 left-10 text-2xl pointer-events-none"
+        >✨</motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: [0, 1, 0], y: [10, 0, 10] }}
+          transition={{ duration: 2.5, repeat: Infinity, delay: 1.2 }}
+          className="absolute bottom-16 right-12 text-2xl pointer-events-none"
+        >🎉</motion.div>
+
+        {/* Cabeçalho festivo */}
+        <div className="text-center space-y-3 relative z-10 pt-2">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 to-emerald-500/20 border-2 border-gold flex items-center justify-center mx-auto glow-gold animate-pulse-gold"
+          >
+            <PartyPopper className="w-10 h-10 text-gold" />
           </motion.div>
-          <h2 className="font-grotesk font-bold text-2xl text-foreground">{success.isEdit ? 'Anúncio Atualizado!' : 'Anúncio Publicado!'} 🎉</h2>
-          <p className="text-muted-foreground">{success.isEdit ? 'Suas alterações foram salvas' : 'Seu anúncio está ativo e pronto para compartilhar'}</p>
+          <h2 className="font-grotesk font-bold text-3xl text-foreground">
+            {success.isEdit ? 'Anúncio Atualizado! 🎊' : 'Parabéns! 🎊'}
+          </h2>
+          <p className="text-muted-foreground text-base">
+            {success.isEdit
+              ? 'Seus créditos foram adicionados com sucesso!'
+              : 'Seu anúncio está ativo e pronto para ser compartilhado!'}
+          </p>
         </div>
 
-        <div className="bg-background/40 rounded-lg p-6 space-y-4">
+        {/* Card de detalhes */}
+        <div className="bg-background/50 rounded-xl p-6 space-y-4 border border-border/50 relative z-10">
           <div className="border-b border-border/30 pb-4">
             <p className="text-sm text-muted-foreground mb-1">Título do Anúncio</p>
-            <p className="font-semibold text-foreground">{success.title}</p>
+            <p className="font-semibold text-foreground text-lg">{success.title}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-destructive/10 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground mb-1">Orçamento Debitado</p>
-              <p className="font-bold text-lg text-destructive">-{success.cost} pts</p>
+            <div className="bg-gradient-to-br from-gold/15 to-gold/5 rounded-xl p-4 border border-gold/20">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-gold" />
+                <p className="text-xs text-muted-foreground">Você Investiu</p>
+              </div>
+              <p className="font-grotesk font-bold text-2xl text-gold">{success.cost} pts</p>
             </div>
-            <div className="bg-green-500/10 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground mb-1">Por Compartilhamento</p>
-              <p className="font-bold text-lg text-green-400">+{success.reward} pts</p>
+            <div className="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 rounded-xl p-4 border border-emerald-500/20">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <p className="text-xs text-muted-foreground">Por Compartilhamento</p>
+              </div>
+              <p className="font-grotesk font-bold text-2xl text-emerald-400">{success.reward} pts</p>
             </div>
           </div>
 
-          <div className="bg-gold/10 rounded-lg p-4 border border-gold/20">
-            <p className="text-xs text-muted-foreground mb-1">Novo Saldo</p>
-            <p className="font-grotesk font-bold text-2xl text-gold">{success.newBalance} pts</p>
+          <div className="bg-gradient-to-r from-gold/10 to-transparent rounded-xl p-4 border border-gold/20">
+            <p className="text-xs text-muted-foreground mb-1">Seu Novo Saldo</p>
+            <p className="font-grotesk font-bold text-3xl text-gold">{success.newBalance.toLocaleString('pt-BR')} pts</p>
           </div>
         </div>
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-center text-xs text-muted-foreground">
-          Voltando para dashboard em alguns segundos...
-        </motion.p>
+        {/* Barra de progresso + aviso */}
+        <div className="relative z-10 space-y-2">
+          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: '100%' }}
+              animate={{ width: '0%' }}
+              transition={{ duration: 10, ease: 'linear' }}
+              className="h-full bg-gradient-to-r from-gold to-emerald-400 rounded-full"
+            />
+          </div>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-center text-xs text-muted-foreground">
+            Fechando automaticamente em 10 segundos... ou clique no ✕ acima
+          </motion.p>
+        </div>
       </motion.div>
     );
   }
