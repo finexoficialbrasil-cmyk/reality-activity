@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     const [videos, companies, allAds, withdrawals] = await Promise.all([
       base44.asServiceRole.entities.Video.filter({ is_active: true }, '-order', 12),
       base44.asServiceRole.entities.Company.filter({ is_active: true }, 'order', 20),
-      base44.asServiceRole.entities.Advertisement.list('-created_date', 20),
+      base44.asServiceRole.entities.Advertisement.list('-created_date', 500),
       base44.asServiceRole.entities.WithdrawalRequest.filter({ status: { $ne: 'rejected' } }, '-created_date', 500)
     ]);
 

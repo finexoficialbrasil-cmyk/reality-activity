@@ -371,7 +371,13 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
     }
 
     if (url) window.open(url, '_blank');
-    
+
+    // Bloqueia compartilhamento do próprio anúncio antes de chamar o backend
+    if (ad.user_email === user.email) {
+      toast.error('Você não pode ganhar pontos compartilhando seu próprio anúncio');
+      return;
+    }
+
     setSharedPlatform(platform);
     setIsSharing(true);
 
@@ -382,7 +388,8 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       toast.success(`+${res.data.pointsCost} pontos! 🎉`);
       if (onPointsEarned) onPointsEarned();
     }).catch(err => {
-      toast.error(err.message || 'Erro ao processar compartilhamento');
+      const serverMsg = err?.response?.data?.error || err?.data?.error || err?.message;
+      toast.error(serverMsg || 'Erro ao processar compartilhamento');
     }).finally(() => {
       setTimeout(() => {
         setSharedPlatform(null);
