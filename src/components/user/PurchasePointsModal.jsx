@@ -11,7 +11,7 @@ import {
 
 export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }) {
   const [settings, setSettings] = useState(null);
-  const [step, setStep] = useState('choose'); // choose, payment, upload, analyzing, result
+  const [step, setStep] = useState('choose'); // choose, payment, upload, analyzing, result, manual_review
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [customPoints, setCustomPoints] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
@@ -149,7 +149,8 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
     } catch (err) {
       console.error('Erro:', err);
       toast.error('Erro ao processar comprovante');
-      setStep('upload');
+      setStep('manual_review');
+      loadHistory();
     }
   };
 
@@ -468,6 +469,39 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                     </motion.div>
                   ))}
                 </div>
+              </motion.div>
+            )}
+
+            {/* STEP: MANUAL REVIEW (IA falhou) */}
+            {step === 'manual_review' && (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 text-center space-y-5">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200 }}
+                  className="w-20 h-20 rounded-full bg-red-500/20 border-2 border-red-400 flex items-center justify-center mx-auto"
+                >
+                  <AlertCircle className="w-10 h-10 text-red-400" />
+                </motion.div>
+                <div>
+                  <h3 className="text-2xl font-bold text-red-400">Comprovante em Análise Manual</h3>
+                  <p className="text-sm text-muted-foreground mt-2">Não foi possível validar automaticamente seu comprovante.</p>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 space-y-2 text-left">
+                  <p className="text-sm font-semibold text-red-400">⚠️ Atenção</p>
+                  <p className="text-sm text-red-300 leading-relaxed">
+                    Nosso time administrativo vai analisar seu comprovante manualmente. Aguarde até <span className="font-bold">24 horas</span> para a aprovação do seu saldo.
+                  </p>
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-red-500/20">
+                    Você será notificado assim que a análise for concluída. Obrigado pela compreensão.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => { resetFlow(); onClose(); }}
+                  className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                >
+                  Entendi, concluir
+                </Button>
               </motion.div>
             )}
 
