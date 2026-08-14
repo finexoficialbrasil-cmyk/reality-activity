@@ -6,7 +6,7 @@ import { TrendingUp, DollarSign, Wallet, Users } from 'lucide-react';
 export default function AdminAdvertisersSpending() {
   const [advertisers, setAdvertisers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('spent'); // spent, balance, name
+  const [sortBy, setSortBy] = useState('invested'); // invested, balance, spent, name
 
   useEffect(() => {
     loadAdvertisersData();
@@ -14,19 +14,31 @@ export default function AdminAdvertisersSpending() {
 
   const loadAdvertisersData = async () => {
     try {
-      const allAds = await base44.entities.Advertisement.list('-created_date', 1000);
-      
+      // Busca TODOS os anúncios (paginação completa) + saldos reais dos usuários
+      const [allAds, allUserPoints] = await Promise.all([
+        base44.entities.Advertisement.list('-created_date', 5000),
+        base44.entities.UserPoints.list('-created_date', 5000)
+      ]);
+
+      // Mapa de saldo real por email
+      const balanceMap = {};
+      allUserPoints.forEach(up => {
+        balanceMap[up.user_email] = up.balance || 0;
+      });
+
       // Agrupar por anunciante
       const grouped = {};
       allAds.forEach(ad => {
         const key = ad.user_email;
+        if (!key) return;
         if (!grouped[key]) {
           grouped[key] = {
             user_email: ad.user_email,
-            user_name: ad.user_name,
-            total_budget: 0,
-            total_spent: 0,
-            total_remaining: 0,
+            user_name: ad.user_name || ad.user_email,
+            total_budget: 0,        // Total alocado nos anúncios (investimento real)
+            total_spent: 0,         // Total já pago a quem compartilhou
+            total_remaining: 0,     // Saldo ainda disponível dentro dos anúncios
+            real_balance: balanceMap[key] || 0,  // Saldo real do usuário (UserPoints)
             ad_count: 0
           };
         }
@@ -39,10 +51,12 @@ export default function AdminAdvertisersSpending() {
       let data = Object.values(grouped);
 
       // Ordenar
-      if (sortBy === 'spent') {
-        data.sort((a, b) => b.total_spent - a.total_spent);
+      if (sortBy === 'invested') {
+        data.sort((a, b) => b.total_budget - a.total_budget);
       } else if (sortBy === 'balance') {
-        data.sort((a, b) => b.total_remaining - a.total_remaining);
+        data.sort((a, b) => b.real_balance - a.real_balance);
+      } else if (sortBy === 'spent') {
+        data.sort((a, b) => b.total_spent - a.total_spent);
       } else {
         data.sort((a, b) => a.user_name.localeCompare(b.user_name));
       }
@@ -55,8 +69,9 @@ export default function AdminAdvertisersSpending() {
     }
   };
 
-  const totalInvested = advertisers.reduce((sum, a) => sum + a.total_spent, 0);
-  const totalBalance = advertisers.reduce((sum, a) => sum + a.total_remaining, 0);
+  const totalInvested = advertisers.reduce((sum, a) => sum + a.total_budget, 0);
+  const totalBalance = advertisers.reduce((sum, a) => sum + a.real_balance, 0);
+  const totalSpent = advertisers.reduce((sum, a) => sum + a.total_spent, 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -68,16 +83,16 @@ export default function AdminAdvertisersSpending() {
             <TrendingUp className="w-5 h-5 text-gold" />
           </div>
           <p className="text-3xl font-bold text-gold">{totalInvested.toLocaleString('pt-BR')}</p>
-          <p className="text-xs text-muted-foreground">pts na plataforma</p>
+          <p className="text-xs text-muted-foreground">pts alocados em anúncios</p>
         </div>
 
         <div className="bg-gradient-to-br from-card to-card/80 border border-purple/20 rounded-2xl p-6 space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Saldo Disponível</p>
+            <p className="text-sm text-muted-foreground">Saldo Real dos Anunciantes</p>
             <Wallet className="w-5 h-5 text-purple" />
           </div>
           <p className="text-3xl font-bold text-purple">{totalBalance.toLocaleString('pt-BR')}</p>
-          <p className="text-xs text-muted-foreground">pts não utilizados</p>
+          <p className="text-xs text-muted-foreground">pts disponíveis nas contas</p>
         </div>
 
         <div className="bg-gradient-to-br from-card to-card/80 border border-blue-500/20 rounded-2xl p-6 space-y-2">
@@ -91,27 +106,27 @@ export default function AdminAdvertisersSpending() {
 
         <div className="bg-gradient-to-br from-card to-card/80 border border-green-500/20 rounded-2xl p-6 space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Total de Anúncios</p>
+            <p className="text-sm text-muted-foreground">Pago em Compartilhamentos</p>
             <DollarSign className="w-5 h-5 text-green-500" />
           </div>
-          <p className="text-3xl font-bold text-green-500">{advertisers.reduce((sum, a) => sum + a.ad_count, 0)}</p>
-          <p className="text-xs text-muted-foreground">anúncios ativas</p>
+          <p className="text-3xl font-bold text-green-500">{totalSpent.toLocaleString('pt-BR')}</p>
+          <p className="text-xs text-muted-foreground">pts distribuídos</p>
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         {/* Sorting Controls */}
-        <div className="flex gap-2 p-4 border-b border-border">
+        <div className="flex gap-2 p-4 border-b border-border flex-wrap">
           <button
-            onClick={() => setSortBy('spent')}
+            onClick={() => setSortBy('invested')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              sortBy === 'spent'
+              sortBy === 'invested'
                 ? 'bg-gold text-background'
                 : 'bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
-            Total Gasto
+            Investimento
           </button>
           <button
             onClick={() => setSortBy('balance')}
@@ -121,7 +136,17 @@ export default function AdminAdvertisersSpending() {
                 : 'bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
-            Saldo
+            Saldo Real
+          </button>
+          <button
+            onClick={() => setSortBy('spent')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              sortBy === 'spent'
+                ? 'bg-gold text-background'
+                : 'bg-secondary text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Pago em Shares
           </button>
           <button
             onClick={() => setSortBy('name')}
@@ -152,7 +177,8 @@ export default function AdminAdvertisersSpending() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">Email</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Anúncios</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Total Investido</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Saldo Restante</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Pago em Shares</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Saldo Real</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground">Utilização</th>
                 </tr>
               </thead>
@@ -182,10 +208,13 @@ export default function AdminAdvertisersSpending() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <p className="font-semibold text-gold">{advertiser.total_spent.toLocaleString('pt-BR')} pts</p>
+                        <p className="font-semibold text-gold">{advertiser.total_budget.toLocaleString('pt-BR')} pts</p>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <p className="font-semibold text-purple">{advertiser.total_remaining.toLocaleString('pt-BR')} pts</p>
+                        <p className="font-semibold text-green-500">{advertiser.total_spent.toLocaleString('pt-BR')} pts</p>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <p className="font-semibold text-purple">{advertiser.real_balance.toLocaleString('pt-BR')} pts</p>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
