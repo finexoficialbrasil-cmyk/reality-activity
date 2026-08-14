@@ -29,11 +29,14 @@ Deno.serve(async (req) => {
 
     // Verifica se o anúncio ainda tem orçamento
     const budgetRemaining = advertisement.budget_remaining || 0;
-    const pointsCost = advertisement.reward_per_share || 10;
+    const rewardPerShare = advertisement.reward_per_share || 10;
 
-    if (budgetRemaining < pointsCost) {
+    if (budgetRemaining <= 0) {
       return Response.json({ error: 'Orçamento do anúncio esgotado' }, { status: 400 });
     }
+
+    // Paga o que restar: se o saldo for menor que a recompensa, paga o saldo e zera
+    const pointsCost = Math.min(budgetRemaining, rewardPerShare);
 
     // Cria registro de compartilhamento (service role — bypassa RLS admin-only)
     await base44.asServiceRole.entities.AdvertisementShare.create({
