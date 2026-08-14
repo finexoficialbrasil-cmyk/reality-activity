@@ -90,7 +90,8 @@ Deno.serve(async (req) => {
 
     if (settings.ai_analysis_enabled) {
       const aiResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `Você é um especialista em verificação de comprovantes bancários. Analise este comprovante de pagamento com RIGOR MÁXIMO.
+        model: "gpt_5_4",
+        prompt: `Você é um especialista em verificação de comprovantes bancários brasileiros (PIX, TED, DOC). Analise este comprovante de pagamento.
 
 DADOS ESPERADOS (fornecidos pela empresa):
 - Nome do recebedor: ${settings.bank_holder_name}
@@ -98,38 +99,45 @@ DADOS ESPERADOS (fornecidos pela empresa):
 - Banco: ${settings.bank_name}
 - Valor esperado: R$ ${purchase.amount_paid}
 
+INSTRUÇÕES IMPORTANTES:
+- Leia TODOS os campos visíveis no comprovante com atenção
+- O CPF pode aparecer MASCARADO (ex: ***.681.941-**), neste caso extraia os dígitos visíveis
+- O nome do banco pode variar (ex: "BCO XP S.A." = XP INVESTIMENTOS, "NU PAGAMENTOS" = NUBANK)
+- A data pode estar no formato brasileiro (DD/MM/AAAA HH:MM:SS)
+- Converta a data para formato ISO (AAAA-MM-DDTHH:MM:SS) no campo date_found
+
 Extraia do comprovante:
-1. Nome do pagador (quem enviou)
-2. Nome do recebedor (quem recebeu)
-3. CPF encontrado (se houver)
-4. Banco/instituição
-5. Valor pago
-6. Data e horário
+1. Nome do recebedor (quem recebeu o pagamento)
+2. Nome do pagador (quem enviou)
+3. CPF encontrado (mesmo que mascarado, extraia os dígitos visíveis)
+4. Banco/instituição do recebedor
+5. Valor pago (número, ex: 1.00)
+6. Data e horário (formato ISO: AAAA-MM-DDTHH:MM:SS)
 7. Código/ID da transação
 
 Avalie:
-- O comprovante parece autêntico ou há sinais de edição/manipulação?
-- O valor confere exatamente com R$ ${purchase.amount_paid}?
+- O comprovante parece autêntico (screenshot real de app bancário)?
+- O valor confere com R$ ${purchase.amount_paid}?
 - O recebedor confere com "${settings.bank_holder_name}"?
-- O documento está legível e completo?
+- O documento está legível?
 
 Retorne JSON:
 {
   "name_found": string ou null,
   "receiver_name_found": string ou null,
-  "cpf_found": string ou null,
+  "cpf_found": string ou null (dígitos visíveis, mesmo mascarado),
   "bank_found": string ou null,
   "amount_found": number ou null,
-  "date_found": string ou null (formato ISO),
+  "date_found": string ou null (formato ISO AAAA-MM-DDTHH:MM:SS),
   "transaction_code_found": string ou null,
   "appears_authentic": boolean,
   "is_legible": boolean,
-  "flags": [lista de alertas detectados, ex: "valor_divergente", "nome_incorreto", "possivel_editado"],
+  "flags": [lista de alertas, ex: "valor_divergente", "nome_incorreto"],
   "confidence": number (0-100),
-  "observations": string (análise detalhada)
+  "observations": string
 }
 
-Seja rigoroso. Se algo não estiver claro, reporte como null ou false.`,
+Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence alto (80+).`,
         file_urls: [purchase.receipt_image_url],
         response_json_schema: {
           type: "object",
@@ -150,34 +158,76 @@ Seja rigoroso. Se algo não estiver claro, reporte como null ou false.`,
         }
       });
 
-      const ai = aiResult.data;
+      const ai = aiResult.data || aiResult;
 
-      // Comparações
+      // ========================================================================
+      // COMPARAÇÕES - LÓGICA FLEXÍVEL PARA COMPROVANTES BRASILEIROS
+      // ========================================================================
+      
+      // Nome: comparação flexível (primeiro nome + sobrenome)
       const expectedName = settings.bank_holder_name?.toLowerCase() || '';
       const foundReceiver = (ai.receiver_name_found || ai.name_found || '')?.toLowerCase();
       const nameMatch = foundReceiver && (
         foundReceiver.includes(expectedName) ||
         expectedName.includes(foundReceiver) ||
-        foundReceiver.split(' ').slice(0, 2).every(part => expectedName.includes(part))
+        // Compara pelo menos 2 palavras do nome esperado
+        expectedName.split(' ').filter(w => w.length > 2).every(word => 
+          foundReceiver.includes(word)
+        )
       );
 
+      // CPF: aceita mascarado (verifica dígitos visíveis)
       const expectedCpf = (settings.bank_cpf || '').replace(/\D/g, '');
       const foundCpf = (ai.cpf_found || '').replace(/\D/g, '');
-      const cpfMatch = foundCpf && foundCpf === expectedCpf;
-
-      const expectedBank = (settings.bank_name || '').toLowerCase();
-      const foundBank = (ai.bank_found || '').toLowerCase();
-      const bankMatch = foundBank && (
-        foundBank.includes(expectedBank) ||
-        expectedBank.includes(foundBank)
+      const cpfMatch = foundCpf && (
+        foundCpf === expectedCpf ||
+        // Se mascarado, verifica se os dígitos visíveis são substring do CPF esperado
+        (foundCpf.length < expectedCpf.length && expectedCpf.includes(foundCpf))
       );
 
-      const amountMatch = ai.amount_found !== null && Math.abs(ai.amount_found - purchase.amount_paid) < 0.01;
+      // Banco: extrai palavras-chave para comparação flexível
+      const expectedBank = (settings.bank_name || '').toLowerCase();
+      const foundBank = (ai.bank_found || '').toLowerCase();
+      const bankKeywords = {
+        'xp investimentos': ['xp'],
+        'nubank': ['nu pagamentos', 'nubank', 'nu bank'],
+        'itau': ['itau', 'itú', 'bcu'],
+        'bradesco': ['bradesco'],
+        'santander': ['santander'],
+        'banco do brasil': ['banco do brasil', 'bb '],
+        'caixa': ['caixa'],
+        'inter': ['inter', 'bancointer'],
+        'mercadopago': ['mercado pago', 'mercadopago'],
+        'picpay': ['picpay']
+      };
+      const expectedKey = Object.keys(bankKeywords).find(k => expectedBank.includes(k));
+      const bankMatch = foundBank && (
+        foundBank.includes(expectedBank) ||
+        expectedBank.includes(foundBank) ||
+        (expectedKey && bankKeywords[expectedKey].some(kw => foundBank.includes(kw)))
+      );
 
+      // Valor: aceita pequena tolerância
+      const amountMatch = ai.amount_found !== null && Math.abs(ai.amount_found - purchase.amount_paid) < 0.02;
+
+      // Data: tenta parsear formato brasileiro se ISO falhar
       const now = new Date();
-      const depositDate = ai.date_found ? new Date(ai.date_found) : null;
-      const hoursDiff = depositDate ? (now.getTime() - depositDate.getTime()) / (1000 * 60 * 60) : 999;
-      const dateValid = depositDate && hoursDiff >= -1 && hoursDiff <= 48;
+      let depositDate = null;
+      if (ai.date_found) {
+        depositDate = new Date(ai.date_found);
+        if (isNaN(depositDate.getTime())) {
+          // Tenta formato brasileiro DD/MM/AAAA HH:MM:SS
+          const brMatch = ai.date_found.match(/(\d{2})\/(\d{2})\/(\d{4})[ -]+(\d{2}):(\d{2}):?(\d{2})?/);
+          if (brMatch) {
+            depositDate = new Date(
+              parseInt(brMatch[3]), parseInt(brMatch[2]) - 1, parseInt(brMatch[1]),
+              parseInt(brMatch[4]), parseInt(brMatch[5]), parseInt(brMatch[6] || '0')
+            );
+          }
+        }
+      }
+      const hoursDiff = depositDate && !isNaN(depositDate.getTime()) ? (now.getTime() - depositDate.getTime()) / (1000 * 60 * 60) : 999;
+      const dateValid = depositDate && !isNaN(depositDate.getTime()) && hoursDiff >= -1 && hoursDiff <= 48;
 
       const flags = ai.flags || [];
       if (duplicateSuspected) flags.push('comprovante_duplicado');
@@ -201,13 +251,15 @@ Seja rigoroso. Se algo não estiver claro, reporte como null ou false.`,
       };
 
       // ========================================================================
-      // REGRA DE APROVAÇÃO AUTOMÁTICA
+      // REGRA DE APROVAÇÃO AUTOMÁTICA - Condições essenciais
       // ========================================================================
-      const allConditionsMet = nameMatch && amountMatch && dateValid && ai.appears_authentic && ai.is_legible;
-      const noFlags = flags.length === 0;
-      const highConfidence = (ai.confidence || 0) >= 80;
+      const essentialConditionsMet = nameMatch && amountMatch && dateValid && ai.appears_authentic !== false && ai.is_legible !== false;
+      // Flags críticas que bloqueiam aprovação automática
+      const criticalFlags = ['comprovante_duplicado', 'valor_divergente', 'possivel_editado', 'nome_incorreto'];
+      const hasCriticalFlags = flags.some(f => criticalFlags.includes(f));
+      const highConfidence = (ai.confidence || 0) >= 70;
 
-      analysis.is_valid = !!(allConditionsMet && noFlags && highConfidence && !duplicateSuspected);
+      analysis.is_valid = !!(essentialConditionsMet && !hasCriticalFlags && highConfidence && !duplicateSuspected);
 
       // ========================================================================
       // DECISÃO: APROVAR AUTOMATICAMENTE OU ENVIAR PARA ANÁLISE
