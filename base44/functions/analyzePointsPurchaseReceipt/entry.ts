@@ -268,7 +268,42 @@ Seja rigoroso. Se algo não estiver claro, reporte como null ou false.`,
     });
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // Em caso de erro, envia para revisão manual e retorna análise parcial
+    try {
+      const body = await req.json().catch(() => ({}));
+      if (body?.purchase_id) {
+        const b = createClientFromRequest(req);
+        await b.asServiceRole.entities.PointsPurchase.update(body.purchase_id, {
+          status: 'under_review'
+        });
+      }
+    } catch (_) {}
+
+    return Response.json({
+      purchase_id: null,
+      status: 'under_review',
+      approval_type: 'none',
+      points_credited: false,
+      analysis: {
+        name_found: null,
+        cpf_found: null,
+        bank_found: null,
+        amount_found: null,
+        date_found: null,
+        transaction_code_found: null,
+        name_match: false,
+        cpf_match: false,
+        bank_match: false,
+        amount_match: false,
+        date_valid: false,
+        is_valid: false,
+        confidence: 0,
+        flags: ['erro_analise_automatica'],
+        analysis_text: 'Não foi possível concluir a validação automática. O comprovante foi encaminhado para revisão manual.'
+      },
+      duplicate_suspected: false,
+      error: error.message
+    });
   }
 });
 

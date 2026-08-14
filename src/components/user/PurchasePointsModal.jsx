@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   X, Coins, TrendingUp, Upload, CheckCircle, Loader2, Copy,
-  Building2, User, CreditCard, FileText, ShieldCheck, AlertCircle, Sparkles
+  Building2, User, CreditCard, FileText, ShieldCheck, AlertCircle, Sparkles, Clock
 } from 'lucide-react';
 
 export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }) {
@@ -470,106 +470,176 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
             {/* STEP: MANUAL REVIEW (IA falhou) */}
             {step === 'manual_review' && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 text-center space-y-5">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                  className="w-20 h-20 rounded-full bg-red-500/20 border-2 border-red-400 flex items-center justify-center mx-auto"
-                >
-                  <AlertCircle className="w-10 h-10 text-red-400" />
-                </motion.div>
-                <div>
-                  <h3 className="text-2xl font-bold text-red-400">Comprovante em Análise Manual</h3>
-                  <p className="text-sm text-muted-foreground mt-2">Não foi possível validar automaticamente seu comprovante.</p>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 space-y-5">
+                {/* Header */}
+                <div className="text-center space-y-3">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                    className="w-16 h-16 rounded-2xl bg-orange-500/15 border border-orange-500/40 flex items-center justify-center mx-auto"
+                  >
+                    <Clock className="w-8 h-8 text-orange-400" />
+                  </motion.div>
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground">Comprovante em Análise Manual</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Não foi possível validar automaticamente.</p>
+                  </div>
                 </div>
 
                 {/* Motivos da falha */}
                 {analysisResult?.analysis && (
-                  <div className="bg-secondary/50 border border-border rounded-2xl p-5 space-y-3 text-left">
-                    <p className="text-sm font-bold text-red-400 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      Por que não foi validado?
+                  <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-orange-400" />
+                      Motivos da não validação
                     </p>
                     <div className="space-y-2">
                       {analysisResult.analysis.name_match === false && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Nome do recebedor não confere com o esperado. {analysisResult.analysis.name_found ? `Encontrado: "${analysisResult.analysis.name_found}"` : 'Nome não encontrado no comprovante.'}</span>
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="w-3 h-3 text-red-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Nome do recebedor</span>
+                            <span className="text-muted-foreground block mt-0.5">
+                              {analysisResult.analysis.name_found ? `Encontrado: "${analysisResult.analysis.name_found}"` : 'Nome não encontrado no comprovante.'}
+                            </span>
+                          </div>
                         </div>
                       )}
                       {analysisResult.analysis.amount_match === false && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Valor do pagamento não confere. {analysisResult.analysis.amount_found != null ? `Encontrado: R$ ${analysisResult.analysis.amount_found.toFixed(2)} (esperado R$ ${currentAmount.toFixed(2)})` : `Valor esperado: R$ ${currentAmount.toFixed(2)}.`}</span>
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="w-3 h-3 text-red-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Valor do pagamento</span>
+                            <span className="text-muted-foreground block mt-0.5">
+                              {analysisResult.analysis.amount_found != null
+                                ? `Encontrado: R$ ${analysisResult.analysis.amount_found.toFixed(2)} • Esperado: R$ ${currentAmount.toFixed(2)}`
+                                : `Valor esperado: R$ ${currentAmount.toFixed(2)}.`}
+                            </span>
+                          </div>
                         </div>
                       )}
                       {analysisResult.analysis.date_valid === false && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Data da transação fora do período válido. {analysisResult.analysis.date_found ? `Encontrado: ${new Date(analysisResult.analysis.date_found).toLocaleString('pt-BR')}` : 'Data não encontrada ou ilegível.'}</span>
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="w-3 h-3 text-red-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Data da transação</span>
+                            <span className="text-muted-foreground block mt-0.5">
+                              {analysisResult.analysis.date_found
+                                ? `Encontrado: ${new Date(analysisResult.analysis.date_found).toLocaleString('pt-BR')}`
+                                : 'Data não encontrada ou ilegível.'}
+                            </span>
+                          </div>
                         </div>
                       )}
                       {analysisResult.analysis.bank_match === false && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Banco/instituição não confere. {analysisResult.analysis.bank_found ? `Encontrado: "${analysisResult.analysis.bank_found}"` : 'Banco não identificado.'}</span>
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="w-3 h-3 text-red-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Banco / Instituição</span>
+                            <span className="text-muted-foreground block mt-0.5">
+                              {analysisResult.analysis.bank_found ? `Encontrado: "${analysisResult.analysis.bank_found}"` : 'Banco não identificado.'}
+                            </span>
+                          </div>
                         </div>
                       )}
                       {analysisResult.duplicate_suspected && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Comprovante possivelmente duplicado. Este comprovante já foi utilizado em outra compra.</span>
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="w-3 h-3 text-red-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Comprovante duplicado</span>
+                            <span className="text-muted-foreground block mt-0.5">Este comprovante já foi utilizado em outra compra.</span>
+                          </div>
                         </div>
                       )}
                       {analysisResult.analysis.flags?.map((flag, i) => {
                         const flagMessages = {
-                          'valor_divergente': 'Valor divergente do informado.',
-                          'nome_incorreto': 'Nome do recebedor incorreto.',
-                          'possivel_editado': 'Comprovante possivelmente editado ou manipulado.',
-                          'comprovante_duplicado': 'Comprovante duplicado detectado.',
-                          'imagem_ilegivel': 'Imagem ilegível ou com baixa qualidade.',
-                          'sem_codigo_transacao': 'Código de transação não encontrado.',
-                          'data_invalida': 'Data da transação inválida ou fora do prazo.'
+                          'possivel_editado': { title: 'Comprovante possivelmente editado', desc: 'Sinais de manipulação detectados.' },
+                          'imagem_ilegivel': { title: 'Imagem ilegível', desc: 'Baixa qualidade ou difícil leitura.' },
+                          'sem_codigo_transacao': { title: 'Código de transação ausente', desc: 'Não foi possível identificar o código.' },
+                          'erro_analise_automatica': { title: 'Análise automática indisponível', desc: 'Não foi possível concluir a validação por IA.' }
                         };
-                        const msg = flagMessages[flag] || flag.replace(/_/g, ' ');
-                        if (['valor_divergente', 'nome_incorreto', 'possivel_editado', 'comprovante_duplicado', 'imagem_ilegivel', 'sem_codigo_transacao', 'data_invalida'].includes(flag)) {
-                          return null; // já mostrado acima
-                        }
+                        const msg = flagMessages[flag];
+                        if (!msg) return null;
                         return (
-                          <div key={i} className="flex items-start gap-2 text-xs text-red-300">
-                            <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                            <span>{msg}</span>
+                          <div key={i} className="flex items-start gap-2.5 text-xs">
+                            <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <X className="w-3 h-3 text-red-400" />
+                            </div>
+                            <div>
+                              <span className="text-foreground font-medium">{msg.title}</span>
+                              <span className="text-muted-foreground block mt-0.5">{msg.desc}</span>
+                            </div>
                           </div>
                         );
                       })}
-                      {analysisResult.analysis.confidence != null && analysisResult.analysis.confidence < 80 && (
-                        <div className="flex items-start gap-2 text-xs text-red-300">
-                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
-                          <span>Baixa confiança na análise ({analysisResult.analysis.confidence}%). A imagem pode estar com baixa qualidade ou ilegível.</span>
+                      {analysisResult.analysis.confidence != null && analysisResult.analysis.confidence < 80 && analysisResult.analysis.confidence > 0 && (
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-orange-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <AlertCircle className="w-3 h-3 text-orange-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Baixa confiança ({analysisResult.analysis.confidence}%)</span>
+                            <span className="text-muted-foreground block mt-0.5">A imagem pode estar com baixa qualidade.</span>
+                          </div>
+                        </div>
+                      )}
+                      {/* Se não há nenhum motivo específico */}
+                      {analysisResult.analysis.name_match !== false &&
+                       analysisResult.analysis.amount_match !== false &&
+                       analysisResult.analysis.date_valid !== false &&
+                       analysisResult.analysis.bank_match !== false &&
+                       !analysisResult.duplicate_suspected &&
+                       (!analysisResult.analysis.flags || analysisResult.analysis.flags.filter(f => !['valor_divergente','nome_incorreto','data_invalida','comprovante_duplicado'].includes(f)).length === 0) && (
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-5 h-5 rounded-full bg-orange-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <AlertCircle className="w-3 h-3 text-orange-400" />
+                          </div>
+                          <div>
+                            <span className="text-foreground font-medium">Validação inconclusiva</span>
+                            <span className="text-muted-foreground block mt-0.5">A análise não retornou dados suficientes para aprovação automática.</span>
+                          </div>
                         </div>
                       )}
                     </div>
-                    {analysisResult.analysis.analysis_text && (
-                      <p className="text-xs text-muted-foreground italic pt-2 border-t border-border">
-                        "{analysisResult.analysis.analysis_text}"
+                    {analysisResult.analysis.analysis_text && analysisResult.analysis.analysis_text !== 'Não foi possível concluir a validação automática. O comprovante foi encaminhado para revisão manual.' && (
+                      <p className="text-xs text-muted-foreground italic pt-2 border-t border-border/60 leading-relaxed">
+                        {analysisResult.analysis.analysis_text}
                       </p>
                     )}
                   </div>
                 )}
 
-                <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 space-y-2 text-left">
-                  <p className="text-sm font-semibold text-red-400">⚠️ Atenção</p>
-                  <p className="text-sm text-red-300 leading-relaxed">
-                    Nosso time administrativo vai analisar seu comprovante manualmente. Aguarde até <span className="font-bold">24 horas</span> para a aprovação do seu saldo.
-                  </p>
-                  <p className="text-xs text-muted-foreground pt-2 border-t border-red-500/20">
-                    Você será notificado assim que a análise for concluída. Obrigado pela compreensão.
-                  </p>
+                {/* Próximos passos */}
+                <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 space-y-2.5">
+                  <p className="text-xs font-bold text-orange-400 uppercase tracking-wider">Próximos passos</p>
+                  <div className="flex items-start gap-2.5 text-xs text-foreground">
+                    <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5 font-bold text-orange-400 text-[10px]">1</div>
+                    <span className="leading-relaxed">Nossa equipe vai revisar seu comprovante manualmente.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5 text-xs text-foreground">
+                    <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5 font-bold text-orange-400 text-[10px]">2</div>
+                    <span className="leading-relaxed">Aguarde até <span className="font-bold text-orange-400">24 horas</span> para a aprovação.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5 text-xs text-foreground">
+                    <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5 font-bold text-orange-400 text-[10px]">3</div>
+                    <span className="leading-relaxed">Você será notificado assim que for concluído.</span>
+                  </div>
                 </div>
+
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                  className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
                 >
                   Entendi, concluir
                 </Button>
