@@ -238,38 +238,95 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
       };
 
       // ========================================================================
-      // DETECÇÃO DE DUPLICIDADE - por código da transação (chave principal)
-      // e por hash da URL (chave secundária)
+      // DETECÇÃO RIGOROSA DE DUPLICIDADE - verifica TODAS as compras do sistema
+      // (inclusive de outros usuários) por múltiplas impressões digitais:
+      //   1. Código da transação (normalizado) — chave primária
+      //   2. URL exata do comprovante (mesma imagem reutilizada)
+      //   3. Impressão digital composta (valor + data + nome do recebedor)
       // ========================================================================
       const receiptHash = await simpleHash(purchase.receipt_image_url);
       let duplicateSuspected = false;
       let duplicateReason = '';
+      let duplicateMatchType = '';
 
-      // Busca todas as compras e filtra client-side (filtro aninhado não é suportado)
-      const allPurchases = await base44.asServiceRole.entities.PointsPurchase.list('-created_date', 500);
+      // Normaliza código de transação: uppercase, remove não-alfanuméricos
+      const normalizeCode = (s: string) => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const txnCodeNorm = normalizeCode(ai.transaction_code_found || '');
 
-      // 1. Verifica por código da transação (mais confiável - mesmo comprovante reenviado)
-      const txnCode = (ai.transaction_code_found || '').trim();
-      if (txnCode && txnCode.length >= 10) {
+      // Impressão digital composta (fallback quando não há código de transação)
+      const fingerprint = [
+        (ai.amount_found != null ? ai.amount_found.toFixed(2) : ''),
+        (ai.date_found || '').slice(0, 16),
+        (ai.receiver_name_found || ai.name_found || '').toLowerCase().trim()
+      ].join('|');
+
+      // Pagina por TODAS as compras do sistema (limite de 5000 por chamada)
+      const allPurchases: any[] = [];
+      let hasMore = true;
+      let skip = 0;
+      while (hasMore) {
+        const batch = await base44.asServiceRole.entities.PointsPurchase.list('-created_date', 5000, skip);
+        allPurchases.push(...batch);
+        hasMore = batch.length === 5000;
+        skip += 5000;
+        // Proteção: limite de 100.000 registros para evitar loop infinito
+        if (skip > 100000) break;
+      }
+
+      // 1. Código da transação normalizado (chave primária — mais confiável)
+      if (txnCodeNorm && txnCodeNorm.length >= 6) {
         const codeDuplicates = allPurchases.filter(p =>
           p.id !== purchase_id &&
-          p.receipt_analysis?.transaction_code_found === txnCode
+          normalizeCode(p.receipt_analysis?.transaction_code_found || '') === txnCodeNorm
         );
         if (codeDuplicates.length > 0) {
           duplicateSuspected = true;
-          duplicateReason = `Código de transação já utilizado em compra anterior (${codeDuplicates[0].transaction_id})`;
+          duplicateMatchType = 'transaction_code';
+          const other = codeDuplicates[0];
+          const sameUser = other.user_email === purchase.user_email;
+          duplicateReason = sameUser
+            ? `Código de transação já utilizado em compra anterior (${other.transaction_id})`
+            : `Código de transação já utilizado por outro usuário (${other.transaction_id})`;
         }
       }
 
-      // 2. Verifica por hash da URL (mesma imagem enviada)
-      if (!duplicateSuspected) {
-        const hashDuplicates = allPurchases.filter(p =>
+      // 2. URL exata do comprovante (mesma imagem reutilizada)
+      if (!duplicateSuspected && purchase.receipt_image_url) {
+        const urlDuplicates = allPurchases.filter(p =>
           p.id !== purchase_id &&
-          p.receipt_hash === receiptHash
+          p.receipt_image_url === purchase.receipt_image_url
         );
-        if (hashDuplicates.length > 0) {
+        if (urlDuplicates.length > 0) {
           duplicateSuspected = true;
-          duplicateReason = `Comprovante já utilizado em compra anterior (${hashDuplicates[0].transaction_id})`;
+          duplicateMatchType = 'image_url';
+          const other = urlDuplicates[0];
+          const sameUser = other.user_email === purchase.user_email;
+          duplicateReason = sameUser
+            ? `Comprovante já utilizado em compra anterior (${other.transaction_id})`
+            : `Comprovante já utilizado por outro usuário (${other.transaction_id})`;
+        }
+      }
+
+      // 3. Impressão digital composta (valor + data + recebedor) — fallback
+      if (!duplicateSuspected && fingerprint.length > 5) {
+        const fpDuplicates = allPurchases.filter(p => {
+          if (p.id === purchase_id) return false;
+          const pa = p.receipt_analysis || {};
+          const otherFp = [
+            (pa.amount_found != null ? Number(pa.amount_found).toFixed(2) : ''),
+            (pa.date_found || '').slice(0, 16),
+            (pa.name_found || '').toLowerCase().trim()
+          ].join('|');
+          return otherFp === fingerprint && otherFp.length > 5;
+        });
+        if (fpDuplicates.length > 0) {
+          duplicateSuspected = true;
+          duplicateMatchType = 'fingerprint';
+          const other = fpDuplicates[0];
+          const sameUser = other.user_email === purchase.user_email;
+          duplicateReason = sameUser
+            ? `Comprovante já utilizado em compra anterior (${other.transaction_id})`
+            : `Comprovante já utilizado por outro usuário (${other.transaction_id})`;
         }
       }
 
