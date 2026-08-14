@@ -8,6 +8,7 @@ import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import UserCatalog from '@/components/user/UserCatalog';
 import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
 import BuyPointsModal from '@/components/user/BuyPointsModal';
+import PurchasePointsModal from '@/components/user/PurchasePointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
 import UserWithdrawals from '@/components/user/UserWithdrawals';
 import UserTransfer from '@/components/user/UserTransfer';
@@ -22,6 +23,7 @@ export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [editingAd, setEditingAd] = useState(null);
   const [showBuyPoints, setShowBuyPoints] = useState(false);
+  const [showPurchasePoints, setShowPurchasePoints] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -172,8 +174,15 @@ export default function UserDashboard() {
             />
           ) : (
             <>
-          {/* Buy Points Button */}
-          <div className="mb-8">
+          {/* Buy Points Buttons */}
+          <div className="mb-8 flex gap-3 flex-wrap">
+            <Button
+              onClick={() => setShowPurchasePoints(true)}
+              className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold"
+            >
+              <Star className="w-4 h-4 mr-2" />
+              + Comprar Saldo
+            </Button>
             <Button
               onClick={() => setShowBuyPoints(true)}
               className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
@@ -288,6 +297,12 @@ export default function UserDashboard() {
           userPoints={userPoints?.balance || 0}
           isOpen={showBuyPoints}
           onClose={() => setShowBuyPoints(false)}
+          onSuccess={() => loadData()}
+          />
+          <PurchasePointsModal
+          user={user}
+          isOpen={showPurchasePoints}
+          onClose={() => setShowPurchasePoints(false)}
           onSuccess={() => loadData()}
           />
           </div>

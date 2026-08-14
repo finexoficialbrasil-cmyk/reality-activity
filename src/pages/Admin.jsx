@@ -15,6 +15,7 @@ import AdminStats from '@/components/admin/AdminStats';
 import AdminAdvertisements from '@/components/admin/AdminAdvertisements';
 import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
 import AdminPointsPurchases from '@/components/admin/AdminPointsPurchases';
+import AdminPurchaseSettings from '@/components/admin/AdminPurchaseSettings';
 import AdminAdvertisersSpending from '@/components/admin/AdminAdvertisersSpending';
 import AdminCampaignsAnalytics from '@/components/admin/AdminCampaignsAnalytics';
 import AdminApprovedDomains from '@/components/admin/AdminApprovedDomains';
@@ -33,6 +34,7 @@ const tabs = [
   { id: 'advertisements', label: 'Anúncios', icon: Star },
   { id: 'products', label: 'Produtos', icon: Package },
   { id: 'purchases', label: 'Compras', icon: Coins },
+  { id: 'purchase_settings', label: 'Compra Config', icon: SlidersHorizontal },
   { id: 'redemptions', label: 'Resgates', icon: Gift },
   { id: 'users', label: 'Usuários', icon: Users },
   { id: 'domains', label: 'Domínios', icon: Globe },
@@ -189,6 +191,7 @@ export default function Admin() {
           {activeTab === 'advertisements' && <AdminAdvertisements />}
           {activeTab === 'products' && <AdminProducts />}
           {activeTab === 'purchases' && <AdminPointsPurchases />}
+          {activeTab === 'purchase_settings' && <AdminPurchaseSettings />}
           {activeTab === 'redemptions' && <AdminRedemptions />}
           {activeTab === 'users' && <AdminUsers />}
           {activeTab === 'domains' && <AdminApprovedDomains />}

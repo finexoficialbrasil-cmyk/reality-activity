@@ -2,6 +2,10 @@
   "name": "PointsPurchase",
   "type": "object",
   "properties": {
+    "transaction_id": {
+      "type": "string",
+      "description": "ID \u00fanico da compra (formato: CMP-XXXXXXXX)"
+    },
     "user_email": {
       "type": "string",
       "description": "Email do usu\u00e1rio"
@@ -14,21 +18,66 @@
       "type": "number",
       "description": "Quantidade de pontos solicitados"
     },
+    "bonus_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos b\u00f4nus da compra"
+    },
     "amount_paid": {
       "type": "number",
       "description": "Valor pago (em reais)"
+    },
+    "price_per_point": {
+      "type": "number",
+      "description": "Pre\u00e7o por ponto no momento da compra"
     },
     "receipt_image_url": {
       "type": "string",
       "description": "URL do comprovante de dep\u00f3sito"
     },
+    "receipt_hash": {
+      "type": "string",
+      "description": "Hash do arquivo para detec\u00e7\u00e3o de duplicidade"
+    },
     "receipt_analysis": {
       "type": "object",
       "description": "Resultado da an\u00e1lise por IA",
       "properties": {
+        "name_found": {
+          "type": "string",
+          "description": "Nome encontrado no comprovante"
+        },
+        "cpf_found": {
+          "type": "string",
+          "description": "CPF encontrado"
+        },
+        "bank_found": {
+          "type": "string",
+          "description": "Banco encontrado"
+        },
+        "amount_found": {
+          "type": "number",
+          "description": "Valor encontrado"
+        },
+        "date_found": {
+          "type": "string",
+          "description": "Data encontrada"
+        },
+        "transaction_code_found": {
+          "type": "string",
+          "description": "C\u00f3digo da transa\u00e7\u00e3o encontrado"
+        },
         "name_match": {
           "type": "boolean",
-          "description": "Nome confere com o do usu\u00e1rio"
+          "description": "Nome do recebedor confere"
+        },
+        "cpf_match": {
+          "type": "boolean",
+          "description": "CPF confere"
+        },
+        "bank_match": {
+          "type": "boolean",
+          "description": "Banco confere"
         },
         "amount_match": {
           "type": "boolean",
@@ -42,11 +91,27 @@
           "type": "boolean",
           "description": "Comprovante \u00e9 v\u00e1lido"
         },
+        "confidence": {
+          "type": "number",
+          "description": "Grau de confian\u00e7a da an\u00e1lise (0-100)"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alertas detectados"
+        },
         "analysis_text": {
           "type": "string",
           "description": "Detalhes da an\u00e1lise"
         }
       }
+    },
+    "duplicate_suspected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Comprovante possivelmente duplicado"
     },
     "status": {
       "type": "string",
@@ -54,14 +119,39 @@
         "pending",
         "analyzing",
         "approved",
-        "rejected"
+        "rejected",
+        "under_review"
       ],
       "default": "pending",
       "description": "Status da solicita\u00e7\u00e3o"
     },
+    "approval_type": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual",
+        "none"
+      ],
+      "default": "none",
+      "description": "Tipo de aprova\u00e7\u00e3o (auto por IA ou manual por admin)"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email do administrador que revisou"
+    },
+    "reviewed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da revis\u00e3o manual"
+    },
     "rejection_reason": {
       "type": "string",
       "description": "Motivo da rejei\u00e7\u00e3o"
+    },
+    "points_credited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se os pontos j\u00e1 foram creditados ao usu\u00e1rio"
     }
   },
   "required": [

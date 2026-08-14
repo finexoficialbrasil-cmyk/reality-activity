@@ -1,0 +1,126 @@
+{
+  "name": "PurchaseSettings",
+  "type": "object",
+  "properties": {
+    "price_per_point": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Pre\u00e7o por ponto em R$"
+    },
+    "packages": {
+      "type": "array",
+      "description": "Pacotes pr\u00e9-definidos de pontos",
+      "items": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string"
+          },
+          "bonus": {
+            "type": "number",
+            "default": 0
+          }
+        }
+      },
+      "default": [
+        {
+          "points": 100,
+          "label": "Iniciante",
+          "bonus": 0
+        },
+        {
+          "points": 500,
+          "label": "Popular",
+          "bonus": 25
+        },
+        {
+          "points": 1000,
+          "label": "Profissional",
+          "bonus": 100
+        },
+        {
+          "points": 5000,
+          "label": "Empresarial",
+          "bonus": 750
+        }
+      ]
+    },
+    "bank_holder_name": {
+      "type": "string",
+      "default": "MARCIO JOSE GOMES DE SOUZA",
+      "description": "Nome do titular da conta"
+    },
+    "bank_cpf": {
+      "type": "string",
+      "default": "00568194128",
+      "description": "CPF do titular"
+    },
+    "bank_name": {
+      "type": "string",
+      "default": "XP INVESTIMENTOS",
+      "description": "Nome do banco"
+    },
+    "bank_branch": {
+      "type": "string",
+      "default": "",
+      "description": "Ag\u00eancia"
+    },
+    "bank_account": {
+      "type": "string",
+      "default": "",
+      "description": "Conta"
+    },
+    "pix_key": {
+      "type": "string",
+      "default": "",
+      "description": "Chave PIX para recebimento"
+    },
+    "min_purchase_points": {
+      "type": "number",
+      "default": 100,
+      "description": "Quantidade m\u00ednima de pontos por compra"
+    },
+    "max_purchase_points": {
+      "type": "number",
+      "default": 100000,
+      "description": "Quantidade m\u00e1xima de pontos por compra"
+    },
+    "auto_approve_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Aprova\u00e7\u00e3o autom\u00e1tica ativada"
+    },
+    "ai_analysis_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "An\u00e1lise por IA ativada"
+    },
+    "instructions": {
+      "type": "string",
+      "default": "Fa\u00e7a o pagamento via PIX ou transfer\u00eancia banc\u00e1ria usando os dados abaixo. Ap\u00f3s pagar, envie o comprovante para valida\u00e7\u00e3o autom\u00e1tica.",
+      "description": "Instru\u00e7\u00f5es exibidas para o usu\u00e1rio"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
