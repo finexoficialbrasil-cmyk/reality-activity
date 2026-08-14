@@ -96,11 +96,12 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
       const res = await base44.integrations.Core.UploadFile({ file });
-      setReceiptFile({ url: res.file_url, name: file.name });
-      toast.success('Comprovante carregado!');
+      const fileUrl = res.file_url;
+      setReceiptFile({ url: fileUrl, name: file.name });
+      toast.success('Comprovante carregado! Iniciando validação...');
+      // Inicia validação automaticamente
+      handleSubmit(fileUrl);
     } catch (err) {
       toast.error('Erro ao enviar arquivo');
     } finally {
@@ -108,8 +109,9 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
     }
   };
 
-  const handleSubmit = async () => {
-    if (!receiptFile) {
+  const handleSubmit = async (fileUrl) => {
+    const url = fileUrl || receiptFile?.url;
+    if (!url) {
       toast.error('Envie o comprovante primeiro');
       return;
     }
@@ -126,7 +128,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
         bonus_points: currentBonus,
         amount_paid: currentAmount,
         price_per_point: pricePerPoint,
-        receipt_image_url: receiptFile.url,
+        receipt_image_url: url,
         status: 'pending'
       });
 
@@ -431,13 +433,6 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={() => setStep('payment')} className="flex-1 h-12 rounded-xl">
                     Voltar
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!receiptFile}
-                    className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl disabled:opacity-50"
-                  >
-                    Enviar para validação
                   </Button>
                 </div>
               </motion.div>
