@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   Check, X, Clock, Loader2, Eye, Coins, TrendingUp, Users,
-  DollarSign, CheckCircle, XCircle, AlertTriangle, Search, Filter, Download, Sparkles
+  DollarSign, CheckCircle, XCircle, AlertTriangle, Search, Filter, Download, Sparkles, FileText
 } from 'lucide-react';
 
 export default function AdminPointsPurchases() {
@@ -268,7 +268,14 @@ export default function AdminPointsPurchases() {
                     onClick={() => setPreviewImage(purchase.receipt_image_url)}
                   >
                     {purchase.receipt_image_url ? (
-                      <img src={purchase.receipt_image_url} alt="Comprovante" className="w-full h-full object-cover" />
+                      purchase.receipt_image_url.toLowerCase().endsWith('.pdf') ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-red-500/10">
+                          <FileText className="w-6 h-6 text-red-400" />
+                          <span className="text-[9px] text-red-400 font-semibold">PDF</span>
+                        </div>
+                      ) : (
+                        <img src={purchase.receipt_image_url} alt="Comprovante" className="w-full h-full object-cover" />
+                      )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">Sem imagem</div>
                     )}
@@ -369,7 +376,7 @@ export default function AdminPointsPurchases() {
         </div>
       )}
 
-      {/* Image Preview Modal */}
+      {/* Receipt Preview Modal */}
       {previewImage && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -377,14 +384,42 @@ export default function AdminPointsPurchases() {
           onClick={() => setPreviewImage(null)}
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
         >
-          <motion.img
-            src={previewImage}
-            alt="Comprovante"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="max-w-2xl max-h-[80vh] object-contain rounded-lg cursor-pointer"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {previewImage.toLowerCase().endsWith('.pdf') ? (
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-3 border-b border-border">
+                <span className="text-sm font-semibold flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-red-400" /> Comprovante PDF
+                </span>
+                <div className="flex gap-2">
+                  <a
+                    href={previewImage}
+                    download="comprovante.pdf"
+                    className="p-2 hover:bg-secondary rounded-lg text-xs flex items-center gap-1"
+                  >
+                    <Download className="w-3 h-3" /> Baixar
+                  </a>
+                  <button onClick={() => setPreviewImage(null)} className="p-2 hover:bg-secondary rounded-lg">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <iframe src={previewImage} className="flex-1 w-full bg-white" title="Comprovante" />
+            </motion.div>
+          ) : (
+            <motion.img
+              src={previewImage}
+              alt="Comprovante"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="max-w-2xl max-h-[80vh] object-contain rounded-lg cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
         </motion.div>
       )}
 
@@ -486,7 +521,21 @@ function ReviewModal({ purchase, onClose, onApprove, onReject, processing }) {
             <div>
               <p className="text-xs font-semibold text-muted-foreground mb-2">Comprovante</p>
               {purchase.receipt_image_url && (
-                <img src={purchase.receipt_image_url} alt="Comprovante" className="w-full max-h-64 object-contain rounded-lg border border-border" />
+                purchase.receipt_image_url.toLowerCase().endsWith('.pdf') ? (
+                  <div className="w-full rounded-lg border border-border overflow-hidden">
+                    <iframe src={purchase.receipt_image_url} className="w-full h-64 bg-white" title="Comprovante" />
+                    <div className="flex items-center justify-between p-2 bg-secondary/30">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <FileText className="w-3 h-3 text-red-400" /> Arquivo PDF
+                      </span>
+                      <a href={purchase.receipt_image_url} download="comprovante.pdf" className="text-xs text-gold flex items-center gap-1 hover:underline">
+                        <Download className="w-3 h-3" /> Baixar
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <img src={purchase.receipt_image_url} alt="Comprovante" className="w-full max-h-64 object-contain rounded-lg border border-border" />
+                )
               )}
             </div>
 
