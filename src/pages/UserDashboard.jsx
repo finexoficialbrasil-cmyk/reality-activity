@@ -12,9 +12,10 @@ import PurchasePointsModal from '@/components/user/PurchasePointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
 import UserWithdrawals from '@/components/user/UserWithdrawals';
 import UserTransfer from '@/components/user/UserTransfer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -184,7 +185,7 @@ export default function UserDashboard() {
               + Comprar Saldo
             </Button>
             <Button
-              onClick={() => setShowBuyPoints(true)}
+              onClick={() => navigate('/marketplace')}
               className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
             >
               <ArrowRightLeft className="w-4 h-4 mr-2" />

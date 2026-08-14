@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Vitrine from './pages/Vitrine';
 import Catalog from './pages/Catalog';
 import UserDashboard from './pages/UserDashboard';
+import Marketplace from './pages/Marketplace';
 import Admin from './pages/Admin.jsx';
 
 const AuthenticatedApp = () => {
@@ -37,6 +38,7 @@ const AuthenticatedApp = () => {
       <Route path="/vitrine" element={<Vitrine />} />
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/dashboard" element={<UserDashboard />} />
+      <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
