@@ -56,18 +56,6 @@ Deno.serve(async (req) => {
     });
 
     // ========================================================================
-    // DETECÇÃO DE DUPLICIDADE
-    // ========================================================================
-    const receiptHash = await simpleHash(purchase.receipt_image_url);
-
-    const existingPurchases = await base44.asServiceRole.entities.PointsPurchase.filter({
-      receipt_hash: receiptHash
-    });
-
-    const duplicates = existingPurchases.filter(p => p.id !== purchase_id);
-    const duplicateSuspected = duplicates.length > 0;
-
-    // ========================================================================
     // ANÁLISE POR IA
     // ========================================================================
     let analysis = {
@@ -230,7 +218,6 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
       const dateValid = depositDate && !isNaN(depositDate.getTime()) && hoursDiff >= -1 && hoursDiff <= 48;
 
       const flags = ai.flags || [];
-      if (duplicateSuspected) flags.push('comprovante_duplicado');
 
       analysis = {
         name_found: ai.receiver_name_found || ai.name_found,
@@ -244,22 +231,88 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
         bank_match: !!bankMatch,
         amount_match: !!amountMatch,
         date_valid: !!dateValid,
-        is_valid: false, // definido abaixo
+        is_valid: false,
         confidence: ai.confidence || 0,
         flags,
         analysis_text: ai.observations || ''
       };
 
       // ========================================================================
+      // DETECÇÃO DE DUPLICIDADE - por código da transação (chave principal)
+      // e por hash da URL (chave secundária)
+      // ========================================================================
+      const receiptHash = await simpleHash(purchase.receipt_image_url);
+      let duplicateSuspected = false;
+      let duplicateReason = '';
+
+      // Busca todas as compras e filtra client-side (filtro aninhado não é suportado)
+      const allPurchases = await base44.asServiceRole.entities.PointsPurchase.list('-created_date', 500);
+
+      // 1. Verifica por código da transação (mais confiável - mesmo comprovante reenviado)
+      const txnCode = (ai.transaction_code_found || '').trim();
+      if (txnCode && txnCode.length >= 10) {
+        const codeDuplicates = allPurchases.filter(p =>
+          p.id !== purchase_id &&
+          p.receipt_analysis?.transaction_code_found === txnCode
+        );
+        if (codeDuplicates.length > 0) {
+          duplicateSuspected = true;
+          duplicateReason = `Código de transação já utilizado em compra anterior (${codeDuplicates[0].transaction_id})`;
+        }
+      }
+
+      // 2. Verifica por hash da URL (mesma imagem enviada)
+      if (!duplicateSuspected) {
+        const hashDuplicates = allPurchases.filter(p =>
+          p.id !== purchase_id &&
+          p.receipt_hash === receiptHash
+        );
+        if (hashDuplicates.length > 0) {
+          duplicateSuspected = true;
+          duplicateReason = `Comprovante já utilizado em compra anterior (${hashDuplicates[0].transaction_id})`;
+        }
+      }
+
+      if (duplicateSuspected) {
+        flags.push('comprovante_duplicado');
+        analysis.flags = flags;
+        analysis.analysis_text = (analysis.analysis_text ? analysis.analysis_text + ' ' : '') + `DUPLICIDADE: ${duplicateReason}`;
+      }
+
+      // ========================================================================
+      // DECISÃO: DUPLICIDADE = REJEITAR automaticamente, sem creditar pontos
+      // ========================================================================
+      if (duplicateSuspected) {
+        await base44.asServiceRole.entities.PointsPurchase.update(purchase_id, {
+          status: 'rejected',
+          receipt_analysis: analysis,
+          receipt_hash: receiptHash,
+          duplicate_suspected: true,
+          approval_type: 'auto',
+          rejection_reason: duplicateReason,
+          points_credited: false
+        });
+
+        return Response.json({
+          purchase_id,
+          status: 'rejected',
+          approval_type: 'auto',
+          points_credited: false,
+          analysis,
+          duplicate_suspected: true,
+          duplicate_reason: duplicateReason
+        });
+      }
+
+      // ========================================================================
       // REGRA DE APROVAÇÃO AUTOMÁTICA - Condições essenciais
       // ========================================================================
       const essentialConditionsMet = nameMatch && amountMatch && dateValid && ai.appears_authentic !== false && ai.is_legible !== false;
-      // Flags críticas que bloqueiam aprovação automática
       const criticalFlags = ['comprovante_duplicado', 'valor_divergente', 'possivel_editado', 'nome_incorreto'];
       const hasCriticalFlags = flags.some(f => criticalFlags.includes(f));
       const highConfidence = (ai.confidence || 0) >= 70;
 
-      analysis.is_valid = !!(essentialConditionsMet && !hasCriticalFlags && highConfidence && !duplicateSuspected);
+      analysis.is_valid = !!(essentialConditionsMet && !hasCriticalFlags && highConfidence);
 
       // ========================================================================
       // DECISÃO: APROVAR AUTOMATICAMENTE OU ENVIAR PARA ANÁLISE
@@ -271,10 +324,6 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
       if (analysis.is_valid && settings.auto_approve_enabled) {
         newStatus = 'approved';
         approvalType = 'auto';
-      } else if (!analysis.is_valid) {
-        // Se condições claramente falharam, pode rejeitar automaticamente OU mandar para revisão
-        // Melhor mandar para revisão para o admin decidir
-        newStatus = 'under_review';
       }
 
       // Atualiza a compra
@@ -282,7 +331,7 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
         status: newStatus,
         receipt_analysis: analysis,
         receipt_hash: receiptHash,
-        duplicate_suspected: duplicateSuspected,
+        duplicate_suspected: false,
         approval_type: approvalType
       });
 
@@ -301,22 +350,23 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
         approval_type: approvalType,
         points_credited: pointsCredited,
         analysis,
-        duplicate_suspected: duplicateSuspected
+        duplicate_suspected: false
       });
     }
 
     // Se IA desativada, envia para revisão manual
+    const receiptHashFallback = await simpleHash(purchase.receipt_image_url);
     await base44.asServiceRole.entities.PointsPurchase.update(purchase_id, {
       status: 'under_review',
-      receipt_hash: receiptHash,
-      duplicate_suspected: duplicateSuspected
+      receipt_hash: receiptHashFallback,
+      duplicate_suspected: false
     });
 
     return Response.json({
       purchase_id,
       status: 'under_review',
       analysis,
-      duplicate_suspected: duplicateSuspected
+      duplicate_suspected: false
     });
 
   } catch (error) {

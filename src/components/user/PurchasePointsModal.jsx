@@ -143,6 +143,9 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
         setStep('result');
         toast.success('Pagamento confirmado! Saldo liberado! 🎉');
         if (onSuccess) onSuccess();
+      } else if (res.data.status === 'rejected') {
+        setStep('duplicate_rejected');
+        toast.error('Comprovante rejeitado: já utilizado anteriormente');
       } else if (res.data.status === 'under_review') {
         setStep('manual_review');
         toast.info('Comprovante em análise administrativa');
@@ -642,6 +645,61 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
                 >
                   Entendi, concluir
+                </Button>
+              </motion.div>
+            )}
+
+            {/* STEP: DUPLICATE REJECTED */}
+            {step === 'duplicate_rejected' && analysisResult && (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 space-y-5">
+                <div className="text-center space-y-3">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                    className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/40 flex items-center justify-center mx-auto"
+                  >
+                    <X className="w-8 h-8 text-red-400" />
+                  </motion.div>
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground">Comprovante Rejeitado</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Este comprovante já foi utilizado.</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Comprovante duplicado
+                  </p>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {analysisResult.duplicate_reason || 'O código da transação deste comprovante já foi utilizado em uma compra anterior. Pontos não foram creditados.'}
+                  </p>
+                </div>
+
+                <div className="bg-secondary/30 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">Detalhes da análise</p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Código da transação:</span>
+                    <span className="font-mono text-foreground text-[11px]">{analysisResult.analysis?.transaction_code_found || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Confiança da IA:</span>
+                    <span className="text-foreground">{analysisResult.analysis?.confidence || 0}%</span>
+                  </div>
+                </div>
+
+                <div className="bg-accent/10 border border-accent/20 rounded-xl p-3">
+                  <p className="text-xs text-accent leading-relaxed">
+                    Cada comprovante só pode ser utilizado uma vez. Envie um novo comprovante de pagamento para validar sua compra.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => { resetFlow(); onClose(); }}
+                  className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                >
+                  Entendi, fechar
                 </Button>
               </motion.div>
             )}
