@@ -138,12 +138,13 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
       });
 
       setAnalysisResult(res.data);
-      setStep('result');
 
       if (res.data.status === 'approved') {
+        setStep('result');
         toast.success('Pagamento confirmado! Saldo liberado! 🎉');
         if (onSuccess) onSuccess();
       } else if (res.data.status === 'under_review') {
+        setStep('manual_review');
         toast.info('Comprovante em análise administrativa');
       }
 
@@ -482,6 +483,81 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   <h3 className="text-2xl font-bold text-red-400">Comprovante em Análise Manual</h3>
                   <p className="text-sm text-muted-foreground mt-2">Não foi possível validar automaticamente seu comprovante.</p>
                 </div>
+
+                {/* Motivos da falha */}
+                {analysisResult?.analysis && (
+                  <div className="bg-secondary/50 border border-border rounded-2xl p-5 space-y-3 text-left">
+                    <p className="text-sm font-bold text-red-400 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      Por que não foi validado?
+                    </p>
+                    <div className="space-y-2">
+                      {analysisResult.analysis.name_match === false && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Nome do recebedor não confere com o esperado. {analysisResult.analysis.name_found ? `Encontrado: "${analysisResult.analysis.name_found}"` : 'Nome não encontrado no comprovante.'}</span>
+                        </div>
+                      )}
+                      {analysisResult.analysis.amount_match === false && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Valor do pagamento não confere. {analysisResult.analysis.amount_found != null ? `Encontrado: R$ ${analysisResult.analysis.amount_found.toFixed(2)} (esperado R$ ${currentAmount.toFixed(2)})` : `Valor esperado: R$ ${currentAmount.toFixed(2)}.`}</span>
+                        </div>
+                      )}
+                      {analysisResult.analysis.date_valid === false && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Data da transação fora do período válido. {analysisResult.analysis.date_found ? `Encontrado: ${new Date(analysisResult.analysis.date_found).toLocaleString('pt-BR')}` : 'Data não encontrada ou ilegível.'}</span>
+                        </div>
+                      )}
+                      {analysisResult.analysis.bank_match === false && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Banco/instituição não confere. {analysisResult.analysis.bank_found ? `Encontrado: "${analysisResult.analysis.bank_found}"` : 'Banco não identificado.'}</span>
+                        </div>
+                      )}
+                      {analysisResult.duplicate_suspected && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Comprovante possivelmente duplicado. Este comprovante já foi utilizado em outra compra.</span>
+                        </div>
+                      )}
+                      {analysisResult.analysis.flags?.map((flag, i) => {
+                        const flagMessages = {
+                          'valor_divergente': 'Valor divergente do informado.',
+                          'nome_incorreto': 'Nome do recebedor incorreto.',
+                          'possivel_editado': 'Comprovante possivelmente editado ou manipulado.',
+                          'comprovante_duplicado': 'Comprovante duplicado detectado.',
+                          'imagem_ilegivel': 'Imagem ilegível ou com baixa qualidade.',
+                          'sem_codigo_transacao': 'Código de transação não encontrado.',
+                          'data_invalida': 'Data da transação inválida ou fora do prazo.'
+                        };
+                        const msg = flagMessages[flag] || flag.replace(/_/g, ' ');
+                        if (['valor_divergente', 'nome_incorreto', 'possivel_editado', 'comprovante_duplicado', 'imagem_ilegivel', 'sem_codigo_transacao', 'data_invalida'].includes(flag)) {
+                          return null; // já mostrado acima
+                        }
+                        return (
+                          <div key={i} className="flex items-start gap-2 text-xs text-red-300">
+                            <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                            <span>{msg}</span>
+                          </div>
+                        );
+                      })}
+                      {analysisResult.analysis.confidence != null && analysisResult.analysis.confidence < 80 && (
+                        <div className="flex items-start gap-2 text-xs text-red-300">
+                          <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-red-400" />
+                          <span>Baixa confiança na análise ({analysisResult.analysis.confidence}%). A imagem pode estar com baixa qualidade ou ilegível.</span>
+                        </div>
+                      )}
+                    </div>
+                    {analysisResult.analysis.analysis_text && (
+                      <p className="text-xs text-muted-foreground italic pt-2 border-t border-border">
+                        "{analysisResult.analysis.analysis_text}"
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 space-y-2 text-left">
                   <p className="text-sm font-semibold text-red-400">⚠️ Atenção</p>
                   <p className="text-sm text-red-300 leading-relaxed">
