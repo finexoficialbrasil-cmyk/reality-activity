@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame } from 'lucide-react';
+import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard } from 'lucide-react';
 import { usePublicData } from '@/hooks/usePublicData';
 
 export default function Navbar() {
@@ -107,8 +107,8 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link to="/dashboard">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground">
-                    <User className="w-4 h-4 mr-1" /> {user.full_name?.split(' ')[0]}
+                  <Button size="sm" className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold animate-pulse-gold">
+                    <LayoutDashboard className="w-4 h-4 mr-1.5" /> Dashboard
                   </Button>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
@@ -150,6 +150,11 @@ export default function Navbar() {
           <div className="border-t border-border pt-3">
             {user ? (
               <>
+                <Link to="/dashboard" onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold mb-2 animate-pulse-gold">
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Meu Dashboard</span>
+                </Link>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gold/10 border border-gold/30 mb-2">
                   <Star className="w-4 h-4 text-gold" />
