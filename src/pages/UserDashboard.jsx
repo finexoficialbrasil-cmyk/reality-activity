@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import UserAdvertisementForm from '@/components/user/UserAdvertisementForm';
 import UserCatalog from '@/components/user/UserCatalog';
 import UserAdvertisementsManager from '@/components/user/UserAdvertisementsManager';
+import UserAdsStats from '@/components/user/UserAdsStats';
 import BuyPointsModal from '@/components/user/BuyPointsModal';
 import PurchasePointsModal from '@/components/user/PurchasePointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
@@ -142,6 +143,7 @@ export default function UserDashboard() {
 
           {activeTab === 'anuncios' ? (
           <div className="space-y-8">
+            <UserAdsStats user={user} />
             <div>
               <h2 className="font-semibold text-lg mb-4">Publicar Novo Anúncio</h2>
               <UserAdvertisementForm
