@@ -178,20 +178,20 @@ export default function UserDashboard() {
           ) : (
             <>
           {/* Buy Points Buttons */}
-          <div className="mb-8 flex gap-3 flex-wrap">
+          <div className="mb-8 flex gap-3 justify-center">
             <Button
               onClick={() => setShowPurchasePoints(true)}
-              className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold"
+              className="flex-1 sm:flex-none bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold"
             >
               <Star className="w-4 h-4 mr-2" />
-              + Comprar Saldo
+              Comprar pts
             </Button>
             <Button
               onClick={() => navigate('/marketplace')}
-              className="bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
+              className="flex-1 sm:flex-none bg-gold/20 text-gold hover:bg-gold/30 border border-gold/40"
             >
               <ArrowRightLeft className="w-4 h-4 mr-2" />
-              Mercado de Pontos
+              Marketplace
             </Button>
           </div>
 
