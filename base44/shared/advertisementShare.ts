@@ -1,7 +1,7 @@
 // Shared logic for processing a single advertisement share.
 // Used by both processAdvertisementShare (single) and bulkShareAdvertisements (batch).
 
-export async function processSingleShare(base44, user, advertisement, platform) {
+export async function processSingleShare(base44, user, advertisement, platform, extraShareFields = {}) {
   // Already fetched advertisement passed in; validate state
   if (!advertisement || advertisement.status !== 'approved') {
     return { ok: false, error: 'Anúncio não encontrado ou não aprovado' };
@@ -30,7 +30,8 @@ export async function processSingleShare(base44, user, advertisement, platform) 
     user_name: user.full_name,
     platform,
     points_earned: pointsCost,
-    is_valid: true
+    is_valid: true,
+    ...extraShareFields
   });
 
   // Calculate new balance and check if should pause

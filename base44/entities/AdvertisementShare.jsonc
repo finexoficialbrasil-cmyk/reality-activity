@@ -24,6 +24,8 @@
         "tiktok",
         "twitter",
         "linkedin",
+        "telegram",
+        "mega_link",
         "outro"
       ],
       "description": "Plataforma de compartilhamento"
@@ -36,6 +38,10 @@
       "type": "boolean",
       "default": true,
       "description": "Se o compartilhamento foi validado"
+    },
+    "visitor_ip": {
+      "type": "string",
+      "description": "IP do visitante (para mega_link, anti-fraude)"
     }
   },
   "required": [

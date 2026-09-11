@@ -12,6 +12,7 @@ import Catalog from './pages/Catalog';
 import UserDashboard from './pages/UserDashboard';
 import Marketplace from './pages/Marketplace';
 import Admin from './pages/Admin.jsx';
+import MegaLinkVitrine from './pages/MegaLinkVitrine';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -40,6 +41,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/vitrine/u/:userSlug" element={<MegaLinkVitrine />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
