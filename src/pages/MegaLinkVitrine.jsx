@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
+import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu } from 'lucide-react';
 
 const FacebookIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -24,6 +23,9 @@ const SHARE_OPTS = [
   { id: 'facebook', name: 'Facebook', Icon: FacebookIcon, color: 'text-[#1877F2]' },
   { id: 'twitter', name: 'X', Icon: XIcon, color: 'text-foreground' },
 ];
+
+const CYAN = '#00f2ff';
+const PINK = '#ff007a';
 
 export default function MegaLinkVitrine() {
   const { userSlug } = useParams();
@@ -86,10 +88,10 @@ export default function MegaLinkVitrine() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0b0d] cyber-grid flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-gold animate-spin mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">Carregando vitrine...</p>
+          <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3" style={{ color: CYAN }} />
+          <p className="font-cyber-mono text-xs tracking-widest" style={{ color: CYAN }}>CARREGANDO VITRINE...</p>
         </div>
       </div>
     );
@@ -97,120 +99,129 @@ export default function MegaLinkVitrine() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#0a0b0d] cyber-grid flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-destructive text-lg font-semibold mb-2">Ops!</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
+          <p className="text-lg font-bold mb-2" style={{ color: PINK }}>SYSTEM ERROR</p>
+          <p className="font-cyber-mono text-xs text-muted-foreground">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
-              <Zap className="w-5 h-5 text-background" />
+    <div className="min-h-screen bg-[#0a0b0d] cyber-grid">
+      <div className="flex flex-col md:flex-row">
+        {/* Left Sidebar */}
+        <aside className="md:sticky md:top-0 md:h-screen md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r p-5 md:p-6 flex flex-col" style={{ borderColor: 'hsl(190 100% 50% / 0.15)' }}>
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 mb-6">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: CYAN, boxShadow: `0 0 20px ${CYAN}55` }}>
+              <Zap className="w-6 h-6 text-black" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground leading-none mb-0.5">Vitrine de</p>
-              <p className="text-sm font-bold text-foreground capitalize leading-none">{ownerName}</p>
+              <p className="font-cyber-mono text-[10px] tracking-[0.2em] text-muted-foreground leading-none mb-1">VITRINE DE</p>
+              <h1 className="font-grotesk font-bold text-lg text-white leading-none capitalize truncate max-w-[180px]">{ownerName}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/30">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs font-semibold text-gold">{ads.length} ofertas</span>
-          </div>
-        </div>
-      </header>
 
-      {/* Click feedback banner */}
-      {pointsEarned > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto px-4 pt-3"
-        >
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-green-500/10 border border-green-500/30">
-            <Gift className="w-4 h-4 text-green-400 flex-shrink-0" />
-            <p className="text-xs text-green-400 font-medium">Você ajudou {ownerName} a ganhar +{pointsEarned} pontos! 🎉</p>
-          </div>
-        </motion.div>
-      )}
-      {alreadyCounted && (
-        <div className="max-w-2xl mx-auto px-4 pt-3">
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/50 border border-border">
-            <p className="text-xs text-muted-foreground">Bem-vindo de volta! Seu clique já foi contado.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Carousel */}
-      {ads.length === 0 ? (
-        <div className="min-h-[60vh] flex items-center justify-center px-4">
-          <div className="text-center">
-            <Share2 className="w-14 h-14 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Nenhum anúncio disponível nesta vitrine no momento.</p>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          {/* Desktop grid */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
-            {ads.map(ad => (
-              <VitrineCard key={ad.id} ad={ad} onShare={setShareMenuFor} />
-            ))}
+          {/* Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md mb-5 self-start" style={{ background: CYAN, color: '#000' }}>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="font-cyber-mono text-xs font-bold tracking-wide">{ads.length} OFERTAS</span>
           </div>
 
-          {/* Mobile horizontal carousel */}
-          <div className="md:hidden flex gap-3 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollSnapType: 'x mandatory' }}>
-            {ads.map(ad => (
-              <div key={ad.id} className="snap-start flex-shrink-0 w-[85%]" style={{ scrollSnapAlign: 'start' }}>
-                <VitrineCard ad={ad} onShare={setShareMenuFor} />
+          {/* Notification Box */}
+          {pointsEarned > 0 && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="pixel-border rounded-lg p-3.5 mb-4"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Gift className="w-4 h-4 flex-shrink-0" style={{ color: PINK }} />
+                <span className="font-cyber-mono text-[10px] tracking-widest" style={{ color: PINK }}>PONTOS CREDITADOS</span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <p className="text-sm text-white font-medium leading-snug">
+                Você ajudou <span className="font-bold capitalize" style={{ color: PINK }}>{ownerName}</span> a ganhar <span className="font-bold" style={{ color: CYAN }}>+{pointsEarned}</span> pontos! 🎉
+              </p>
+            </motion.div>
+          )}
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-6 py-6 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded bg-gold flex items-center justify-center">
-              <Zap className="w-4 h-4 text-background" />
+          {alreadyCounted && (
+            <div className="rounded-lg p-3 mb-4 border" style={{ borderColor: 'hsl(190 100% 50% / 0.2)', background: 'hsl(190 100% 50% / 0.05)' }}>
+              <p className="font-cyber-mono text-[10px] tracking-widest text-muted-foreground mb-1">STATUS</p>
+              <p className="text-xs text-white">Bem-vindo de volta! Seu clique já foi contado.</p>
             </div>
-            <span className="text-sm font-bold text-foreground">Reality Activity</span>
+          )}
+
+          {/* Stats */}
+          <div className="mt-auto pt-4 border-t" style={{ borderColor: 'hsl(190 100% 50% / 0.1)' }}>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="rounded-md p-2.5 border" style={{ borderColor: 'hsl(190 100% 50% / 0.15)', background: 'hsl(190 100% 50% / 0.03)' }}>
+                <p className="font-cyber-mono text-[9px] tracking-widest text-muted-foreground mb-0.5">LINKS</p>
+                <p className="font-grotesk font-bold text-lg" style={{ color: CYAN }}>{ads.length}</p>
+              </div>
+              <div className="rounded-md p-2.5 border" style={{ borderColor: 'hsl(330 100% 50% / 0.15)', background: 'hsl(330 100% 50% / 0.03)' }}>
+                <p className="font-cyber-mono text-[9px] tracking-widest text-muted-foreground mb-0.5">PTS</p>
+                <p className="font-grotesk font-bold text-lg" style={{ color: PINK }}>{pointsEarned}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded bg-white flex items-center justify-center">
+                <Zap className="w-3.5 h-3.5 text-black" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white leading-none">Reality Activity</p>
+                <p className="font-cyber-mono text-[9px] text-muted-foreground leading-none mt-0.5">Compartilhe e ganhe</p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">Compartilhe e ganhe pontos</p>
-        </div>
-      </footer>
+        </aside>
+
+        {/* Right Content - Grid */}
+        <main className="flex-1 p-4 md:p-6">
+          {ads.length === 0 ? (
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <div className="text-center">
+                <Share2 className="w-14 h-14 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="font-cyber-mono text-xs text-muted-foreground tracking-widest">NENHUM ANÚNCIO DISPONÍVEL</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {ads.map((ad, i) => (
+                <CyberCard key={ad.id} ad={ad} index={i} onShare={setShareMenuFor} />
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* Share menu for individual ad */}
       {shareMenuFor && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShareMenuFor(null)}>
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 bg-black/70" />
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
-            className="relative w-full max-w-md bg-card border-t border-border rounded-t-2xl p-5"
+            className="relative w-full max-w-md bg-[#0d0e11] border-t rounded-t-2xl p-5"
+            style={{ borderColor: 'hsl(190 100% 50% / 0.3)', boxShadow: `0 -10px 40px ${CYAN}22` }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-center pb-3">
-              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+              <div className="w-12 h-1.5 rounded-full" style={{ background: 'hsl(190 100% 50% / 0.3)' }} />
             </div>
-            <p className="text-sm font-semibold text-foreground mb-3 truncate">Compartilhar: {shareMenuFor.title}</p>
+            <p className="font-cyber-mono text-[10px] tracking-widest text-muted-foreground mb-1">COMPARTILHAR</p>
+            <p className="text-sm font-semibold text-white mb-4 truncate">{shareMenuFor.title}</p>
             <div className="grid grid-cols-4 gap-2">
               {SHARE_OPTS.map(p => (
                 <button
                   key={p.id}
                   onClick={() => handleShareSingle(shareMenuFor, p.id)}
-                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-secondary transition-colors"
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors"
+                  style={{ borderColor: 'hsl(190 100% 50% / 0.1)' }}
                 >
-                  <div className="w-11 h-11 rounded-full bg-secondary flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'hsl(190 100% 50% / 0.08)' }}>
                     <p.Icon className={`w-5 h-5 ${p.color}`} />
                   </div>
                   <span className="text-xs text-muted-foreground">{p.name}</span>
@@ -224,63 +235,90 @@ export default function MegaLinkVitrine() {
   );
 }
 
-function VitrineCard({ ad, onShare }) {
-  const budgetPct = ad.budget_total ? (ad.budget_remaining / ad.budget_total) * 100 : 0;
+function BudgetMeter({ remaining, total }) {
+  const pct = total ? remaining / total : 0;
+  const segments = 8;
+  const filled = Math.max(0, Math.round(pct * segments));
+  return (
+    <div className="flex gap-1 items-center">
+      {Array.from({ length: segments }).map((_, i) => {
+        const isFilled = i < filled;
+        const isLast = i === filled - 1;
+        return (
+          <div
+            key={i}
+            className="w-2 h-2 rounded-full transition-all"
+            style={{
+              background: isFilled ? (isLast ? PINK : CYAN) : '#1a1a1e',
+              boxShadow: isFilled ? `0 0 6px ${isLast ? PINK : CYAN}` : 'none',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
+function CyberCard({ ad, index, onShare }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl overflow-hidden bg-card border border-border flex flex-col"
+      transition={{ delay: Math.min(index * 0.04, 0.4) }}
+      className="cyber-border rounded-xl bg-[#0d0e11] flex flex-col overflow-hidden hover:glow-cyan transition-all"
     >
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-3 py-2.5 border-b" style={{ borderColor: 'hsl(190 100% 50% / 0.12)' }}>
+        <div className="flex items-center gap-2">
+          <Cpu className="w-3.5 h-3.5" style={{ color: CYAN }} />
+          <span className="font-cyber-mono text-[9px] tracking-widest text-muted-foreground uppercase">{ad.category || 'anuncio'}</span>
+        </div>
+        <BudgetMeter remaining={ad.budget_remaining} total={ad.budget_total} />
+      </div>
+
       {/* Image */}
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+      <div className="relative aspect-[16/10] bg-[#15161a] overflow-hidden">
         {ad.image_url ? (
           <img src={ad.image_url} alt={ad.title} loading="lazy" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-            <Share2 className="w-8 h-8 text-muted-foreground/40" />
+          <div className="w-full h-full flex items-center justify-center">
+            <Share2 className="w-8 h-8 text-muted-foreground/30" />
           </div>
         )}
-        {ad.category && (
-          <div className="absolute top-2 left-2 bg-gold/90 rounded-full px-2.5 py-1 text-xs font-bold text-background">
-            {ad.category}
-          </div>
-        )}
+        <div className="absolute inset-0" style={{ background: `linear-gradient(to top, #0d0e11 0%, transparent 40%)` }} />
       </div>
 
-      {/* Content */}
+      {/* Body */}
       <div className="p-3.5 flex-1 flex flex-col">
-        <h3 className="font-bold text-sm text-foreground line-clamp-2 mb-1">{ad.title}</h3>
+        <h3 className="font-grotesk font-bold text-sm text-white line-clamp-2 mb-1.5 leading-snug">{ad.title}</h3>
         {ad.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5">{ad.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{ad.description}</p>
         )}
 
-        {/* Budget bar */}
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground">Orçamento</span>
-            <span className="text-xs font-semibold text-gold">{ad.budget_remaining}/{ad.budget_total}</span>
-          </div>
-          <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-            <div className="h-full bg-gold" style={{ width: `${budgetPct}%` }} />
-          </div>
+        {/* Budget label */}
+        <div className="flex items-center justify-between mb-3 mt-auto">
+          <span className="font-cyber-mono text-[9px] tracking-widest text-muted-foreground">BUDGET</span>
+          <span className="font-cyber-mono text-xs font-bold" style={{ color: CYAN }}>
+            {ad.budget_remaining}<span className="text-muted-foreground">/</span>{ad.budget_total}
+          </span>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-auto">
+        <div className="flex gap-2">
           <a
             href={ad.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold text-xs hover:from-gold-dark hover:to-yellow-400 transition-all"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-grotesk font-bold text-xs transition-all hover:brightness-110"
+            style={{ background: CYAN, color: '#000', boxShadow: `0 0 12px ${CYAN}44` }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Ir
           </a>
           <button
             onClick={() => onShare(ad)}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-secondary text-foreground font-semibold text-xs hover:bg-secondary/70 transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-grotesk font-bold text-xs transition-all hover:bg-[#ff007a]/10"
+            style={{ border: `1px solid ${PINK}`, color: PINK }}
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>

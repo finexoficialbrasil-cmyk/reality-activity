@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -68,4 +68,10 @@
   .neon-glow { box-shadow: 0 0 30px hsl(45 100% 55% / 0.5), inset 0 0 30px hsl(45 100% 55% / 0.1); }
   .neon-border { border: 2px solid hsl(45 100% 55% / 0.3); box-shadow: inset 0 0 20px hsl(45 100% 55% / 0.1); }
   .neon-glow-purple { box-shadow: 0 0 30px hsl(270 80% 65% / 0.5); }
+  .font-cyber-mono { font-family: 'JetBrains Mono', monospace; }
+  .cyber-grid { background-image: linear-gradient(hsl(190 100% 50% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(190 100% 50% / 0.04) 1px, transparent 1px); background-size: 32px 32px; }
+  .glow-cyan { box-shadow: 0 0 20px hsl(190 100% 50% / 0.15), inset 0 0 20px hsl(190 100% 50% / 0.03); }
+  .glow-pink { box-shadow: 0 0 20px hsl(330 100% 50% / 0.25); }
+  .cyber-border { border: 1px solid hsl(190 100% 50% / 0.25); box-shadow: 0 0 12px hsl(190 100% 50% / 0.08), inset 0 0 12px hsl(190 100% 50% / 0.02); }
+  .pixel-border { border: 2px dashed hsl(330 100% 50% / 0.6); box-shadow: 0 0 12px hsl(330 100% 50% / 0.2), inset 0 0 12px hsl(330 100% 50% / 0.05); }
 }
