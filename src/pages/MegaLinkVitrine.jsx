@@ -46,7 +46,19 @@ export default function MegaLinkVitrine() {
         if (auth) setUser(await base44.auth.me());
       } catch {}
       try {
-        const res = await base44.functions.invoke('trackMegaLinkClick', { slug: userSlug });
+        const getVisitorId = () => {
+          try {
+            let id = localStorage.getItem('ra_visitor_id');
+            if (!id) {
+              id = 'v-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+              localStorage.setItem('ra_visitor_id', id);
+            }
+            return id;
+          } catch {
+            return null;
+          }
+        };
+        const res = await base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() });
         const data = res.data;
         if (data?.success) {
           setAds(data.ads || []);

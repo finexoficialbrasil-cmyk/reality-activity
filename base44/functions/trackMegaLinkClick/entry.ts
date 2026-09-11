@@ -4,7 +4,7 @@ import { processSingleShare } from '../../shared/advertisementShare.ts';
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const { slug } = await req.json();
+    const { slug, visitor_id } = await req.json();
 
     if (!slug) {
       return Response.json({ error: 'Slug obrigatório' }, { status: 400 });
@@ -23,6 +23,11 @@ export default async function(req) {
     const visitorIp = (forwarded ? forwarded.split(',')[0].trim() : null)
       || req.headers.get('x-real-ip')
       || 'unknown';
+
+    // Fingerprint confiável por visitante: prefere o visitor_id (UUID do localStorage),
+    // cai para IP. 'unknown' nunca bloqueia (evita falsos positivos em ambientes sem IP).
+    const fingerprint = visitor_id || visitorIp;
+    const canDetect = fingerprint && fingerprint !== 'unknown';
 
     // Fetch eligible ads (approved, active, with budget, not owned by link owner)
     const allAds = await base44.asServiceRole.entities.Advertisement.list('-created_date', 500);
@@ -49,10 +54,10 @@ export default async function(req) {
     // Check for duplicate click in last 24h (same IP, same owner)
     const recentShares = await base44.asServiceRole.entities.AdvertisementShare.list('-created_date', 500);
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const duplicate = recentShares.some(s =>
+    const duplicate = canDetect && recentShares.some(s =>
       s.platform === 'mega_link' &&
       s.user_email === ownerEmail &&
-      s.visitor_ip === visitorIp &&
+      s.visitor_ip === fingerprint &&
       s.created_date >= yesterday
     );
 
@@ -74,7 +79,7 @@ export default async function(req) {
 
       for (const ad of eligibleAds) {
         try {
-          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: visitorIp });
+          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: fingerprint });
           if (result.ok) {
             pointsEarned += result.pointsCost;
           }
