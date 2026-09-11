@@ -54,11 +54,19 @@ export default function ShareAllButton({ user, ads, onShared }) {
           url: megaLink,
         });
         toast.success('Link compartilhado! 🎉');
-      } catch {
-        // user cancelled
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return; // usuário cancelou
+        // senão, segue para o fallback de copiar
       }
-    } else {
-      handleCopy();
+    }
+    try {
+      await navigator.clipboard.writeText(megaLink);
+      setCopied(true);
+      toast.success('Link copiado! Cole onde quiser 📋');
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error('Não foi possível compartilhar o link');
     }
   };
 
