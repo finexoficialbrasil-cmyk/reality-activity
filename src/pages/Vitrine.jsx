@@ -7,6 +7,7 @@ import VideoCard from '@/components/video/VideoCard';
 import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import BannerCarousel from '@/components/home/BannerCarousel';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
+import ShareAllButton from '@/components/advertisements/ShareAllButton';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
@@ -103,9 +104,12 @@ export default function Vitrine() {
           {/* Advertisements Section */}
           {advertisements.length > 0 && (
             <div className="mb-16">
-              <h2 className="font-grotesk font-bold text-xl md:text-2xl mb-6 flex items-center gap-2">
-                <Megaphone className="w-6 h-6 text-gold" /> Anúncios Compartilháveis
-              </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 className="font-grotesk font-bold text-xl md:text-2xl flex items-center gap-2">
+                  <Megaphone className="w-6 h-6 text-gold" /> Anúncios Compartilháveis
+                </h2>
+                <ShareAllButton user={user} ads={advertisements} onShared={handlePointsEarned} />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {advertisements.map((ad) => (
                   <AdvertisementCard

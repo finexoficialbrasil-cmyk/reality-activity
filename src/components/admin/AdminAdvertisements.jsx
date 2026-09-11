@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle, Edit2, Trash2, Plus, Upload, Eye, Image as ImageIcon, Video, Power } from 'lucide-react';
+import { CheckCircle, XCircle, Edit2, Trash2, Plus, Upload, Eye, Image as ImageIcon, Video, Power, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/useCategories';
@@ -193,6 +193,18 @@ export default function AdminAdvertisements() {
     }
   };
 
+  const handleToggleBulkShareable = async (ad) => {
+    try {
+      const newValue = ad.is_bulk_shareable === false ? true : false;
+      await base44.entities.Advertisement.update(ad.id, { is_bulk_shareable: newValue });
+      toast.success(newValue ? 'Compartilhamento em massa ativado' : 'Compartilhamento em massa desativado');
+      loadData();
+    } catch (err) {
+      console.error('Erro ao alternar compartilhamento em massa:', err);
+      toast.error('Erro ao alternar');
+    }
+  };
+
   const filteredAds = ads.filter(ad => {
     const matchSearch = !searchQuery ||
       ad.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -333,6 +345,7 @@ export default function AdminAdvertisements() {
               <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
               <th className="px-4 py-3 text-center text-sm font-semibold">Shares</th>
               <th className="px-4 py-3 text-center text-sm font-semibold">Custo/Recompensa</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold" title="Participa do Compartilhar Tudo">Bulk</th>
               <th className="px-4 py-3 text-left text-sm font-semibold">Data</th>
               <th className="px-4 py-3 text-right text-sm font-semibold">Ações</th>
             </tr>
@@ -385,6 +398,19 @@ export default function AdminAdvertisements() {
                     </span>
                     <div className="text-xs text-muted-foreground">{ad.reward_per_share || 0}/share</div>
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => handleToggleBulkShareable(ad)}
+                      title={ad.is_bulk_shareable === false ? 'Ativar compartilhamento em massa' : 'Desativar compartilhamento em massa'}
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
+                        ad.is_bulk_shareable === false
+                          ? 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                          : 'bg-gold/15 text-gold hover:bg-gold/25'
+                      }`}
+                    >
+                      <Zap className="w-4 h-4" />
+                    </button>
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{formatDate(ad.created_date)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -407,7 +433,7 @@ export default function AdminAdvertisements() {
             })}
             {filteredAds.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">Nenhum anúncio encontrado</td>
+                <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">Nenhum anúncio encontrado</td>
               </tr>
             )}
           </tbody>

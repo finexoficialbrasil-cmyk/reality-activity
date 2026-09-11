@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdvertisementCard from './AdvertisementCard';
+import ShareAllButton from './ShareAllButton';
 import { Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -37,21 +38,26 @@ export default function AdvertisementsGrid({ user, onAdShared }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {ads.map((ad, idx) => (
-        <motion.div
-          key={ad.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: idx * 0.05 }}
-        >
-          <AdvertisementCard
-            ad={ad}
-            user={user}
-            onAdShared={onAdShared}
-          />
-        </motion.div>
-      ))}
+    <div>
+      <div className="flex justify-end mb-4">
+        <ShareAllButton user={user} ads={ads} onShared={onAdShared} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {ads.map((ad, idx) => (
+          <motion.div
+            key={ad.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+          >
+            <AdvertisementCard
+              ad={ad}
+              user={user}
+              onAdShared={onAdShared}
+            />
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -110,6 +110,11 @@
       "default": true,
       "description": "An\u00fancio ativo"
     },
+    "is_bulk_shareable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Participa do compartilhamento em massa (bot\u00e3o Compartilhar Tudo)"
+    },
     "shares_count": {
       "type": "number",
       "default": 0,
