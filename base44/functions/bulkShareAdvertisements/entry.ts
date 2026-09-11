@@ -10,7 +10,7 @@ export default async function(req) {
       return Response.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const { platform } = await req.json();
+    const { platform, max_ads } = await req.json();
 
     if (!platform) {
       return Response.json({ error: 'Plataforma de compartilhamento é obrigatória' }, { status: 400 });
@@ -36,11 +36,16 @@ export default async function(req) {
       });
     }
 
+    // Apply platform-specific limit if provided
+    const adsToShare = (typeof max_ads === 'number' && max_ads > 0)
+      ? eligibleAds.slice(0, max_ads)
+      : eligibleAds;
+
     let totalPoints = 0;
     const sharedAds = [];
     const errors = [];
 
-    for (const ad of eligibleAds) {
+    for (const ad of adsToShare) {
       try {
         const result = await processSingleShare(base44, user, ad, platform);
         if (result.ok) {
