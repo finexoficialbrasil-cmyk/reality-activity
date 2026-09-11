@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu } from 'lucide-react';
+import { toast } from 'sonner';
 
 const FacebookIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -36,9 +37,14 @@ export default function MegaLinkVitrine() {
   const [alreadyCounted, setAlreadyCounted] = useState(false);
   const [error, setError] = useState(null);
   const [shareMenuFor, setShareMenuFor] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     (async () => {
+      try {
+        const auth = await base44.auth.isAuthenticated();
+        if (auth) setUser(await base44.auth.me());
+      } catch {}
       try {
         const res = await base44.functions.invoke('trackMegaLinkClick', { slug: userSlug });
         const data = res.data;
@@ -63,27 +69,72 @@ export default function MegaLinkVitrine() {
     })();
   }, [userSlug]);
 
-  const handleShareSingle = (ad, platform) => {
+  const handleShareSingle = async (ad, platform) => {
+    if (!user) {
+      base44.auth.redirectToLogin();
+      return;
+    }
+
+    const productLink = ad.link;
     const siteUrl = window.location.origin;
     const isMobile = /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const msg = `${ad.title}\n\n${ad.link}\n\nvia ${siteUrl}`;
+
     let url = '';
+
     switch (platform) {
-      case 'whatsapp':
-        url = isMobile ? `whatsapp://send?text=${encodeURIComponent(msg)}` : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      case 'whatsapp': {
+        const msg = [
+          `🚨 Oferta imperdível...`,
+          ``,
+          `📌 ${ad.title}`,
+          `${productLink}`,
+          ``,
+          `—`,
+          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. ${siteUrl}`
+        ].join('\n');
+        url = isMobile
+          ? `whatsapp://send?text=${encodeURIComponent(msg)}`
+          : `https://web.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         break;
-      case 'telegram':
-        url = `https://t.me/share/url?url=${encodeURIComponent(ad.link)}&text=${encodeURIComponent(msg)}`;
+      }
+      case 'telegram': {
+        const msg = `${ad.title}\n\n${productLink}\n\nvia ${siteUrl}`;
+        url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(msg)}`;
         break;
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ad.link)}&quote=${encodeURIComponent(msg)}`;
+      }
+      case 'facebook': {
+        const msg = `${ad.title}\n\n${productLink}`;
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
+        } else {
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(msg)}`;
+        }
         break;
-      case 'twitter':
+      }
+      case 'twitter': {
+        const msg = `${ad.title}\n\n${productLink}`;
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
         break;
+      }
     }
+
     if (url) window.open(url, '_blank');
     setShareMenuFor(null);
+
+    if (ad.user_email === user.email) {
+      toast.error('Você não pode ganhar pontos compartilhando seu próprio anúncio');
+      return;
+    }
+
+    base44.functions.invoke('processAdvertisementShare', {
+      advertisement_id: ad.id,
+      platform
+    }).then(res => {
+      toast.success(`+${res.data.pointsCost} pontos! 🎉`);
+    }).catch(err => {
+      const serverMsg = err?.response?.data?.error || err?.data?.error || err?.message;
+      toast.error(serverMsg || 'Erro ao processar compartilhamento');
+    });
   };
 
   if (loading) {

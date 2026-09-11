@@ -42,7 +42,8 @@ export default async function(req) {
       category: a.category,
       reward_per_share: a.reward_per_share,
       budget_remaining: a.budget_remaining,
-      budget_total: a.budget_total
+      budget_total: a.budget_total,
+      user_email: a.user_email
     }));
 
     // Check for duplicate click in last 24h (same IP, same owner)
