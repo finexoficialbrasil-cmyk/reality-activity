@@ -7,6 +7,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import MoneyFloatEffect from '@/components/advertisements/MoneyFloatEffect';
 
 const slugFromEmail = (email) =>
   btoa(email).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -146,16 +147,17 @@ export default function ShareAllButton({ user, ads, onShared }) {
       {showShareOpts && (
         <div className="mt-3 grid grid-cols-4 gap-2">
           {SHARE_PLATFORMS.map(p => (
-            <button
-              key={p.id}
-              onClick={() => handleShareToPlatform(p.id)}
-              className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border hover:border-purple/40 hover:bg-purple/5 transition-colors"
-            >
-              <div className="w-11 h-11 rounded-full flex items-center justify-center bg-secondary/60">
-                <p.Icon className={`w-5 h-5 ${p.color}`} />
-              </div>
-              <span className="text-xs text-muted-foreground">{p.name}</span>
-            </button>
+            <MoneyFloatEffect key={p.id}>
+              <button
+                onClick={() => handleShareToPlatform(p.id)}
+                className="w-full flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border hover:border-purple/40 hover:bg-purple/5 transition-colors"
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center bg-secondary/60">
+                  <p.Icon className={`w-5 h-5 ${p.color}`} />
+                </div>
+                <span className="text-xs text-muted-foreground">{p.name}</span>
+              </button>
+            </MoneyFloatEffect>
           ))}
         </div>
       )}
