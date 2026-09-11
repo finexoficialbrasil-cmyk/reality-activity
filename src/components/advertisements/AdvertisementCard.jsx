@@ -4,6 +4,7 @@ import { Share2, ExternalLink, CheckCircle, Gift, Link as LinkIcon } from 'lucid
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useCategories } from '@/hooks/useCategories';
+import MoneyFloatEffect from '@/components/advertisements/MoneyFloatEffect';
 
 const TelegramIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -232,26 +233,27 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           {/* Share Buttons - Rodapé com cores das marcas */}
           <div className="flex items-center gap-1.5 justify-center">
             {SHARE_PLATFORMS.map((p) => (
-              <motion.button
-                key={p.id}
-                onClick={() => handleShare(p.id)}
-                disabled={isSharing}
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.95 }}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
-                title={p.name}
-              >
-                {/* Se for o botão de copiar e já tiver copiado, muda o ícone para check */}
-                {p.id === 'copy' && copied ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                ) : (
-                  <p.Icon className="w-4 h-4" />
-                )}
-                
-                {sharedPlatform === p.id && p.id !== 'copy' && (
-                  <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-                )}
-              </motion.button>
+              <MoneyFloatEffect key={p.id}>
+                <motion.button
+                  onClick={() => handleShare(p.id)}
+                  disabled={isSharing}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
+                  title={p.name}
+                >
+                  {/* Se for o botão de copiar e já tiver copiado, muda o ícone para check */}
+                  {p.id === 'copy' && copied ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <p.Icon className="w-4 h-4" />
+                  )}
+                  
+                  {sharedPlatform === p.id && p.id !== 'copy' && (
+                    <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                  )}
+                </motion.button>
+              </MoneyFloatEffect>
             ))}
           </div>
 
