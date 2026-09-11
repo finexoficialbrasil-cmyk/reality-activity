@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
+import ShareAllButton from '@/components/advertisements/ShareAllButton';
 import { useCategories } from '@/hooks/useCategories';
 import { usePublicData } from '@/hooks/usePublicData';
 
@@ -158,6 +159,11 @@ export default function Home() {
       {/* Advertisements Grid */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
+          {!dataLoading && filteredAds.length > 0 && (
+            <div className="flex justify-end mb-4">
+              <ShareAllButton user={user} ads={filteredAds} onShared={handlePointsEarned} />
+            </div>
+          )}
           {dataLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array(6).fill(0).map((_, i) => (
