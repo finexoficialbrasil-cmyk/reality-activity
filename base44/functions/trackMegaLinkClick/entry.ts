@@ -64,17 +64,22 @@ export default async function(req) {
       });
     }
 
-    // Credit points to link owner: process first eligible ad as a mega_link share
+    // Credit points to link owner: process ALL eligible ads as mega_link shares
     let pointsEarned = 0;
     if (eligibleAds.length > 0) {
       const ownerPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: ownerEmail });
       const ownerName = ownerPoints[0]?.user_name || ownerEmail.split('@')[0];
       const pseudoUser = { email: ownerEmail, full_name: ownerName };
 
-      const ad = eligibleAds[0];
-      const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: visitorIp });
-      if (result.ok) {
-        pointsEarned = result.pointsCost;
+      for (const ad of eligibleAds) {
+        try {
+          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: visitorIp });
+          if (result.ok) {
+            pointsEarned += result.pointsCost;
+          }
+        } catch (e) {
+          // skip ads that fail (e.g. budget exhausted)
+        }
       }
     }
 
