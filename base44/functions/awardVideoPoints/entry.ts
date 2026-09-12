@@ -28,15 +28,18 @@ Deno.serve(async (req) => {
     const pts = Math.floor(secs * pps) + (completed ? bonus : 0);
     if (pts <= 0) return Response.json({ error: 'Pontos insuficientes' }, { status: 400 });
 
-    // Trava de 24h: valida no servidor (filtro de data delegado ao banco)
-    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const recent = await base44.asServiceRole.entities.PointsTransaction.filter({
-      user_email: user.email,
-      type: 'earned_watch',
-      video_id,
-      created_date: { $gte: since24h }
+    // Trava de 24h: busca transações recentes do usuário+vídeo e valida a data em JS
+    // (usa o atributo built-in created_date — não depende de suporte a $gte no filter)
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recent = await base44.asServiceRole.entities.PointsTransaction.filter(
+      { user_email: user.email, type: 'earned_watch', video_id },
+      '-created_date',
+      10
+    );
+    const watchedRecently = recent.some(t => {
+      const d = t.created_date ? new Date(t.created_date) : null;
+      return d && d >= since24h;
     });
-    const watchedRecently = recent.length > 0;
     if (watchedRecently) {
       return Response.json({
         success: false,
