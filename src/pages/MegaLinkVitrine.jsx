@@ -29,6 +29,50 @@ const SHARE_OPTS = [
 const CYAN = '#00f2ff';
 const PINK = '#ff007a';
 
+// Cores oficiais das marcas — visitantes reconhecem marcas grandes e confiam mais
+const BRAND_COLORS = {
+  mercadolivre: '#FFE600',
+  mercado_livre: '#FFE600',
+  mercado_livre: '#FFE600',
+  airbnb: '#FF5A5F',
+  amazon: '#FF9900',
+  shopee: '#EE4D2D',
+  magalu: '#0086FF',
+  magazineluiza: '#0086FF',
+  americanas: '#E60012',
+  aliexpress: '#E62E04',
+  shein: '#F2F2F2',
+  mercadopago: '#00B1EA',
+  netflix: '#E50914',
+  spotify: '#1DB954',
+  ifood: '#EA1D2C',
+  olx: '#6E278E',
+  ebay: '#E53238',
+  walmart: '#FFC220',
+  apple: '#A8A8A8',
+  google: '#4285F4',
+  microsoft: '#00A4EF',
+  samsung: '#1428A0',
+  nike: '#FF6900',
+  adidas: '#FFFFFF',
+  coca: '#F40009',
+  pepsi: '#004B93',
+  starbucks: '#00704A',
+  mcdonalds: '#FFC72C',
+  burger: '#E5A728',
+  netshoes: '#FF1F4B',
+  kabum: '#8DC63F',
+  pichau: '#FF5500',
+  terabithia: '#00C2FF',
+  mercadolivrebrasil: '#FFE600',
+};
+
+const getBrandColor = (category) => {
+  if (!category) return null;
+  const slug = String(category).toLowerCase().trim().replace(/\s+/g, '_').replace(/-/g, '_');
+  return BRAND_COLORS[slug] || null;
+};
+
 export default function MegaLinkVitrine() {
   const { userSlug } = useParams();
   const { data: publicData, isLoading: publicLoading, error: publicError } = usePublicData();
@@ -366,7 +410,17 @@ function CyberCard({ ad, index, onShare }) {
       <div className="flex items-center justify-between px-3 py-2.5 border-b" style={{ borderColor: 'hsl(190 100% 50% / 0.12)' }}>
         <div className="flex items-center gap-2">
           <Cpu className="w-3.5 h-3.5" style={{ color: CYAN }} />
-          <span className="font-cyber-mono text-[9px] tracking-widest text-muted-foreground uppercase">{ad.category || 'anuncio'}</span>
+          {(() => {
+            const brandColor = getBrandColor(ad.category);
+            return (
+              <span
+                className={`font-cyber-mono text-[9px] tracking-widest uppercase ${brandColor ? '' : 'text-muted-foreground'}`}
+                style={brandColor ? { color: brandColor, fontWeight: 700, textShadow: `0 0 8px ${brandColor}66` } : undefined}
+              >
+                {ad.category || 'anuncio'}
+              </span>
+            );
+          })()}
         </div>
         <BudgetMeter remaining={ad.budget_remaining} total={ad.budget_total} />
       </div>
