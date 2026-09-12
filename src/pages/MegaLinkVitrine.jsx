@@ -40,45 +40,71 @@ export default function MegaLinkVitrine() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    const getVisitorId = () => {
       try {
-        const auth = await base44.auth.isAuthenticated();
-        if (auth) setUser(await base44.auth.me());
-      } catch {}
-      try {
-        const getVisitorId = () => {
-          try {
-            let id = localStorage.getItem('ra_visitor_id');
-            if (!id) {
-              id = 'v-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-              localStorage.setItem('ra_visitor_id', id);
-            }
-            return id;
-          } catch {
-            return null;
-          }
-        };
-        const res = await base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() });
-        const data = res.data;
-        if (data?.success) {
-          setAds(data.ads || []);
-          setPointsEarned(data.points_earned || 0);
-          setAlreadyCounted(!!data.already_counted);
-          try {
-            const email = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
-            setOwnerName(email.split('@')[0]);
-          } catch {
-            setOwnerName('Reality Activity');
-          }
-        } else {
-          setError(data?.error || 'Erro ao carregar vitrine');
+        let id = localStorage.getItem('ra_visitor_id');
+        if (!id) {
+          id = 'v-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+          localStorage.setItem('ra_visitor_id', id);
         }
+        return id;
+      } catch {
+        return null;
+      }
+    };
+
+    (async () => {
+      // Decodifica email do dono da vitrine (síncrono, instantâneo)
+      let ownerEmail = '';
+      try {
+        ownerEmail = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
+        setOwnerName(ownerEmail.split('@')[0]);
+      } catch {
+        setOwnerName('Reality Activity');
+      }
+
+      // Auth em paralelo (não bloqueia render)
+      base44.auth.isAuthenticated().then(async (auth) => {
+        if (auth && !cancelled) {
+          try { setUser(await base44.auth.me()); } catch {}
+        }
+      }).catch(() => {});
+
+      // RÁPIDO: lista anúncios direto do banco para renderizar imediato
+      try {
+        const list = await base44.entities.Advertisement.filter(
+          { status: 'approved', is_active: true },
+          '-order',
+          100
+        );
+        if (cancelled) return;
+        const filtered = (list || []).filter(
+          a => (a.budget_remaining || 0) > 0 && a.user_email !== ownerEmail
+        );
+        setAds(filtered);
+        setLoading(false);
       } catch (err) {
+        if (cancelled) return;
         setError(err?.message || 'Erro ao carregar vitrine');
-      } finally {
         setLoading(false);
       }
+
+      // BACKGROUND: credita pontos sem bloquear a tela (fire-and-forget)
+      base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() })
+        .then(res => {
+          if (cancelled) return;
+          const data = res.data;
+          if (data?.success) {
+            setPointsEarned(data.points_earned || 0);
+            setAlreadyCounted(!!data.already_counted);
+          }
+        })
+        .catch(() => {});
     })();
+
+    return () => { cancelled = true; };
   }, [userSlug]);
 
   const handleShareSingle = async (ad, platform) => {
