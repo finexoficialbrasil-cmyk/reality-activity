@@ -28,6 +28,10 @@
     "last_activity": {
       "type": "string",
       "format": "date-time"
+    },
+    "mega_link_slug": {
+      "type": "string",
+      "description": "C\u00f3digo curto \u00fanico da vitrine pessoal (ex: A7K2XQ)"
     }
   },
   "required": [

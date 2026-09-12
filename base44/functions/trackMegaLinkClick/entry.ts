@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { processSingleShare } from '../../shared/advertisementShare.ts';
+import { resolveOwnerEmail } from '../../shared/megaLinkSlug.ts';
 
 export default async function(req) {
   try {
@@ -10,13 +11,13 @@ export default async function(req) {
       return Response.json({ error: 'Slug obrigatório' }, { status: 400 });
     }
 
-    // Decode owner email from base64url slug
-    let ownerEmail;
-    try {
-      ownerEmail = atob(slug.replace(/-/g, '+').replace(/_/g, '/'));
-    } catch {
+    // Resolve owner email: base64 (legado) ou código curto (novo)
+    const resolved = await resolveOwnerEmail(base44, slug);
+    if (!resolved) {
       return Response.json({ error: 'Slug inválido' }, { status: 400 });
     }
+    const ownerEmail = resolved.email;
+    const ownerName = resolved.name;
 
     // Get visitor IP
     const forwarded = req.headers.get('x-forwarded-for');
@@ -66,7 +67,9 @@ export default async function(req) {
         success: true,
         already_counted: true,
         points_earned: 0,
-        ads: adsForClient
+        ads: adsForClient,
+        owner_email: ownerEmail,
+        owner_name: ownerName
       });
     }
 
@@ -93,7 +96,9 @@ export default async function(req) {
       success: true,
       already_counted: false,
       points_earned: pointsEarned,
-      ads: adsForClient
+      ads: adsForClient,
+      owner_email: ownerEmail,
+      owner_name: ownerName
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

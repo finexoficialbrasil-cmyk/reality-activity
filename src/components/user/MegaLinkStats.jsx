@@ -3,18 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Link2, MousePointerClick, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-
-const slugFromEmail = (email) =>
-  btoa(email).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+import { useMegaLink } from '@/hooks/useMegaLink';
 
 export default function MegaLinkStats({ user }) {
   const [clicks, setClicks] = useState(0);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-
-  const megaLink = user
-    ? `${window.location.origin}/vitrine/u/${slugFromEmail(user.email)}`
-    : '';
+  const { megaLink } = useMegaLink(user);
 
   useEffect(() => {
     if (!user?.email) return;

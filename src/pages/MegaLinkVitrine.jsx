@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { usePublicData } from '@/hooks/usePublicData';
@@ -39,15 +39,20 @@ export default function MegaLinkVitrine() {
   const [alreadyCounted, setAlreadyCounted] = useState(false);
   const [shareMenuFor, setShareMenuFor] = useState(null);
   const [user, setUser] = useState(null);
+  const [trackError, setTrackError] = useState(false);
+  const ownerEmailRef = useRef('');
 
-  // Decodifica email do dono da vitrine (síncrono, instantâneo)
+  // Decodifica email do dono: base64 (legado, instantâneo) ou aguarda trackMegaLinkClick (slug curto)
   useEffect(() => {
     try {
-      const email = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
-      setOwnerEmail(email);
-      setOwnerName(email.split('@')[0]);
+      const decoded = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(decoded)) {
+        ownerEmailRef.current = decoded;
+        setOwnerEmail(decoded);
+        setOwnerName(decoded.split('@')[0]);
+      }
     } catch {
-      setOwnerName('Reality Activity');
+      // slug curto — dono será resolvido via trackMegaLinkClick
     }
   }, [userSlug]);
 
@@ -90,14 +95,23 @@ export default function MegaLinkVitrine() {
         if (data?.success) {
           setPointsEarned(data.points_earned || 0);
           setAlreadyCounted(!!data.already_counted);
+          // Slug curto: resolve dono e anúncios a partir da resposta do servidor
+          if (data.owner_email && !ownerEmailRef.current) {
+            ownerEmailRef.current = data.owner_email;
+            setOwnerEmail(data.owner_email);
+            setOwnerName(data.owner_name || data.owner_email.split('@')[0]);
+            if (data.ads) setAds(data.ads);
+          }
         }
       })
-      .catch(() => {});
+      .catch(() => { if (!cancelled) setTrackError(true); });
     return () => { cancelled = true; };
   }, [userSlug]);
 
-  const loading = publicLoading && ads.length === 0;
-  const error = publicError ? (publicError.message || 'Erro ao carregar vitrine') : null;
+  const loading = ads.length === 0 && (publicLoading || !ownerEmail);
+  const error = publicError
+    ? (publicError.message || 'Erro ao carregar vitrine')
+    : (trackError && !ownerEmail ? 'Vitrine não encontrada' : null);
 
   const handleShareSingle = async (ad, platform) => {
     if (!user) {
