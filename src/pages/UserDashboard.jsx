@@ -13,6 +13,7 @@ import PurchasePointsModal from '@/components/user/PurchasePointsModal';
 import EditAdModal from '@/components/user/EditAdModal';
 import UserWithdrawals from '@/components/user/UserWithdrawals';
 import UserTransfer from '@/components/user/UserTransfer';
+import MegaLinkStats from '@/components/user/MegaLinkStats';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function UserDashboard() {
@@ -194,6 +195,9 @@ export default function UserDashboard() {
               Marketplace
             </Button>
           </div>
+
+          {/* Mega-Link Stats */}
+          <MegaLinkStats user={user} />
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
