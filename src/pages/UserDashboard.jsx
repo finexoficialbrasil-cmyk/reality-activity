@@ -156,7 +156,7 @@ export default function UserDashboard() {
             </div>
              <div>
                <h2 className="font-semibold text-lg mb-4">Meus Anúncios</h2>
-               <UserAdvertisementsManager user={user} onEditAd={setEditingAd} />
+               <UserAdvertisementsManager user={user} userPoints={userPoints} onEditAd={setEditingAd} onReplenished={loadData} />
              </div>
            </div>
           ) : activeTab === 'resgatar' ? (

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LowBalanceAdsAlert from './LowBalanceAdsAlert';
 
-export default function UserAdvertisementsManager({ user, onEditAd }) {
+export default function UserAdvertisementsManager({ user, userPoints, onEditAd, onReplenished }) {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +65,7 @@ export default function UserAdvertisementsManager({ user, onEditAd }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-      <LowBalanceAdsAlert ads={ads} onReplenish={onEditAd} />
+      <LowBalanceAdsAlert ads={ads} onReplenish={onEditAd} userPoints={userPoints} onReplenished={onReplenished} />
       {ads.map((ad) => {
         const status = statusConfig[ad.status] || statusConfig.pending;
         const StatusIcon = status.icon;
