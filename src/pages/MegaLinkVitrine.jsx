@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { usePublicData } from '@/hooks/usePublicData';
 import { motion } from 'framer-motion';
 import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,18 +31,46 @@ const PINK = '#ff007a';
 
 export default function MegaLinkVitrine() {
   const { userSlug } = useParams();
-  const [loading, setLoading] = useState(true);
+  const { data: publicData, isLoading: publicLoading, error: publicError } = usePublicData();
   const [ads, setAds] = useState([]);
   const [ownerName, setOwnerName] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
   const [pointsEarned, setPointsEarned] = useState(0);
   const [alreadyCounted, setAlreadyCounted] = useState(false);
-  const [error, setError] = useState(null);
   const [shareMenuFor, setShareMenuFor] = useState(null);
   const [user, setUser] = useState(null);
 
+  // Decodifica email do dono da vitrine (síncrono, instantâneo)
+  useEffect(() => {
+    try {
+      const email = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
+      setOwnerEmail(email);
+      setOwnerName(email.split('@')[0]);
+    } catch {
+      setOwnerName('Reality Activity');
+    }
+  }, [userSlug]);
+
+  // Filtra anúncios públicos (do hook cacheado, não exige login) removendo os do dono
+  useEffect(() => {
+    if (!publicData?.advertisements || !ownerEmail) return;
+    setAds(publicData.advertisements.filter(a => a.user_email !== ownerEmail));
+  }, [publicData, ownerEmail]);
+
+  // Auth em paralelo (não bloqueia render — visitantes anônimos são ok)
   useEffect(() => {
     let cancelled = false;
+    base44.auth.isAuthenticated().then(async (auth) => {
+      if (auth && !cancelled) {
+        try { setUser(await base44.auth.me()); } catch {}
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
+  // BACKGROUND: credita pontos sem bloquear a tela (fire-and-forget)
+  useEffect(() => {
+    let cancelled = false;
     const getVisitorId = () => {
       try {
         let id = localStorage.getItem('ra_visitor_id');
@@ -54,58 +83,21 @@ export default function MegaLinkVitrine() {
         return null;
       }
     };
-
-    (async () => {
-      // Decodifica email do dono da vitrine (síncrono, instantâneo)
-      let ownerEmail = '';
-      try {
-        ownerEmail = atob(userSlug.replace(/-/g, '+').replace(/_/g, '/'));
-        setOwnerName(ownerEmail.split('@')[0]);
-      } catch {
-        setOwnerName('Reality Activity');
-      }
-
-      // Auth em paralelo (não bloqueia render)
-      base44.auth.isAuthenticated().then(async (auth) => {
-        if (auth && !cancelled) {
-          try { setUser(await base44.auth.me()); } catch {}
+    base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() })
+      .then(res => {
+        if (cancelled) return;
+        const data = res.data;
+        if (data?.success) {
+          setPointsEarned(data.points_earned || 0);
+          setAlreadyCounted(!!data.already_counted);
         }
-      }).catch(() => {});
-
-      // RÁPIDO: lista anúncios direto do banco para renderizar imediato
-      try {
-        const list = await base44.entities.Advertisement.filter(
-          { status: 'approved', is_active: true },
-          '-order',
-          100
-        );
-        if (cancelled) return;
-        const filtered = (list || []).filter(
-          a => (a.budget_remaining || 0) > 0 && a.user_email !== ownerEmail
-        );
-        setAds(filtered);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err?.message || 'Erro ao carregar vitrine');
-        setLoading(false);
-      }
-
-      // BACKGROUND: credita pontos sem bloquear a tela (fire-and-forget)
-      base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() })
-        .then(res => {
-          if (cancelled) return;
-          const data = res.data;
-          if (data?.success) {
-            setPointsEarned(data.points_earned || 0);
-            setAlreadyCounted(!!data.already_counted);
-          }
-        })
-        .catch(() => {});
-    })();
-
+      })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [userSlug]);
+
+  const loading = publicLoading && ads.length === 0;
+  const error = publicError ? (publicError.message || 'Erro ao carregar vitrine') : null;
 
   const handleShareSingle = async (ad, platform) => {
     if (!user) {
