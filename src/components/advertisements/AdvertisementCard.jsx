@@ -194,19 +194,21 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
-          {/* Share Buttons - WhatsApp com destaque sutil via pulso verde */}
-          <div className="flex items-center gap-1.5 justify-center">
+          {/* Share Buttons - quadradinhos com nome da rede (estilo Compartilhar Tudo) */}
+          <div className="grid grid-cols-4 gap-1.5">
             {SHARE_PLATFORMS.map((p) => (
               <MoneyFloatEffect key={p.id}>
                 <motion.button
                   onClick={() => handleShare(p.id)}
                   disabled={isSharing}
-                  whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color} ${p.id === 'whatsapp' ? 'ring-2 ring-[#25D366]/40 animate-pulse' : ''}`}
-                  title={p.id === 'whatsapp' ? 'Compartilhar no Status do WhatsApp' : p.name}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border hover:border-purple/40 hover:bg-purple/5 transition-colors relative"
+                  title={p.name}
                 >
-                  <p.Icon className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary/60">
+                    <p.Icon className={`w-4 h-4 ${p.color}`} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">{p.name}</span>
 
                   {sharedPlatform === p.id && (
                     <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
@@ -214,6 +216,13 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                 </motion.button>
               </MoneyFloatEffect>
             ))}
+          </div>
+
+          {/* Info sutil: ganha pontos ao compartilhar */}
+          <div className="p-2 rounded-lg bg-purple/5 border border-purple/15">
+            <p className="text-[10px] text-muted-foreground text-center leading-tight">
+              💡 Compartilhe e ganhe +{ad.reward_per_share} pts a cada clique no seu link
+            </p>
           </div>
 
           {/* Advertiser Info */}
