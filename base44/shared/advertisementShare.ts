@@ -20,6 +20,42 @@ export async function processSingleShare(base44, user, advertisement, platform, 
     return { ok: false, error: 'Orçamento do anúncio esgotado' };
   }
 
+  // 24h cooldown per user/ad: if the user already earned points on this ad in
+  // the last 24h, the share still happens but no points are credited.
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const recentShares = await base44.asServiceRole.entities.AdvertisementShare.filter({
+    advertisement_id: advertisement.id,
+    user_email: user.email,
+    is_valid: true,
+    created_date: { $gte: twentyFourHoursAgo }
+  });
+
+  if (recentShares.length > 0) {
+    // Register a non-credited share (keeps the share flow intact)
+    await base44.asServiceRole.entities.AdvertisementShare.create({
+      advertisement_id: advertisement.id,
+      user_email: user.email,
+      user_name: user.full_name,
+      platform,
+      points_earned: 0,
+      is_valid: false,
+      ...extraShareFields
+    });
+
+    // Compute remaining cooldown time for the message
+    const lastShareDate = new Date(recentShares[0].created_date);
+    const nextAvailable = new Date(lastShareDate.getTime() + 24 * 60 * 60 * 1000);
+    const msRemaining = nextAvailable.getTime() - Date.now();
+    const hoursRemaining = Math.max(1, Math.ceil(msRemaining / (60 * 60 * 1000)));
+
+    return {
+      ok: true,
+      pointsCost: 0,
+      alreadyEarned: true,
+      cooldownMessage: `Você já ganhou pontos por este anúncio. Volte em ${hoursRemaining}h para ganhar de novo.`
+    };
+  }
+
   // Pay what's left: if balance < reward, pay the balance and zero out
   const pointsCost = Math.min(budgetRemaining, rewardPerShare);
 

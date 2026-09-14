@@ -28,7 +28,10 @@ export default async function(req) {
     return Response.json({
       success: true,
       pointsCost: result.pointsCost,
-      message: `-${result.pointsCost} pontos debitados do criador`
+      alreadyEarned: result.alreadyEarned === true,
+      message: result.alreadyEarned
+        ? result.cooldownMessage
+        : `-${result.pointsCost} pontos debitados do criador`
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

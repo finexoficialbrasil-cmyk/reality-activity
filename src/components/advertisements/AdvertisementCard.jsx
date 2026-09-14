@@ -138,8 +138,12 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       advertisement_id: ad.id,
       platform
     }).then(res => {
-      toast.success(`+${res.data.pointsCost} pontos! 🎉`);
-      if (onPointsEarned) onPointsEarned();
+      if (res.data.alreadyEarned) {
+        toast.info(res.data.message);
+      } else {
+        toast.success(`+${res.data.pointsCost} pontos! 🎉`);
+        if (onPointsEarned) onPointsEarned();
+      }
     }).catch(err => {
       const serverMsg = err?.response?.data?.error || err?.data?.error || err?.message;
       toast.error(serverMsg || 'Erro ao processar compartilhamento');
