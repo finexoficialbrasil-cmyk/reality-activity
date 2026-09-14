@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useCategories } from '@/hooks/useCategories';
 import MoneyFloatEffect from '@/components/advertisements/MoneyFloatEffect';
+import { getBrandColor, getContrastColor } from '@/lib/brandColors';
 
 const TelegramIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -180,9 +181,25 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         <div className="absolute inset-0 bg-background/30 group-hover:bg-background/10 transition-all" />
 
         {/* Category Badge */}
-        <div className="absolute top-2 left-2 bg-gold/90 rounded-full px-2 py-1 text-xs font-bold text-background">
-          {getCategoryLabel(ad.category)}
-        </div>
+        {(() => {
+          const brandColor = getBrandColor(ad.category);
+          const label = getCategoryLabel(ad.category);
+          if (brandColor) {
+            return (
+              <div
+                className="absolute top-2 left-2 rounded-full px-2 py-1 text-xs font-bold leading-none"
+                style={{ background: brandColor, color: getContrastColor(brandColor) }}
+              >
+                {label}
+              </div>
+            );
+          }
+          return (
+            <div className="absolute top-2 left-2 bg-gold/90 rounded-full px-2 py-1 text-xs font-bold text-background">
+              {label}
+            </div>
+          );
+        })()}
 
       </div>
 
