@@ -100,6 +100,29 @@ export default function Vitrine() {
             </div>
           )}
 
+          {/* All videos */}
+          <div className="mb-16">
+            <h2 className="font-grotesk font-bold text-xl md:text-2xl mb-6">Vídeos das Empresas</h2>
+            {videos.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <Building2 className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p>Nenhum vídeo disponível</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {videos.map((video) => (
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    company={companiesMap[video.company_id]}
+                    user={user}
+                    onPointsEarned={handlePointsEarned}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Advertisements Section */}
           {advertisements.length > 0 && (
             <div className="mb-16">
@@ -121,29 +144,6 @@ export default function Vitrine() {
               </div>
             </div>
           )}
-
-          {/* All videos */}
-          <div>
-            <h2 className="font-grotesk font-bold text-xl md:text-2xl mb-6">Todos os Vídeos</h2>
-            {videos.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <Building2 className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                <p>Nenhum vídeo disponível</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {videos.map((video) => (
-                  <VideoCard
-                    key={video.id}
-                    video={video}
-                    company={companiesMap[video.company_id]}
-                    user={user}
-                    onPointsEarned={handlePointsEarned}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
