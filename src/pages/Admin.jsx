@@ -24,6 +24,7 @@ import AdminWithdrawals from '@/components/admin/AdminWithdrawals';
 import AdminWithdrawalSettings from '@/components/admin/AdminWithdrawalSettings';
 import AdminTransfers from '@/components/admin/AdminTransfers';
 import AdminTransferSettings from '@/components/admin/AdminTransferSettings';
+import AdminSiteSettings from '@/components/admin/AdminSiteSettings';
 
 const tabs = [
   { id: 'stats', label: 'Dashboard', icon: BarChart3 },
@@ -43,6 +44,7 @@ const tabs = [
   { id: 'withdrawal_settings', label: 'Saque Config', icon: SlidersHorizontal },
   { id: 'transfers', label: 'Transferências', icon: ArrowRightLeft },
   { id: 'transfer_settings', label: 'Transf. Config', icon: SlidersHorizontal },
+  { id: 'site_settings', label: 'Site Config', icon: SlidersHorizontal },
   { id: 'account', label: 'Conta', icon: Settings },
 ];
 
@@ -200,6 +202,7 @@ export default function Admin() {
           {activeTab === 'withdrawal_settings' && <AdminWithdrawalSettings />}
           {activeTab === 'transfers' && <AdminTransfers />}
           {activeTab === 'transfer_settings' && <AdminTransferSettings />}
+          {activeTab === 'site_settings' && <AdminSiteSettings />}
           {activeTab === 'account' && <AdminAccountSettings user={user} />}
         </div>
       </main>

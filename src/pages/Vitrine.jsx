@@ -8,11 +8,13 @@ import CompanyOrbitView from '@/components/vitrine/CompanyOrbitView';
 import BannerCarousel from '@/components/home/BannerCarousel';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import ShareAllButton from '@/components/advertisements/ShareAllButton';
+import CeoVideoPlayer from '@/components/vitrine/CeoVideoPlayer';
 
 export default function Vitrine() {
   const [companies, setCompanies] = useState([]);
   const [videos, setVideos] = useState([]);
   const [advertisements, setAdvertisements] = useState([]);
+  const [siteSettings, setSiteSettings] = useState(null);
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,14 @@ export default function Vitrine() {
       setVideos(res.data.videos || []);
       const approvedAds = (res.data.advertisements || []).filter(a => a.status === 'approved' && a.is_active);
       setAdvertisements(approvedAds);
+
+      // Carrega configurações do site (vídeo do CEO)
+      try {
+        const settingsList = await base44.entities.SiteSettings.list();
+        if (settingsList.length > 0) setSiteSettings(settingsList[0]);
+      } catch (e) {
+        console.error('Erro ao carregar SiteSettings:', e);
+      }
     } catch (e) {
       console.error('Erro ao carregar via função, tentando direto:', e);
       // Fallback: carrega direto pelas entidades (RLS público) — sem Advertisement (ad-blocker)
@@ -90,13 +100,27 @@ export default function Vitrine() {
             </div>
           )}
 
-          {/* Orbit view - main navigation */}
+          {/* Orbit + CEO Video - layout lado a lado */}
           {!loading && companies.length > 0 && (
-            <div className="mb-16">
-              <CompanyOrbitView
-                company={companies[0]}
-                otherCompanies={companies.slice(1)}
-              />
+            <div className="mb-16 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Orbita à esquerda */}
+              <div className="order-2 lg:order-1">
+                <CompanyOrbitView
+                  company={companies[0]}
+                  otherCompanies={companies.slice(1)}
+                />
+              </div>
+
+              {/* Vídeo do CEO à direita */}
+              <div className="order-1 lg:order-2">
+                {siteSettings?.ceo_video_active ? (
+                  <CeoVideoPlayer settings={siteSettings} />
+                ) : (
+                  <div className="w-full aspect-video rounded-2xl border border-border bg-card/40 flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Vídeo do CEO indisponível</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
