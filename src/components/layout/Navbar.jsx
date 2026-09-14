@@ -49,8 +49,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Início' },
-    { href: '/vitrine', label: 'Empresas' },
-    { href: '/catalog', label: 'Resgatar' },
+    { href: '/vitrine', label: 'Holding' },
   ];
 
   return (
