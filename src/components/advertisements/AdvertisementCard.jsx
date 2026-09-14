@@ -194,7 +194,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
-          {/* Share Buttons - Rodapé com cores das marcas */}
+          {/* Share Buttons - WhatsApp com destaque sutil via pulso verde */}
           <div className="flex items-center gap-1.5 justify-center">
             {SHARE_PLATFORMS.map((p) => (
               <MoneyFloatEffect key={p.id}>
@@ -203,8 +203,8 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                   disabled={isSharing}
                   whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
-                  title={p.name}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color} ${p.id === 'whatsapp' ? 'ring-2 ring-[#25D366]/40 animate-pulse' : ''}`}
+                  title={p.id === 'whatsapp' ? 'Compartilhar no Status do WhatsApp' : p.name}
                 >
                   <p.Icon className="w-4 h-4" />
 
