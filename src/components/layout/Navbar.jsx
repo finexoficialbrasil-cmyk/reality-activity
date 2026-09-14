@@ -70,7 +70,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((l) => (
               <Link
                 key={l.href}
@@ -84,18 +84,18 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
               <Flame className="w-3.5 h-3.5 text-orange-400" />
               <span className="text-xs font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} queimados</span>
             </div>
-            <Link to="/" className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
+            <Link to="/" className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-xs font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
             </Link>
           </div>
 
           {/* Right Side */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             {user ? (
               <>
                 {userPoints && (
@@ -133,7 +133,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-muted-foreground" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="lg:hidden text-muted-foreground" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -141,7 +141,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden glass border-t border-border px-4 py-4 space-y-3">
+        <div className="lg:hidden glass border-t border-border px-4 py-4 space-y-3">
           {navLinks.map((l) => (
             <Link key={l.href} to={l.href} onClick={() => setMenuOpen(false)}
               className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2">
