@@ -184,10 +184,10 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
       {/* Content */}
       <div className="p-3 flex-1 flex flex-col">
-        <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1">{ad.title}</h3>
-        {ad.description && (
-          <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{ad.description}</p>
-        )}
+        <h3 className="font-semibold text-sm text-foreground line-clamp-2 min-h-[2.5rem] mb-1">{ad.title}</h3>
+        <p className="text-xs text-muted-foreground line-clamp-1 min-h-[1.125rem] mb-2">
+          {ad.description || '\u00A0'}
+        </p>
 
         {/* Budget Bar */}
         <div className="mb-3">
