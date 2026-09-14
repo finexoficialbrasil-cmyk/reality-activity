@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ArrowRight, Search, Share2, Megaphone } from 'lucide-react';
+import { Search, Share2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
+import HeroSection from '@/components/home/HeroSection';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
 import AdvertisementCard from '@/components/advertisements/AdvertisementCard';
 import VideoAdvertisementCard from '@/components/advertisements/VideoAdvertisementCard';
@@ -68,59 +69,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero - Premium Design */}
-      <section className="relative pt-24 pb-12 px-4 overflow-hidden">
-        {/* Radial glow background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gold/10 rounded-full blur-[120px]" />
-          <div className="absolute top-10 left-1/4 w-[300px] h-[300px] bg-purple/10 rounded-full blur-[100px]" />
-        </div>
-
-        <div className="relative max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-5 rounded-full glass border border-gold/20 text-xs font-medium text-gold/90">
-              <Zap className="w-3.5 h-3.5" />
-              Plataforma de Recompensas
-            </div>
-            <h1 className="font-grotesk font-bold text-4xl md:text-6xl leading-tight mb-4 tracking-tight">
-              Compartilhe e Ganhe{' '}
-              <span className="text-gold drop-shadow-[0_0_20px_hsl(45_100%_55%/0.5)]">Pontos</span>
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-              Descubra produtos incríveis, compartilhe com seus amigos e ganhe recompensas
-            </p>
-          </motion.div>
-
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-            {authLoading ? (
-              <div className="h-14 w-48 rounded-2xl bg-card/60 border border-border animate-pulse" />
-            ) : !user ? (
-              <button
-                onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-7 py-3.5 rounded-2xl hover:bg-gold-dark transition-all glow-gold hover:scale-105"
-              >
-                <Zap className="w-4 h-4" />
-                Começar Grátis
-              </button>
-            ) : null}
-            {user && (
-              <Link
-                to="/dashboard?tab=anuncios"
-                className="group inline-flex items-center gap-2 bg-gradient-to-r from-purple/20 to-purple/5 border border-purple/40 text-foreground font-semibold px-7 py-3.5 rounded-2xl hover:border-purple/70 transition-all hover:scale-105 neon-glow-purple"
-              >
-                <Megaphone className="w-4 h-4 text-purple group-hover:scale-110 transition-transform" />
-                Publicar Anúncio
-                <ArrowRight className="w-4 h-4 text-purple group-hover:translate-x-1 transition-transform" />
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
+      <HeroSection user={user} authLoading={authLoading} />
 
       {/* Search & Filter - Premium */}
       <section className="px-4 pb-8 sticky top-16 bg-background/80 backdrop-blur-xl z-40 border-b border-border/50">
