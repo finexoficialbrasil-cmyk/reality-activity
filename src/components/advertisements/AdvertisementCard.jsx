@@ -78,7 +78,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           `${productLink}`,
           ``,
           `—`,
-          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. ${siteUrl}`
+          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
         ].join('\n');
         url = isMobile 
           ? `whatsapp://send?text=${encodeURIComponent(msg)}`
