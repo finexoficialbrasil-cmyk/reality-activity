@@ -16,14 +16,8 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   const allCompanies = company ? [company, ...otherCompanies] : otherCompanies;
   const numCompanies = Math.min(allCompanies.length, 8);
 
-  // Calcula órbita circular perfeita e equilibrada
-  const baseRadius = 220; // raio ampliado para equilibrar com o vídeo
-  const getOrbitPosition = (index, total) => {
-    const angle = (index / total) * Math.PI * 2;
-    const x = Math.cos(angle) * baseRadius;
-    const y = Math.sin(angle) * baseRadius;
-    return { x, y, angle };
-  };
+  // Raio ampliado para equilibrar com o vídeo
+  const baseRadius = 220;
 
   const handleCompanyClick = async (comp) => {
     playClickSound();
@@ -44,110 +38,113 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
       {/* Cabeçalho espelhando o lado do vídeo */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full bg-purple animate-pulse" />
-        <span className="text-xs font-semibold text-purple uppercase tracking-wider">Ecossistema Holding</span>
+        <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Ecossistema Holding</span>
       </div>
 
-      {/* Orbit container - responsivo */}
-      <div className="relative mx-auto flex items-center justify-center" style={{ aspectRatio: '1 / 1', maxWidth: '680px' }}>
-        {/* Orbit ring visual (optional) */}
-        <div className="absolute inset-0 rounded-full border border-gold/10" />
-        <div className="absolute inset-8 rounded-full border border-gold/5" />
+      {/* Orbit container - card estruturado como o do vídeo */}
+      <div className="relative w-full rounded-2xl overflow-hidden border border-purple/20 bg-card/40 shadow-2xl" style={{ aspectRatio: '1 / 1', maxWidth: '680px', margin: '0 auto' }}>
+        <div className="cyber-grid absolute inset-0 opacity-40" />
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Orbit ring visual */}
+          <div className="absolute inset-6 rounded-full border border-purple/15" />
+          <div className="absolute inset-14 rounded-full border border-purple/8" />
 
-        {/* Center logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="absolute z-20 cursor-pointer"
-          onMouseEnter={playMoneySound}
-          whileHover={{ scale: 1.05 }}
-        >
-          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-gold/30 flex items-center justify-center overflow-hidden shadow-2xl glow-gold">
-            <motion.img 
-              src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
-              alt="Logo" 
-              className="w-4/5 h-4/5 object-contain"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-            />
-          </div>
-        </motion.div>
+          {/* Center logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="absolute z-20 cursor-pointer"
+            onMouseEnter={playMoneySound}
+            whileHover={{ scale: 1.05 }}
+          >
+            <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-secondary via-card to-muted border-2 border-purple/30 flex items-center justify-center overflow-hidden shadow-2xl glow-purple">
+              <motion.img 
+                src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
+                alt="Logo" 
+                className="w-4/5 h-4/5 object-contain"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              />
+            </div>
+          </motion.div>
 
-        {/* Orbiting companies - circular layout com animação */}
-        {allCompanies.slice(0, 8).map((comp, idx) => {
-          const angle = (idx / numCompanies) * Math.PI * 2;
-          const isHovered = hoveredCompany === comp.id;
-          
-          return (
-            <motion.div
-              key={comp.id}
-              className="absolute"
-              animate={{
-                x: [Math.cos(angle) * baseRadius, Math.cos(angle + 0.3) * baseRadius, Math.cos(angle) * baseRadius],
-                y: [Math.sin(angle) * baseRadius, Math.sin(angle + 0.3) * baseRadius + 8, Math.sin(angle) * baseRadius],
-              }}
-              transition={{
-                duration: 4 + idx * 0.3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-              style={{
-                left: '50%',
-                top: '50%',
-                marginLeft: '-24px',
-                marginTop: '-24px',
-                zIndex: isHovered ? 50 : 10,
-              }}
-              onMouseEnter={() => {
-                setHoveredCompany(comp.id);
-                playHoverSound();
-              }}
-              onMouseLeave={() => setHoveredCompany(null)}
-            >
-              <motion.button
-                onClick={() => handleCompanyClick(comp)}
-                className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-border cursor-pointer shadow-md"
+          {/* Orbiting companies - circular layout com animação */}
+          {allCompanies.slice(0, 8).map((comp, idx) => {
+            const angle = (idx / numCompanies) * Math.PI * 2;
+            const isHovered = hoveredCompany === comp.id;
+            
+            return (
+              <motion.div
+                key={comp.id}
+                className="absolute"
                 animate={{
-                  scale: isHovered ? 1.2 : 1,
-                  y: isHovered ? 0 : [-4, 4, -4],
-                  borderColor: isHovered ? 'hsl(45 100% 55%)' : 'hsl(220 15% 15%)',
-                  boxShadow: isHovered 
-                    ? '0 0 30px hsl(45 100% 55% / 0.7), inset 0 0 12px hsl(45 100% 55% / 0.15)' 
-                    : '0 0 15px hsl(45 100% 55% / 0.4), 0 0 25px hsl(45 100% 55% / 0.2)',
+                  x: [Math.cos(angle) * baseRadius, Math.cos(angle + 0.3) * baseRadius, Math.cos(angle) * baseRadius],
+                  y: [Math.sin(angle) * baseRadius, Math.sin(angle + 0.3) * baseRadius + 8, Math.sin(angle) * baseRadius],
                 }}
                 transition={{
-                  y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-                  scale: { duration: 0.3 },
+                  duration: 4 + idx * 0.3,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
                 }}
-                whileHover={{ scale: 1.2, y: 0 }}
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: '-24px',
+                  marginTop: '-24px',
+                  zIndex: isHovered ? 50 : 10,
+                }}
+                onMouseEnter={() => {
+                  setHoveredCompany(comp.id);
+                  playHoverSound();
+                }}
+                onMouseLeave={() => setHoveredCompany(null)}
               >
-                {comp.logo_url ? (
-                  <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                    <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-                  </div>
-                )}
-                {isHovered && (
-                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-                    <ExternalLink className="w-4 h-4 text-gold" />
-                  </div>
-                )}
-              </motion.button>
-
-              {/* Label on hover */}
-              {isHovered && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-gold text-center w-24 truncate"
+                <motion.button
+                  onClick={() => handleCompanyClick(comp)}
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-border cursor-pointer shadow-md"
+                  animate={{
+                    scale: isHovered ? 1.2 : 1,
+                    y: isHovered ? 0 : [-4, 4, -4],
+                    borderColor: isHovered ? 'hsl(270 80% 65%)' : 'hsl(220 15% 15%)',
+                    boxShadow: isHovered 
+                      ? '0 0 30px hsl(270 80% 65% / 0.7), inset 0 0 12px hsl(270 80% 65% / 0.15)' 
+                      : '0 0 15px hsl(270 80% 65% / 0.4), 0 0 25px hsl(270 80% 65% / 0.2)',
+                  }}
+                  transition={{
+                    y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+                    scale: { duration: 0.3 },
+                  }}
+                  whileHover={{ scale: 1.2, y: 0 }}
                 >
-                  {comp.name}
-                </motion.div>
-              )}
-            </motion.div>
-          );
-        })}
+                  {comp.logo_url ? (
+                    <img src={comp.logo_url} alt={comp.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+                      <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  {isHovered && (
+                    <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                      <ExternalLink className="w-4 h-4 text-purple" />
+                    </div>
+                  )}
+                </motion.button>
+
+                {/* Label on hover */}
+                {isHovered && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-purple text-center w-24 truncate"
+                  >
+                    {comp.name}
+                  </motion.div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Rodapé espelhando a legenda do vídeo */}

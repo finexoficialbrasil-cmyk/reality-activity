@@ -106,10 +106,10 @@ export default function CeoVideoPlayer({ settings }) {
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-        <span className="text-xs font-semibold text-gold uppercase tracking-wider">{title}</span>
+        <span className="text-xs font-semibold text-foreground uppercase tracking-wider">{title}</span>
       </div>
 
-      <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-gold/20 shadow-2xl neon-border">
+      <div className="relative w-full rounded-2xl overflow-hidden border border-gold/20 bg-card/40 shadow-2xl" style={{ aspectRatio: '16 / 9' }}>
         <div ref={wrapperRef} className="absolute inset-0 w-full h-full" />
 
         {error && (
