@@ -31,13 +31,15 @@ export default async function(req) {
     const canDetect = fingerprint && fingerprint !== 'unknown';
 
     // Fetch eligible ads (approved, active, with budget, not owned by link owner)
-    const allAds = await base44.asServiceRole.entities.Advertisement.list('-created_date', 500);
-    const eligibleAds = allAds.filter(ad =>
-      ad.status === 'approved' &&
-      ad.is_active !== false &&
-      (ad.budget_remaining || 0) > 0 &&
-      ad.user_email !== ownerEmail
-    );
+    const allAds = await base44.asServiceRole.entities.Advertisement.list('-reward_per_share', 500);
+    const eligibleAds = allAds
+      .filter(ad =>
+        ad.status === 'approved' &&
+        ad.is_active !== false &&
+        (ad.budget_remaining || 0) > 0 &&
+        ad.user_email !== ownerEmail
+      )
+      .sort((a, b) => (b.reward_per_share || 0) - (a.reward_per_share || 0) || (new Date(b.created_date).getTime() - new Date(a.created_date).getTime()));
 
     const adsForClient = eligibleAds.map(a => ({
       id: a.id,

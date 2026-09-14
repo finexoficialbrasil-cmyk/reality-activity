@@ -7,11 +7,13 @@ Deno.serve(async (req) => {
     const [videos, companies, allAds, withdrawals] = await Promise.all([
       base44.asServiceRole.entities.Video.filter({ is_active: true }, '-order', 12),
       base44.asServiceRole.entities.Company.filter({ is_active: true }, 'order', 20),
-      base44.asServiceRole.entities.Advertisement.list('-created_date', 500),
+      base44.asServiceRole.entities.Advertisement.list('-reward_per_share', 500),
       base44.asServiceRole.entities.WithdrawalRequest.filter({ status: { $ne: 'rejected' } }, '-created_date', 500)
     ]);
 
-    const advertisements = allAds.filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
+    const advertisements = allAds
+      .filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0)
+      .sort((a, b) => (b.reward_per_share || 0) - (a.reward_per_share || 0) || (new Date(b.created_date).getTime() - new Date(a.created_date).getTime()));
 
     // Saldo queimado = soma de pontos de todos os saques não rejeitados
     const burnedBalance = withdrawals
