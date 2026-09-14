@@ -27,19 +27,18 @@ export default function Vitrine() {
       const res = await base44.functions.invoke('getPublicData', {});
       setCompanies(res.data.companies || []);
       setVideos(res.data.videos || []);
+      const approvedAds = (res.data.advertisements || []).filter(a => a.status === 'approved' && a.is_active);
+      setAdvertisements(approvedAds);
     } catch (e) {
       console.error('Erro ao carregar via função, tentando direto:', e);
-      // Fallback: carrega direto pelas entidades (RLS público)
+      // Fallback: carrega direto pelas entidades (RLS público) — sem Advertisement (ad-blocker)
          try {
-           const [comps, vids, ads] = await Promise.all([
+           const [comps, vids] = await Promise.all([
              base44.entities.Company.filter({ is_active: true }, 'order', 20),
-             base44.entities.Video.filter({ is_active: true }, '-order', 50),
-             base44.entities.Advertisement.list('-created_date', 50)
+             base44.entities.Video.filter({ is_active: true }, '-order', 50)
            ]);
-           const approvedAds = ads.filter(a => a.status === 'approved' && a.is_active);
            setCompanies(comps);
            setVideos(vids);
-           setAdvertisements(approvedAds);
          } catch (e2) {
            console.error('Fallback também falhou:', e2);
          }
