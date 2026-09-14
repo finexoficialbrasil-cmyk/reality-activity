@@ -194,26 +194,43 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             </button>
           </div>
 
-          {/* Share Buttons - Rodapé com cores das marcas */}
-          <div className="flex items-center gap-1.5 justify-center">
-            {SHARE_PLATFORMS.map((p) => (
-              <MoneyFloatEffect key={p.id}>
-                <motion.button
-                  onClick={() => handleShare(p.id)}
-                  disabled={isSharing}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
-                  title={p.name}
-                >
-                  <p.Icon className="w-4 h-4" />
+          {/* Share Buttons - WhatsApp em destaque (90% mobile) + outras plataformas */}
+          <div className="space-y-2">
+            <MoneyFloatEffect>
+              <motion.button
+                onClick={() => handleShare('whatsapp')}
+                disabled={isSharing}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#25D366] text-white font-semibold text-sm transition-all hover:brightness-110 relative shadow-[0_0_12px_rgba(37,211,102,0.3)]"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Compartilhar no Status
+                {sharedPlatform === 'whatsapp' && (
+                  <CheckCircle className="w-4 h-4 text-white absolute right-2.5 top-1/2 -translate-y-1/2" />
+                )}
+              </motion.button>
+            </MoneyFloatEffect>
 
-                  {sharedPlatform === p.id && (
-                    <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
-                  )}
-                </motion.button>
-              </MoneyFloatEffect>
-            ))}
+            <div className="flex items-center gap-1.5 justify-center">
+              {SHARE_PLATFORMS.filter(p => p.id !== 'whatsapp').map((p) => (
+                <MoneyFloatEffect key={p.id}>
+                  <motion.button
+                    onClick={() => handleShare(p.id)}
+                    disabled={isSharing}
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`p-1.5 rounded-lg transition-all cursor-pointer relative ${p.color}`}
+                    title={p.name}
+                  >
+                    <p.Icon className="w-4 h-4" />
+
+                    {sharedPlatform === p.id && (
+                      <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                    )}
+                  </motion.button>
+                </MoneyFloatEffect>
+              ))}
+            </div>
           </div>
 
           {/* Advertiser Info */}
