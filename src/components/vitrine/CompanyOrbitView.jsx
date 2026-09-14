@@ -17,9 +17,9 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   const numCompanies = Math.min(allCompanies.length, 8);
 
   // Calcula órbita circular perfeita e equilibrada
+  const baseRadius = 220; // raio ampliado para equilibrar com o vídeo
   const getOrbitPosition = (index, total) => {
     const angle = (index / total) * Math.PI * 2;
-    const baseRadius = 160; // raio base consistente
     const x = Math.cos(angle) * baseRadius;
     const y = Math.sin(angle) * baseRadius;
     return { x, y, angle };
@@ -37,10 +37,18 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
     }
   };
 
+  const partnerCount = allCompanies.filter(c => c.is_partner).length;
+
   return (
-    <div className="relative w-full mx-auto mb-8 md:mb-16 px-4">
+    <div className="relative w-full mx-auto px-4">
+      {/* Cabeçalho espelhando o lado do vídeo */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-purple animate-pulse" />
+        <span className="text-xs font-semibold text-purple uppercase tracking-wider">Ecossistema Holding</span>
+      </div>
+
       {/* Orbit container - responsivo */}
-      <div className="relative mx-auto flex items-center justify-center" style={{ aspectRatio: '1 / 1', maxWidth: '600px' }}>
+      <div className="relative mx-auto flex items-center justify-center" style={{ aspectRatio: '1 / 1', maxWidth: '680px' }}>
         {/* Orbit ring visual (optional) */}
         <div className="absolute inset-0 rounded-full border border-gold/10" />
         <div className="absolute inset-8 rounded-full border border-gold/5" />
@@ -68,7 +76,6 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
         {/* Orbiting companies - circular layout com animação */}
         {allCompanies.slice(0, 8).map((comp, idx) => {
           const angle = (idx / numCompanies) * Math.PI * 2;
-          const baseRadius = 160;
           const isHovered = hoveredCompany === comp.id;
           
           return (
@@ -142,6 +149,11 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
           );
         })}
       </div>
+
+      {/* Rodapé espelhando a legenda do vídeo */}
+      <p className="text-sm text-muted-foreground mt-3 leading-relaxed text-center">
+        {allCompanies.length} empresas no ecossistema{partnerCount > 0 ? ` · ${partnerCount} parceiras` : ''}
+      </p>
     </div>
   );
 }

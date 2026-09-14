@@ -102,9 +102,9 @@ export default function Vitrine() {
 
           {/* Orbit + CEO Video - layout lado a lado */}
           {!loading && companies.length > 0 && (
-            <div className="mb-16 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="mb-16 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
               {/* Orbita à esquerda */}
-              <div className="order-2 lg:order-1">
+              <div className="order-2 lg:order-1 pt-0">
                 <CompanyOrbitView
                   company={companies[0]}
                   otherCompanies={companies.slice(1)}
