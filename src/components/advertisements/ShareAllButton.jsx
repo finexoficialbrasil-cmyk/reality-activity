@@ -22,12 +22,16 @@ const TelegramIcon = ({ className }) => (
 const XIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
 );
+const InstagramIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="url(#ig-grad)"><defs><linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F77737"/><stop offset="50%" stopColor="#E1306C"/><stop offset="100%" stopColor="#833AB4"/></linearGradient></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.069 1.646.069 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.069-4.85.069s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608.975-.975 2.242-1.249 3.608-1.311C8.416 2.175 8.796 2.163 12 2.163zm0 1.838c-3.141 0-3.51.012-4.749.068-1.29.059-1.99.273-2.456.454-.617.24-1.057.525-1.518.986-.461.461-.746.901-.986 1.518-.181.466-.395 1.166-.454 2.456C1.799 9.49 1.788 9.859 1.788 13s.012 3.51.068 4.749c.059 1.29.273 1.99.454 2.456.24.617.525 1.057.986 1.518.461.461.901.746 1.518.986.466.181 1.166.395 2.456.454 1.239.056 1.608.068 4.749.068s3.51-.012 4.749-.068c1.29-.059 1.99-.273 2.456-.454.617-.24 1.057-.525 1.518-.986.461-.461.746-.901.986-1.518.181-.466.395-1.166.454-2.456.056-1.239.068-1.608.068-4.749s-.012-3.51-.068-4.749c-.059-1.29-.273-1.99-.454-2.456-.24-.617-.525-1.057-.986-1.518-.461-.461-.901-.746-1.518-.986-.466-.181-1.166-.395-2.456-.454C15.51 4.013 15.141 4.001 12 4.001zm0 3.064A4.935 4.935 0 1 1 7.065 12 4.935 4.935 0 0 1 12 7.065zm0 8.137A3.202 3.202 0 1 0 8.798 12 3.202 3.202 0 0 0 12 15.202zm6.406-8.345a1.152 1.152 0 1 1-1.152-1.152 1.152 1.152 0 0 1 1.152 1.152z"/></svg>
+);
 
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: WhatsAppIcon, color: 'text-[#25D366]' },
   { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc]' },
   { id: 'facebook', name: 'Facebook', Icon: FacebookIcon, color: 'text-[#1877F2]' },
   { id: 'twitter', name: 'X', Icon: XIcon, color: 'text-foreground' },
+  { id: 'instagram', name: 'Instagram', Icon: InstagramIcon, color: '' },
 ];
 
 export default function ShareAllButton({ user, ads, onShared }) {
@@ -81,6 +85,18 @@ export default function ShareAllButton({ user, ads, onShared }) {
       case 'twitter':
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
         break;
+      case 'instagram':
+        if (isMob && navigator.share) {
+          navigator.share({ title: 'Minha vitrine', text: msg, url: megaLink }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(megaLink).then(() => {
+            toast.success('Link copiado! Cole no seu story ou direct do Instagram 📋');
+          }).catch(() => {
+            toast.error('Não foi possível copiar o link');
+          });
+        }
+        setShowShareOpts(false);
+        return;
     }
     if (url) window.open(url, '_blank');
     setShowShareOpts(false);
@@ -142,7 +158,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
 
       {/* Share options */}
       {showShareOpts && (
-        <div className="mt-3 grid grid-cols-4 gap-2">
+        <div className="mt-3 grid grid-cols-5 gap-2">
           {SHARE_PLATFORMS.map(p => (
             <MoneyFloatEffect key={p.id}>
               <button
