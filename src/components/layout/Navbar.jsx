@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard } from 'lucide-react';
+import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { usePublicData } from '@/hooks/usePublicData';
 
 export default function Navbar() {
@@ -20,6 +20,7 @@ export default function Navbar() {
 
   const { data: publicData } = usePublicData();
   const burnedBalance = publicData?.burnedBalance || 0;
+  const totalPrizePool = (publicData?.advertisements || []).reduce((sum, ad) => sum + (ad.budget_total || 0), 0);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -87,6 +88,10 @@ export default function Navbar() {
               <Flame className="w-3.5 h-3.5 text-orange-400" />
               <span className="text-xs font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} queimados</span>
             </div>
+            <Link to="/" className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
+            </Link>
           </div>
 
           {/* Right Side */}
@@ -147,6 +152,10 @@ export default function Navbar() {
             <Flame className="w-4 h-4 text-orange-400" />
             <span className="text-sm font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} pts queimados</span>
           </div>
+          <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
+          </Link>
           <div className="border-t border-border pt-3">
             {user ? (
               <>
