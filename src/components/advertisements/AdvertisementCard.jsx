@@ -208,7 +208,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary/60">
                     <p.Icon className={`w-4 h-4 ${p.color}`} />
                   </div>
-                  <span className="text-[10px] text-muted-foreground">{p.name}</span>
+                  <span className="text-[10px] text-muted-foreground">{p.id === 'whatsapp' ? 'Status' : p.name}</span>
 
                   {sharedPlatform === p.id && (
                     <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
