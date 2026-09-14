@@ -9,6 +9,30 @@ const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd25
 export default function HeroSection({ user, authLoading }) {
   return (
     <section className="relative pt-20 pb-10 px-4 overflow-hidden">
+      {/* Vídeo: no mobile é fundo absoluto atrás do texto; no desktop é a coluna direita */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="absolute inset-0 md:relative md:h-[340px] md:rounded-3xl md:border md:border-gold/20 md:shadow-[0_0_40px_hsl(45_100%_55%/0.15)] md:overflow-hidden overflow-hidden"
+      >
+        <video
+          src={VIDEO_URL}
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-background/70 md:bg-gradient-to-r md:from-background/80 md:via-background/10 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent md:from-background/60" />
+        <div className="hidden md:block">
+          <HeroFloatingBadges />
+        </div>
+      </motion.div>
+
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         {/* Coluna esquerda — texto */}
         <div className="relative z-10 text-center md:text-left">
@@ -28,7 +52,7 @@ export default function HeroSection({ user, authLoading }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="font-grotesk font-extrabold text-4xl md:text-5xl leading-[1.1] tracking-tight mb-3 text-white"
+            className="font-grotesk font-extrabold text-4xl md:text-5xl leading-[1.1] tracking-tight mb-3 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
           >
             Cada clique vira{' '}
             <span className="bg-gradient-to-r from-gold via-yellow-200 to-gold bg-clip-text text-transparent drop-shadow-[0_0_25px_hsl(45_100%_55%/0.55)]">
@@ -41,7 +65,7 @@ export default function HeroSection({ user, authLoading }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-foreground/80 text-sm md:text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-6"
+            className="text-foreground/90 text-sm md:text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-6 drop-shadow-[0_1px_8px_rgba(0,0,0,0.7)]"
           >
             Descubra produtos incríveis, compartilhe com seus amigos e transforme cada compartilhamento em recompensas.
           </motion.p>
@@ -75,26 +99,8 @@ export default function HeroSection({ user, authLoading }) {
           </motion.div>
         </div>
 
-        {/* Coluna direita — vídeo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="relative h-[260px] md:h-[340px] rounded-3xl overflow-hidden border border-gold/20 shadow-[0_0_40px_hsl(45_100%_55%/0.15)]"
-        >
-          <video
-            src={VIDEO_URL}
-            autoPlay
-            loop
-            muted
-            playsInline
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/10 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-          <HeroFloatingBadges />
-        </motion.div>
+        {/* Espaço reservado para a coluna do vídeo no desktop */}
+        <div className="hidden md:block md:h-[340px]" />
       </div>
     </section>
   );
