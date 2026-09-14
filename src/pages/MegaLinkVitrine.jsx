@@ -73,6 +73,29 @@ const getBrandColor = (category) => {
   return BRAND_COLORS[slug] || null;
 };
 
+// Decide cor do texto (escuro/claro) com base na luminância da cor da marca
+const getContrastColor = (hex) => {
+  if (!hex) return '#000';
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16) / 255;
+  const g = parseInt(c.substring(2, 4), 16) / 255;
+  const b = parseInt(c.substring(4, 6), 16) / 255;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 0.6 ? '#000' : '#fff';
+};
+
+// Formata o slug da categoria para exibição amigável (ex: mercado_livre -> Mercado Livre)
+const formatBrandLabel = (category) => {
+  if (!category) return 'anúncio';
+  return String(category)
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+};
+
 export default function MegaLinkVitrine() {
   const { userSlug } = useParams();
   const { data: publicData, isLoading: publicLoading, error: publicError } = usePublicData();
@@ -412,12 +435,20 @@ function CyberCard({ ad, index, onShare }) {
           <Cpu className="w-3.5 h-3.5" style={{ color: CYAN }} />
           {(() => {
             const brandColor = getBrandColor(ad.category);
+            const label = formatBrandLabel(ad.category);
+            if (brandColor) {
+              return (
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-full font-grotesk text-[10px] font-bold leading-none"
+                  style={{ background: brandColor, color: getContrastColor(brandColor) }}
+                >
+                  {label}
+                </span>
+              );
+            }
             return (
-              <span
-                className={`font-cyber-mono text-[9px] tracking-widest uppercase ${brandColor ? '' : 'text-muted-foreground'}`}
-                style={brandColor ? { color: brandColor, fontWeight: 700, textShadow: `0 0 8px ${brandColor}66` } : undefined}
-              >
-                {ad.category || 'anuncio'}
+              <span className="font-cyber-mono text-[9px] tracking-widest uppercase text-muted-foreground">
+                {label}
               </span>
             );
           })()}
