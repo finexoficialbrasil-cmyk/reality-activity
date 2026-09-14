@@ -209,12 +209,28 @@ export default function MegaLinkVitrine() {
         break;
       }
       case 'telegram': {
-        const msg = `${ad.title}\n\n${productLink}\n\nvia ${siteUrl}`;
+        const msg = [
+          `🚨 Oferta imperdível...`,
+          ``,
+          `📌 ${ad.title}`,
+          `${productLink}`,
+          ``,
+          `—`,
+          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
+        ].join('\n');
         url = `https://t.me/share/url?url=${encodeURIComponent(productLink)}&text=${encodeURIComponent(msg)}`;
         break;
       }
       case 'facebook': {
-        const msg = `${ad.title}\n\n${productLink}`;
+        const msg = [
+          `🚨 Oferta imperdível...`,
+          ``,
+          `📌 ${ad.title}`,
+          `${productLink}`,
+          ``,
+          `—`,
+          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
+        ].join('\n');
         if (isMobile && navigator.share) {
           navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
         } else {
