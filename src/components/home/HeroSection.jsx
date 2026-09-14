@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Zap, ArrowRight, Megaphone } from 'lucide-react';
 import HeroFloatingBadges from '@/components/home/HeroFloatingBadges';
 
-const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd2503/646e18446_Hero_Background.mp4';
+const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd2503/7f4155db7_Hero_Social_Click.mp4';
 
 export default function HeroSection({ user, authLoading }) {
   return (
