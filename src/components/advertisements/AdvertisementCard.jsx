@@ -103,7 +103,15 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'twitter': {
-        const msg = `${ad.title}\n\n${productLink}`;
+        const msg = [
+          `🚨 Oferta imperdível...`,
+          ``,
+          `📌 ${ad.title}`,
+          `${productLink}`,
+          ``,
+          `—`,
+          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
+        ].join('\n');
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
         break;
       }
