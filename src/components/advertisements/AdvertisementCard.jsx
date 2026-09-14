@@ -30,11 +30,25 @@ const Twitter = ({ className }) => (
   </svg>
 );
 
+const InstagramIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="url(#ig-grad-card)">
+    <defs>
+      <linearGradient id="ig-grad-card" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#F77737"/>
+        <stop offset="50%" stopColor="#E1306C"/>
+        <stop offset="100%" stopColor="#833AB4"/>
+      </linearGradient>
+    </defs>
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.069 1.646.069 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.069-4.85.069s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608.975-.975 2.242-1.249 3.608-1.311C8.416 2.175 8.796 2.163 12 2.163zm0 1.838c-3.141 0-3.51.012-4.749.068-1.29.059-1.99.273-2.456.454-.617.24-1.057.525-1.518.986-.461.461-.746.901-.986 1.518-.181.466-.395 1.166-.454 2.456C1.799 9.49 1.788 9.859 1.788 13s.012 3.51.068 4.749c.059 1.29.273 1.99.454 2.456.24.617.525 1.057.986 1.518.461.461.901.746 1.518.986.466.181 1.166.395 2.456.454 1.239.056 1.608.068 4.749.068s3.51-.012 4.749-.068c1.29-.059 1.99-.273 2.456-.454.617-.24 1.057-.525 1.518-.986.461-.461.746-.901.986-1.518.181-.466.395-1.166.454-2.456.056-1.239.068-1.608.068-4.749s-.012-3.51-.068-4.749c-.059-1.29-.273-1.99-.454-2.456-.24-.617-.525-1.057-.986-1.518-.461-.461-.901-.746-1.518-.986-.466-.181-1.166-.395-2.456-.454C15.51 4.013 15.141 4.001 12 4.001zm0 3.064A4.935 4.935 0 1 1 7.065 12 4.935 4.935 0 0 1 12 7.065zm0 8.137A3.202 3.202 0 1 0 8.798 12 3.202 3.202 0 0 0 12 15.202zm6.406-8.345a1.152 1.152 0 1 1-1.152-1.152 1.152 1.152 0 0 1 1.152 1.152z"/>
+  </svg>
+);
+
 const SHARE_PLATFORMS = [
   { id: 'whatsapp', name: 'WhatsApp', Icon: MessageCircle, color: 'text-[#25D366] hover:bg-[#25D366]/10' },
   { id: 'telegram', name: 'Telegram', Icon: TelegramIcon, color: 'text-[#0088cc] hover:bg-[#0088cc]/10' },
   { id: 'facebook', name: 'Facebook', Icon: Facebook, color: 'text-[#1877F2] hover:bg-[#1877F2]/10' },
   { id: 'twitter', name: 'X', Icon: Twitter, color: 'text-[#FFFFFF] hover:bg-black/10' },
+  { id: 'instagram', name: 'Instagram', Icon: InstagramIcon, color: '' },
 ];
 
 export default function AdvertisementCard({ ad, user, onPointsEarned }) {
@@ -90,6 +104,20 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       case 'twitter': {
         const msg = `${ad.title}\n\n${productLink}`;
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
+        break;
+      }
+
+      case 'instagram': {
+        const msg = `${ad.title}\n\n${productLink}`;
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(`${msg}`).then(() => {
+            toast.success('Link copiado! Cole no seu story ou direct do Instagram 📋');
+          }).catch(() => {
+            toast.error('Não foi possível copiar o link');
+          });
+        }
         break;
       }
 
@@ -195,7 +223,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           </div>
 
           {/* Share Buttons - quadradinhos com nome da rede (estilo Compartilhar Tudo) */}
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-5 gap-1.5">
             {SHARE_PLATFORMS.map((p) => (
               <MoneyFloatEffect key={p.id}>
                 <motion.button
