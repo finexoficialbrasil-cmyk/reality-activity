@@ -16,8 +16,8 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   const allCompanies = company ? [company, ...otherCompanies] : otherCompanies;
   const numCompanies = Math.min(allCompanies.length, 8);
 
-  // Raio ampliado para equilibrar com o vídeo
-  const baseRadius = 220;
+  // Raio ajustado para o aspect 16:9 (mesmo do vídeo)
+  const baseRadius = 150;
 
   const handleCompanyClick = async (comp) => {
     playClickSound();
@@ -34,15 +34,15 @@ export default function CompanyOrbitView({ company, otherCompanies }) {
   const partnerCount = allCompanies.filter(c => c.is_partner).length;
 
   return (
-    <div className="relative w-full mx-auto px-4">
+    <div className="relative w-full">
       {/* Cabeçalho espelhando o lado do vídeo */}
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full bg-purple animate-pulse" />
         <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Ecossistema Holding</span>
       </div>
 
-      {/* Orbit container - card estruturado como o do vídeo */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-purple/20 bg-card/40 shadow-2xl" style={{ aspectRatio: '1 / 1', maxWidth: '680px', margin: '0 auto' }}>
+      {/* Orbit container - mesmo aspect do vídeo (16:9) */}
+      <div className="relative w-full rounded-2xl overflow-hidden border border-purple/20 bg-card/40 shadow-2xl" style={{ aspectRatio: '16 / 9' }}>
         <div className="cyber-grid absolute inset-0 opacity-40" />
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Orbit ring visual */}
