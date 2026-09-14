@@ -13,8 +13,8 @@ export default function UserAdsStats({ user }) {
 
   const loadAds = async () => {
     try {
-      const userAds = await base44.entities.Advertisement.filter({ user_email: user.email }, '-created_date', 50);
-      setAds(userAds);
+      const res = await base44.functions.invoke('getUserPosts', {});
+      setAds(res.data?.ads || []);
     } catch (err) {
       console.error('Erro ao carregar estatísticas:', err);
     } finally {
