@@ -204,7 +204,7 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         </div>
 
         {/* Footer */}
-        <div className="space-y-2 pt-2 border-t border-border">
+        <div className="mt-auto space-y-2 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Gift className="w-4 h-4 text-gold" />
@@ -223,14 +223,14 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
           </div>
 
           {/* Share Buttons - quadradinhos com nome da rede (estilo Compartilhar Tudo) */}
-          <div className="grid grid-cols-5 gap-1">
+          <div className="flex items-center justify-center gap-1.5">
             {SHARE_PLATFORMS.map((p) => (
               <MoneyFloatEffect key={p.id}>
                 <motion.button
                   onClick={() => handleShare(p.id)}
                   disabled={isSharing}
                   whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center justify-center gap-1 p-1.5 rounded-lg border border-border hover:border-purple/40 hover:bg-purple/5 transition-colors relative"
+                  className="w-11 flex flex-col items-center justify-center gap-1 p-1.5 rounded-lg border border-border hover:border-purple/40 hover:bg-purple/5 transition-colors relative"
                   title={p.name}
                 >
                   <div className="w-7 h-7 rounded-full flex items-center justify-center bg-secondary/60 flex-shrink-0">
