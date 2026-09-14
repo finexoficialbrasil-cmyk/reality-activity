@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { usePublicData } from '@/hooks/usePublicData';
+
 import { motion } from 'framer-motion';
 import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
@@ -98,7 +98,6 @@ const formatBrandLabel = (category) => {
 
 export default function MegaLinkVitrine() {
   const { userSlug } = useParams();
-  const { data: publicData, isLoading: publicLoading, error: publicError } = usePublicData();
   const [ads, setAds] = useState([]);
   const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
@@ -123,12 +122,6 @@ export default function MegaLinkVitrine() {
     }
   }, [userSlug]);
 
-  // Filtra anúncios públicos (do hook cacheado, não exige login) removendo os do dono
-  useEffect(() => {
-    if (!publicData?.advertisements || !ownerEmail) return;
-    setAds(publicData.advertisements.filter(a => a.user_email !== ownerEmail));
-  }, [publicData, ownerEmail]);
-
   // Auth em paralelo (não bloqueia render — visitantes anônimos são ok)
   useEffect(() => {
     let cancelled = false;
@@ -140,7 +133,8 @@ export default function MegaLinkVitrine() {
     return () => { cancelled = true; };
   }, []);
 
-  // BACKGROUND: credita pontos sem bloquear a tela (fire-and-forget)
+  // FASE 1 (RÁPIDA): carrega anúncios + dono + status de duplicidade para renderizar a UI
+  // FASE 2 (BACKGROUND): credita pontos ao dono — não bloqueia a tela
   useEffect(() => {
     let cancelled = false;
     const getVisitorId = () => {
@@ -155,30 +149,38 @@ export default function MegaLinkVitrine() {
         return null;
       }
     };
-    base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: getVisitorId() })
+    const visitorId = getVisitorId();
+
+    // FASE 1 — aguardamos: devolve anúncios e dono rapidamente (sem creditar pontos)
+    base44.functions.invoke('getMegaLinkData', { slug: userSlug, visitor_id: visitorId })
       .then(res => {
         if (cancelled) return;
         const data = res.data;
         if (data?.success) {
-          setPointsEarned(data.points_earned || 0);
           setAlreadyCounted(!!data.already_counted);
-          // Slug curto: resolve dono e anúncios a partir da resposta do servidor
-          if (data.owner_email && !ownerEmailRef.current) {
+          if (data.owner_email) {
             ownerEmailRef.current = data.owner_email;
             setOwnerEmail(data.owner_email);
             setOwnerName(data.owner_name || data.owner_email.split('@')[0]);
-            if (data.ads) setAds(data.ads);
           }
+          if (data.ads) setAds(data.ads);
         }
       })
       .catch(() => { if (!cancelled) setTrackError(true); });
+
+    // FASE 2 — fire-and-forget: credita pontos ao dono em background (não trava a UI)
+    base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: visitorId })
+      .then(res => {
+        if (cancelled) return;
+        if (res.data?.success) setPointsEarned(res.data.points_earned || 0);
+      })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, [userSlug]);
 
-  const loading = ads.length === 0 && (publicLoading || !ownerEmail);
-  const error = publicError
-    ? (publicError.message || 'Erro ao carregar vitrine')
-    : (trackError && !ownerEmail ? 'Vitrine não encontrada' : null);
+  const loading = ads.length === 0 && !ownerEmail;
+  const error = trackError && !ownerEmail ? 'Vitrine não encontrada' : null;
 
   const handleShareSingle = async (ad, platform) => {
     if (!user) {
