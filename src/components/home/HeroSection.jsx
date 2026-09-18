@@ -9,15 +9,15 @@ const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd25
 
 export default function HeroSection({ user, authLoading }) {
   return (
-    <section className="relative pt-20 pb-10 px-4 overflow-hidden">
+    <section className="relative pt-20 pb-10 px-4 md:px-4 overflow-hidden">
       {/* ===== MOBILE: Hero premium ===== */}
-      <div className="md:hidden">
+      <div className="md:hidden -mx-4 px-6">
         <div className="relative">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-secondary/40 border border-gold text-xs font-bold tracking-wide text-white"
+            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full bg-secondary/40 border border-gold text-xs font-bold tracking-wide text-white"
           >
             <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
             Plataforma de Recompensas
@@ -28,7 +28,7 @@ export default function HeroSection({ user, authLoading }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-3 text-white"
+            className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-5 text-white"
           >
             Encontre campanhas que{' '}
             <span className="text-gold">performam</span>{' '}
@@ -41,7 +41,7 @@ export default function HeroSection({ user, authLoading }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-sm leading-relaxed mb-5"
+            className="text-muted-foreground text-sm leading-relaxed mb-8"
           >
             Descubra campanhas, publique suas ofertas e ganhe com compartilhamentos qualificados. Mais alcance. Mais resultados. Mais receita.
           </motion.p>
@@ -80,7 +80,7 @@ export default function HeroSection({ user, authLoading }) {
           )}
 
           {/* Card de produto */}
-          <div className="mt-7">
+          <div className="mt-10">
             <HeroProductCard />
           </div>
 
