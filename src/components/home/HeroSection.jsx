@@ -56,12 +56,11 @@ export default function HeroSection({ user, authLoading }) {
                 className="group relative w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.3)',
                 }}
               >
-                <span className="absolute -inset-1 rounded-full opacity-60 blur-md group-hover:opacity-80 group-hover:blur-lg transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.35)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 35%, transparent 50%)' }} />
+                <span className="absolute -inset-1.5 rounded-full opacity-50 blur-lg group-hover:opacity-75 group-hover:blur-xl transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ padding: '1.5px', background: 'linear-gradient(90deg, #c4b5fd 0%, #93c5fd 50%, #67e8f9 100%)', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
+                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 40%, transparent 55%)' }} />
                 <span className="absolute inset-0 rounded-full overflow-hidden">
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 </span>
@@ -134,12 +133,11 @@ export default function HeroSection({ user, authLoading }) {
                 className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{
                   background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.3)',
                 }}
               >
-                <span className="absolute -inset-1 rounded-full opacity-60 blur-md group-hover:opacity-80 group-hover:blur-lg transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.35)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 35%, transparent 50%)' }} />
+                <span className="absolute -inset-1.5 rounded-full opacity-50 blur-lg group-hover:opacity-75 group-hover:blur-xl transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ padding: '1.5px', background: 'linear-gradient(90deg, #c4b5fd 0%, #93c5fd 50%, #67e8f9 100%)', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
+                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 40%, transparent 55%)' }} />
                 <span className="absolute inset-0 rounded-full overflow-hidden">
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 </span>
