@@ -53,19 +53,20 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
+                className="group relative w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
-                  background: 'linear-gradient(90deg, #8B00FF 0%, #4B0082 40%, #0000FF 100%)',
-                  boxShadow: '0 0 20px rgba(0,255,255,0.4), 0 0 40px rgba(138,43,226,0.3), inset 0 1px 1px rgba(255,255,255,0.3)',
-                  border: '1px solid rgba(0,255,255,0.5)',
+                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #3b82f6 100%)',
+                  boxShadow: '0 0 25px rgba(6,182,212,0.5), 0 0 50px rgba(6,182,212,0.2), inset 0 1px 1px rgba(255,255,255,0.25)',
                 }}
               >
-                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-transparent to-transparent" />
-                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-cyan-400/40 via-purple-500/30 to-blue-500/40 blur-md group-hover:blur-lg transition-all" />
-                <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
-                <span className="relative z-10 tracking-wide drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">Publicar Anúncio</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                <span className="absolute -inset-1 rounded-full bg-cyan-400/30 blur-lg group-hover:blur-xl group-hover:bg-cyan-400/40 transition-all" />
+                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 via-transparent to-transparent" />
+                <span className="absolute inset-0 rounded-full overflow-hidden">
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </span>
+                <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
+                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
+                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
           </div>
@@ -129,19 +130,20 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95"
+                className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{
-                  background: 'linear-gradient(90deg, #8B00FF 0%, #4B0082 40%, #0000FF 100%)',
-                  boxShadow: '0 0 20px rgba(0,255,255,0.4), 0 0 40px rgba(138,43,226,0.3), inset 0 1px 1px rgba(255,255,255,0.3)',
-                  border: '1px solid rgba(0,255,255,0.5)',
+                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #3b82f6 100%)',
+                  boxShadow: '0 0 25px rgba(6,182,212,0.5), 0 0 50px rgba(6,182,212,0.2), inset 0 1px 1px rgba(255,255,255,0.25)',
                 }}
               >
-                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-transparent to-transparent" />
-                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-cyan-400/40 via-purple-500/30 to-blue-500/40 blur-md group-hover:blur-lg transition-all" />
-                <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
-                <span className="relative z-10 tracking-wide drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">Publicar Anúncio</span>
-                <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                <span className="absolute -inset-1 rounded-full bg-cyan-400/30 blur-lg group-hover:blur-xl group-hover:bg-cyan-400/40 transition-all" />
+                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 via-transparent to-transparent" />
+                <span className="absolute inset-0 rounded-full overflow-hidden">
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </span>
+                <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
+                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
+                <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
           </motion.div>
