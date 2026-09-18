@@ -55,12 +55,13 @@ export default function HeroSection({ user, authLoading }) {
                 to="/dashboard?tab=anuncios"
                 className="group relative w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
-                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #3b82f6 100%)',
-                  boxShadow: '0 0 25px rgba(6,182,212,0.5), 0 0 50px rgba(6,182,212,0.2), inset 0 1px 1px rgba(255,255,255,0.25)',
+                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.3)',
                 }}
               >
-                <span className="absolute -inset-1 rounded-full bg-cyan-400/30 blur-lg group-hover:blur-xl group-hover:bg-cyan-400/40 transition-all" />
-                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 via-transparent to-transparent" />
+                <span className="absolute -inset-1 rounded-full opacity-60 blur-md group-hover:opacity-80 group-hover:blur-lg transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.35)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 35%, transparent 50%)' }} />
                 <span className="absolute inset-0 rounded-full overflow-hidden">
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 </span>
@@ -132,12 +133,13 @@ export default function HeroSection({ user, authLoading }) {
                 to="/dashboard?tab=anuncios"
                 className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{
-                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #3b82f6 100%)',
-                  boxShadow: '0 0 25px rgba(6,182,212,0.5), 0 0 50px rgba(6,182,212,0.2), inset 0 1px 1px rgba(255,255,255,0.25)',
+                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.3)',
                 }}
               >
-                <span className="absolute -inset-1 rounded-full bg-cyan-400/30 blur-lg group-hover:blur-xl group-hover:bg-cyan-400/40 transition-all" />
-                <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 via-transparent to-transparent" />
+                <span className="absolute -inset-1 rounded-full opacity-60 blur-md group-hover:opacity-80 group-hover:blur-lg transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.35)' }} />
+                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 35%, transparent 50%)' }} />
                 <span className="absolute inset-0 rounded-full overflow-hidden">
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 </span>
