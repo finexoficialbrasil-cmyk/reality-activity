@@ -328,8 +328,11 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        // Usa o sharer URL do Facebook diretamente — mais confiável que navigator.share no mobile
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, url: productLink }).catch(() => {});
+        } else {
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        }
         break;
       }
 

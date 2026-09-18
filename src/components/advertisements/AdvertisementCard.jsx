@@ -101,10 +101,15 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        // Usa o sharer URL do Facebook diretamente — mais confiável que navigator.share no mobile
-        // (a extensão do Facebook frequentemente não recebe o conteúdo via navigator.share).
-        // O parâmetro quote foi descontinuado pelo Facebook, então apenas a URL é compartilhada.
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        // No mobile, navigator.share é o caminho correto — MAS a extensão do Facebook
+        // só processa `url` de forma confiável. Passar `text` (multi-linha, emojis, 2 URLs)
+        // faz a extensão abrir vazia. Por isso enviamos apenas url + title.
+        // O sharer.php não funciona no mobile (deep-link do FB abre o app mas fica na home).
+        if (isMobile && navigator.share) {
+          navigator.share({ title: ad.title, url: productLink }).catch(() => {});
+        } else {
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
+        }
         break;
       }
 
