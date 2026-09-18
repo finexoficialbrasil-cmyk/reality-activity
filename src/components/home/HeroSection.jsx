@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ArrowRight, Megaphone } from 'lucide-react';
-import HeroFloatingBadges from '@/components/home/HeroFloatingBadges';
 
 const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd2503/7f4155db7_Hero_Social_Click.mp4';
 
@@ -149,7 +148,6 @@ export default function HeroSection({ user, authLoading }) {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/10 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-          <HeroFloatingBadges />
         </motion.div>
       </div>
     </section>
