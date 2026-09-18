@@ -53,17 +53,9 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-                style={{
-                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
-                }}
+                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-6 py-4 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               >
-                <span className="absolute -inset-1.5 rounded-full opacity-50 blur-lg group-hover:opacity-75 group-hover:blur-xl transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ padding: '1.5px', background: 'linear-gradient(90deg, #c4b5fd 0%, #93c5fd 50%, #67e8f9 100%)', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
-                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 40%, transparent 55%)' }} />
-                <span className="absolute inset-0 rounded-full overflow-hidden">
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                </span>
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
                 <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
                 <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
@@ -130,17 +122,9 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95"
-                style={{
-                  background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)',
-                }}
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-7 py-3.5 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
               >
-                <span className="absolute -inset-1.5 rounded-full opacity-50 blur-lg group-hover:opacity-75 group-hover:blur-xl transition-all" style={{ background: 'linear-gradient(90deg, #8b5cf6 0%, #4f46e5 50%, #06b6d4 100%)' }} />
-                <span className="absolute inset-0 rounded-full" style={{ padding: '1.5px', background: 'linear-gradient(90deg, #c4b5fd 0%, #93c5fd 50%, #67e8f9 100%)', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
-                <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 40%, transparent 55%)' }} />
-                <span className="absolute inset-0 rounded-full overflow-hidden">
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                </span>
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
                 <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
