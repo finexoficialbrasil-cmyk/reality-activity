@@ -65,7 +65,7 @@ export default function HeroSection({ user, authLoading }) {
       </div>
 
       {/* ===== DESKTOP: Split com vídeo ===== */}
-      <div className="hidden md:block relative max-w-6xl mx-auto grid grid-cols-2 gap-8 items-center">
+      <div className="hidden md:grid relative max-w-6xl mx-auto grid-cols-2 gap-8 items-center">
         {/* Coluna esquerda — texto */}
         <div className="relative z-10 text-left">
           <motion.div
