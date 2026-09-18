@@ -53,9 +53,9 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-600 text-white font-bold px-6 py-4 rounded-full shadow-[0_0_25px_hsl(270_80%_65%/0.45)] hover:shadow-[0_0_35px_hsl(270_80%_65%/0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-6 py-4 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               >
-                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-500/0 via-white/20 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full transition-all duration-700" />
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
                 <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
                 <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
@@ -122,11 +122,12 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group inline-flex items-center gap-2 bg-gradient-to-r from-purple/30 to-purple/10 backdrop-blur border border-purple/50 text-foreground font-semibold px-7 py-3 rounded-2xl hover:border-purple transition-all hover:scale-105 neon-glow-purple"
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-7 py-3.5 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
               >
-                <Megaphone className="w-4 h-4 text-purple group-hover:scale-110 transition-transform" />
-                Publicar Anúncio
-                <ArrowRight className="w-4 h-4 text-purple group-hover:translate-x-1 transition-transform" />
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
+                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
+                <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
           </motion.div>
