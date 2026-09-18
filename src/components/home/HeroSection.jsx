@@ -53,11 +53,12 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple to-purple/80 text-white font-bold px-6 py-3.5 rounded-2xl hover:opacity-90 transition-all"
+                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-600 text-white font-bold px-6 py-4 rounded-full shadow-[0_0_25px_hsl(270_80%_65%/0.45)] hover:shadow-[0_0_35px_hsl(270_80%_65%/0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               >
-                <Megaphone className="w-4 h-4" />
-                Publicar Anúncio
-                <ArrowRight className="w-4 h-4" />
+                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-500/0 via-white/20 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full transition-all duration-700" />
+                <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
+                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
+                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
           </div>
