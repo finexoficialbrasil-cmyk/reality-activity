@@ -328,12 +328,8 @@ export default function VideoAdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        const msg = `${ad.title}\n\n${productLink}`;
-        if (isMobile && navigator.share) {
-          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
-        } else {
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
-        }
+        // Usa o sharer URL do Facebook diretamente — mais confiável que navigator.share no mobile
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
         break;
       }
 

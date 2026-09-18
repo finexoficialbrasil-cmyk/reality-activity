@@ -224,20 +224,7 @@ export default function MegaLinkVitrine() {
         break;
       }
       case 'facebook': {
-        const msg = [
-          `🚨 Oferta imperdível...`,
-          ``,
-          `📌 ${ad.title}`,
-          `${productLink}`,
-          ``,
-          `—`,
-          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
-        ].join('\n');
-        if (isMobile && navigator.share) {
-          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
-        } else {
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(msg)}`;
-        }
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
         break;
       }
       case 'twitter': {

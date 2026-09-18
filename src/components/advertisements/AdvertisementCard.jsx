@@ -101,20 +101,10 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'facebook': {
-        const msg = [
-          `🚨 Oferta imperdível...`,
-          ``,
-          `📌 ${ad.title}`,
-          `${productLink}`,
-          ``,
-          `—`,
-          `🚀 Além de divulgar promoções, ainda acumulo pontos que posso trocar por benefícios. https://realityactivity.com`
-        ].join('\n');
-        if (isMobile && navigator.share) {
-          navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
-        } else {
-          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}&quote=${encodeURIComponent(msg)}`;
-        }
+        // Usa o sharer URL do Facebook diretamente — mais confiável que navigator.share no mobile
+        // (a extensão do Facebook frequentemente não recebe o conteúdo via navigator.share).
+        // O parâmetro quote foi descontinuado pelo Facebook, então apenas a URL é compartilhada.
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productLink)}`;
         break;
       }
 
