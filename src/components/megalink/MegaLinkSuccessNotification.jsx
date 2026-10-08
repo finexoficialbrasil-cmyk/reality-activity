@@ -7,12 +7,13 @@ const CYAN = '#00f2ff';
 const PINK = '#ff007a';
 const GOLD = '#ffc61a';
 
-export default function MegaLinkSuccessNotification({ pointsEarned, ownerName, alreadyCounted }) {
+export default function MegaLinkSuccessNotification({ pointsEarned, ownerName, alreadyCounted, clickComputed }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Só mostra se há pontos creditados OU se já foi contado (bem-vindo de volta)
-    if (pointsEarned > 0 || alreadyCounted) {
+    // Dispara imediatamente quando clickComputed (FASE 1 rápida) ou alreadyCounted
+    // — não espera o credenciamento pesado de FASE 2 (que pode levar 15s+)
+    if (clickComputed || alreadyCounted) {
       setVisible(true);
 
       // Dispara confete apenas quando pontos são creditados (não no retorno)
@@ -38,7 +39,7 @@ export default function MegaLinkSuccessNotification({ pointsEarned, ownerName, a
       const timer = setTimeout(() => setVisible(false), 8000);
       return () => clearTimeout(timer);
     }
-  }, [pointsEarned, alreadyCounted]);
+  }, [clickComputed, alreadyCounted, pointsEarned]);
 
   const isReturn = alreadyCounted && pointsEarned === 0;
 

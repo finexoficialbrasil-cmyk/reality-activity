@@ -104,6 +104,7 @@ export default function MegaLinkVitrine() {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [pointsEarned, setPointsEarned] = useState(0);
   const [alreadyCounted, setAlreadyCounted] = useState(false);
+  const [clickComputed, setClickComputed] = useState(false); // dispara notificação imediatamente (FASE 1)
   const [shareMenuFor, setShareMenuFor] = useState(null);
   const [user, setUser] = useState(null);
   const [trackError, setTrackError] = useState(false);
@@ -153,6 +154,7 @@ export default function MegaLinkVitrine() {
     const visitorId = getVisitorId();
 
     // FASE 1 — aguardamos: devolve anúncios e dono rapidamente (sem creditar pontos)
+    // Já dispara a notificação visual — não precisa esperar o credenciamento pesado
     base44.functions.invoke('getMegaLinkData', { slug: userSlug, visitor_id: visitorId })
       .then(res => {
         if (cancelled) return;
@@ -164,16 +166,30 @@ export default function MegaLinkVitrine() {
             setOwnerEmail(data.owner_email);
             setOwnerName(data.owner_name || data.owner_email.split('@')[0]);
           }
-          if (data.ads) setAds(data.ads);
+          if (data.ads) {
+            setAds(data.ads);
+            // Calcula pontos esperados imediatamente a partir dos anúncios elegíveis
+            // (cada anúncio paga min(reward_per_share, budget_remaining))
+            if (!data.already_counted) {
+              const expected = data.ads.reduce((sum, ad) =>
+                sum + Math.min(ad.reward_per_share || 0, ad.budget_remaining || 0), 0);
+              setPointsEarned(expected);
+              setClickComputed(true);
+            }
+          }
         }
       })
       .catch(() => { if (!cancelled) setTrackError(true); });
 
     // FASE 2 — fire-and-forget: credita pontos ao dono em background (não trava a UI)
+    // Atualiza o valor real quando terminar (pode diferir se orçamentos mudaram)
     base44.functions.invoke('trackMegaLinkClick', { slug: userSlug, visitor_id: visitorId })
       .then(res => {
         if (cancelled) return;
-        if (res.data?.success) setPointsEarned(res.data.points_earned || 0);
+        if (res.data?.success) {
+          const actual = res.data.points_earned || 0;
+          if (actual > 0) setPointsEarned(actual);
+        }
       })
       .catch(() => {});
 
@@ -294,6 +310,7 @@ export default function MegaLinkVitrine() {
         pointsEarned={pointsEarned}
         ownerName={ownerName}
         alreadyCounted={alreadyCounted}
+        clickComputed={clickComputed}
       />
       <div className="flex flex-col md:flex-row">
         {/* Left Sidebar */}
