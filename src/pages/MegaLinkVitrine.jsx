@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 import { motion } from 'framer-motion';
-import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu } from 'lucide-react';
+import { ExternalLink, Share2, Loader2, Zap, Gift, Sparkles, Cpu, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import MegaLinkSuccessNotification from '@/components/megalink/MegaLinkSuccessNotification';
 
 const FacebookIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -289,6 +290,11 @@ export default function MegaLinkVitrine() {
 
   return (
     <div className="min-h-screen bg-[#0a0b0d] cyber-grid">
+      <MegaLinkSuccessNotification
+        pointsEarned={pointsEarned}
+        ownerName={ownerName}
+        alreadyCounted={alreadyCounted}
+      />
       <div className="flex flex-col md:flex-row">
         {/* Left Sidebar */}
         <aside className="md:sticky md:top-0 md:h-screen md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r p-5 md:p-6 flex flex-col" style={{ borderColor: 'hsl(190 100% 50% / 0.15)' }}>
@@ -309,27 +315,26 @@ export default function MegaLinkVitrine() {
             <span className="font-cyber-mono text-xs font-bold tracking-wide">{ads.length} OFERTAS</span>
           </div>
 
-          {/* Notification Box */}
-          {pointsEarned > 0 && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="pixel-border rounded-lg p-3.5 mb-4"
+          {/* Status sutil no sidebar */}
+          {(pointsEarned > 0 || alreadyCounted) && (
+            <div
+              className="rounded-lg p-3 mb-4 border flex items-center gap-2"
+              style={{
+                borderColor: pointsEarned > 0 ? 'hsl(330 100% 50% / 0.2)' : 'hsl(190 100% 50% / 0.2)',
+                background: pointsEarned > 0 ? 'hsl(330 100% 50% / 0.05)' : 'hsl(190 100% 50% / 0.05)'
+              }}
             >
-              <div className="flex items-center gap-2 mb-1">
+              {pointsEarned > 0 ? (
                 <Gift className="w-4 h-4 flex-shrink-0" style={{ color: PINK }} />
-                <span className="font-cyber-mono text-[10px] tracking-widest" style={{ color: PINK }}>PONTOS CREDITADOS</span>
-              </div>
-              <p className="text-sm text-white font-medium leading-snug">
-                Você ajudou <span className="font-bold capitalize" style={{ color: PINK }}>{ownerName}</span> a ganhar <span className="font-bold" style={{ color: CYAN }}>+{pointsEarned}</span> pontos! 🎉
+              ) : (
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: CYAN }} />
+              )}
+              <p className="text-xs text-white leading-tight">
+                {pointsEarned > 0
+                  ? <>+{pointsEarned} pts para {ownerName}</>
+                  : 'Clique já computado'
+                }
               </p>
-            </motion.div>
-          )}
-
-          {alreadyCounted && (
-            <div className="rounded-lg p-3 mb-4 border" style={{ borderColor: 'hsl(190 100% 50% / 0.2)', background: 'hsl(190 100% 50% / 0.05)' }}>
-              <p className="font-cyber-mono text-[10px] tracking-widest text-muted-foreground mb-1">STATUS</p>
-              <p className="text-xs text-white">Bem-vindo de volta! Seu clique já foi contado.</p>
             </div>
           )}
 
