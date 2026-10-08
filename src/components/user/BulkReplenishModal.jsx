@@ -44,8 +44,8 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-md bg-card border-border">
-        <DialogHeader>
+      <DialogContent className="max-w-md bg-card border-border flex flex-col max-h-[90vh] gap-0 p-0 overflow-hidden">
+        <DialogHeader className="p-5 pb-3 flex-shrink-0">
           <DialogTitle className="text-gold flex items-center gap-2">
             <Zap className="w-5 h-5" />
             Repor Créditos em Massa
@@ -55,9 +55,9 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-3">
           {/* Selected ads preview */}
-          <div className="bg-secondary/40 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1">
+          <div className="bg-secondary/40 rounded-lg p-2.5 max-h-24 overflow-y-auto space-y-1">
             {selectedAds.map(ad => (
               <div key={ad.id} className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
                 <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
@@ -68,7 +68,7 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
 
           {/* Credit input */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Crédito por anúncio (pts)</label>
+            <label className="text-sm font-medium mb-1.5 block">Crédito por anúncio (pts)</label>
             <Input
               type="number"
               value={creditPerAd}
@@ -82,7 +82,7 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
           </div>
 
           {/* Summary */}
-          <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
+          <div className="bg-secondary/50 rounded-lg p-3 space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Anúncios selecionados</span>
               <span className="font-semibold text-foreground">{count}</span>
@@ -91,14 +91,14 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
               <span className="text-muted-foreground">Crédito por anúncio</span>
               <span className="font-semibold text-foreground">{(Number(creditPerAd) || 0).toLocaleString()} pts</span>
             </div>
-            <div className="border-t border-border pt-2 flex items-center justify-between">
+            <div className="border-t border-border pt-1.5 flex items-center justify-between">
               <span className="text-sm font-medium">Custo total</span>
               <span className="font-grotesk font-bold text-lg text-gold">{totalCost.toLocaleString()} pts</span>
             </div>
           </div>
 
           {/* Balance check */}
-          <div className={`flex items-center gap-2 p-3 rounded-lg ${hasEnough ? 'bg-green-500/10 border border-green-500/20' : 'bg-destructive/10 border border-destructive/20'}`}>
+          <div className={`flex items-center gap-2 p-2.5 rounded-lg ${hasEnough ? 'bg-green-500/10 border border-green-500/20' : 'bg-destructive/10 border border-destructive/20'}`}>
             {hasEnough ? (
               <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
             ) : (
@@ -112,35 +112,35 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
               )}
             </p>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              disabled={submitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!hasEnough || submitting}
-              className="flex-1 bg-gold text-background hover:bg-gold-dark font-bold"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Repondo...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-4 h-4" />
-                  Repor {count} anúncio{count !== 1 ? 's' : ''}
-                </>
-              )}
-            </Button>
-          </div>
+        {/* Actions — fixados no rodapé do modal */}
+        <div className="flex gap-2 p-5 pt-3 border-t border-border flex-shrink-0">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1"
+            disabled={submitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!hasEnough || submitting}
+            className="flex-1 bg-gold text-background hover:bg-gold-dark font-bold"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Repondo...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4" />
+                Repor {count} anúncio{count !== 1 ? 's' : ''}
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
