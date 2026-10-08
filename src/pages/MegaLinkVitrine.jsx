@@ -332,28 +332,58 @@ export default function MegaLinkVitrine() {
             <span className="font-cyber-mono text-xs font-bold tracking-wide">{ads.length} OFERTAS</span>
           </div>
 
-          {/* Status sutil no sidebar */}
-          {(pointsEarned > 0 || alreadyCounted) && (
-            <div
-              className="rounded-lg p-3 mb-4 border flex items-center gap-2"
+          {/* Status espetacular no sidebar */}
+          {alreadyCounted ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-xl p-3.5 mb-4 border relative overflow-hidden"
               style={{
-                borderColor: pointsEarned > 0 ? 'hsl(330 100% 50% / 0.2)' : 'hsl(190 100% 50% / 0.2)',
-                background: pointsEarned > 0 ? 'hsl(330 100% 50% / 0.05)' : 'hsl(190 100% 50% / 0.05)'
+                borderColor: 'hsl(190 100% 50% / 0.3)',
+                background: 'linear-gradient(135deg, hsl(190 100% 50% / 0.08), hsl(190 100% 50% / 0.02))',
+                boxShadow: '0 0 20px hsl(190 100% 50% / 0.1), inset 0 0 20px hsl(190 100% 50% / 0.03)'
               }}
             >
-              {pointsEarned > 0 ? (
-                <Gift className="w-4 h-4 flex-shrink-0" style={{ color: PINK }} />
-              ) : (
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: CYAN }} />
-              )}
-              <p className="text-xs text-white leading-tight">
-                {pointsEarned > 0
-                  ? <>+{pointsEarned} pts para {ownerName}</>
-                  : 'Clique já computado'
-                }
-              </p>
-            </div>
-          )}
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: CYAN, boxShadow: `0 0 12px ${CYAN}55` }}>
+                  <CheckCircle2 className="w-5 h-5 text-black" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-grotesk font-bold text-sm text-white leading-tight mb-0.5">
+                    Obrigado pela visita! 💙
+                  </p>
+                  <p className="text-[11px] leading-tight" style={{ color: 'hsl(190 100% 70%)' }}>
+                    Você já ajudou <span className="font-bold capitalize">{ownerName}</span> hoje. Volte amanhã para apoiar de novo!
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ) : pointsEarned > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-xl p-3.5 mb-4 border relative overflow-hidden"
+              style={{
+                borderColor: 'hsl(330 100% 50% / 0.3)',
+                background: 'linear-gradient(135deg, hsl(330 100% 50% / 0.08), hsl(330 100% 50% / 0.02))',
+                boxShadow: '0 0 20px hsl(330 100% 50% / 0.1), inset 0 0 20px hsl(330 100% 50% / 0.03)'
+              }}
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 animate-pulse" style={{ background: PINK, boxShadow: `0 0 12px ${PINK}55` }}>
+                  <Gift className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-grotesk font-bold text-sm text-white leading-tight mb-0.5">
+                    +{pointsEarned} pontos gerados! 🎉
+                  </p>
+                  <p className="text-[11px] leading-tight" style={{ color: 'hsl(330 100% 75%)' }}>
+                    Você acabou de ajudar <span className="font-bold capitalize">{ownerName}</span> a ganhar pontos. Que legal!
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ) : null}
 
           {/* Stats */}
           <div className="mt-auto pt-4 border-t" style={{ borderColor: 'hsl(190 100% 50% / 0.1)' }}>
