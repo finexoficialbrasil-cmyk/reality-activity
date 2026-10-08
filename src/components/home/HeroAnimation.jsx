@@ -62,34 +62,35 @@ export default function HeroAnimation() {
       ))}
 
       {/* Núcleo central — Zap pulsante */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <div
-          className="w-20 h-20 rounded-2xl flex items-center justify-center relative"
-          style={{
-            background: 'linear-gradient(135deg, hsl(45 100% 55%), hsl(38 90% 42%))',
-            boxShadow: '0 0 40px hsl(45 100% 55% / 0.5), inset 0 0 20px hsl(45 100% 55% / 0.2)',
-          }}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        <motion.div
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <Zap className="w-10 h-10 text-background" fill="currentColor" />
-          {/* Brilho rotativo */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl overflow-hidden"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center relative"
+            style={{
+              background: 'linear-gradient(135deg, hsl(45 100% 55%), hsl(38 90% 42%))',
+              boxShadow: '0 0 40px hsl(45 100% 55% / 0.5), inset 0 0 20px hsl(45 100% 55% / 0.2)',
+            }}
           >
-            <div
-              className="absolute -inset-1/2"
-              style={{
-                background: 'conic-gradient(from 0deg, transparent 0%, hsl(45 100% 70% / 0.4) 25%, transparent 50%)',
-              }}
-            />
-          </motion.div>
-        </div>
-      </motion.div>
+            <Zap className="w-10 h-10 text-background" fill="currentColor" />
+            {/* Brilho rotativo */}
+            <motion.div
+              className="absolute inset-0 rounded-2xl overflow-hidden"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            >
+              <div
+                className="absolute -inset-1/2"
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0%, hsl(45 100% 70% / 0.4) 25%, transparent 50%)',
+                }}
+              />
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Ícones sociais orbitando */}
       {SOCIAL_ICONS.map(({ Icon, color, angle, delay }, i) => (
