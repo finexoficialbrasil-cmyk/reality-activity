@@ -1,7 +1,7 @@
 // Shared logic for processing a single advertisement share.
 // Used by both processAdvertisementShare (single) and bulkShareAdvertisements (batch).
 
-export async function processSingleShare(base44, user, advertisement, platform, extraShareFields = {}) {
+export async function processSingleShare(base44, user, advertisement, platform, extraShareFields = {}, options = {}) {
   // Already fetched advertisement passed in; validate state
   if (!advertisement || advertisement.status !== 'approved') {
     return { ok: false, error: 'Anúncio não encontrado ou não aprovado' };
@@ -22,38 +22,44 @@ export async function processSingleShare(base44, user, advertisement, platform, 
 
   // 24h cooldown per user/ad: if the user already earned points on this ad in
   // the last 24h, the share still happens but no points are credited.
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const recentShares = await base44.asServiceRole.entities.AdvertisementShare.filter({
-    advertisement_id: advertisement.id,
-    user_email: user.email,
-    is_valid: true,
-    created_date: { $gte: twentyFourHoursAgo }
-  });
-
-  if (recentShares.length > 0) {
-    // Register a non-credited share (keeps the share flow intact)
-    await base44.asServiceRole.entities.AdvertisementShare.create({
+  // SKIPPED for mega_link clicks — the per-visitor duplicate check is done by
+  // trackMegaLinkClick (same fingerprint + owner within 24h). Without this skip,
+  // the 2nd visitor's click finds the owner's shares from the 1st visitor and
+  // is incorrectly blocked, so only the first visitor ever earns points.
+  if (!options.skipCooldown) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentShares = await base44.asServiceRole.entities.AdvertisementShare.filter({
       advertisement_id: advertisement.id,
       user_email: user.email,
-      user_name: user.full_name,
-      platform,
-      points_earned: 0,
-      is_valid: false,
-      ...extraShareFields
+      is_valid: true,
+      created_date: { $gte: twentyFourHoursAgo }
     });
 
-    // Compute remaining cooldown time for the message
-    const lastShareDate = new Date(recentShares[0].created_date);
-    const nextAvailable = new Date(lastShareDate.getTime() + 24 * 60 * 60 * 1000);
-    const msRemaining = nextAvailable.getTime() - Date.now();
-    const hoursRemaining = Math.max(1, Math.ceil(msRemaining / (60 * 60 * 1000)));
+    if (recentShares.length > 0) {
+      // Register a non-credited share (keeps the share flow intact)
+      await base44.asServiceRole.entities.AdvertisementShare.create({
+        advertisement_id: advertisement.id,
+        user_email: user.email,
+        user_name: user.full_name,
+        platform,
+        points_earned: 0,
+        is_valid: false,
+        ...extraShareFields
+      });
 
-    return {
-      ok: true,
-      pointsCost: 0,
-      alreadyEarned: true,
-      cooldownMessage: `Você já ganhou pontos por este anúncio. Volte em ${hoursRemaining}h para ganhar de novo.`
-    };
+      // Compute remaining cooldown time for the message
+      const lastShareDate = new Date(recentShares[0].created_date);
+      const nextAvailable = new Date(lastShareDate.getTime() + 24 * 60 * 60 * 1000);
+      const msRemaining = nextAvailable.getTime() - Date.now();
+      const hoursRemaining = Math.max(1, Math.ceil(msRemaining / (60 * 60 * 1000)));
+
+      return {
+        ok: true,
+        pointsCost: 0,
+        alreadyEarned: true,
+        cooldownMessage: `Você já ganhou pontos por este anúncio. Volte em ${hoursRemaining}h para ganhar de novo.`
+      };
+    }
   }
 
   // Pay what's left: if balance < reward, pay the balance and zero out

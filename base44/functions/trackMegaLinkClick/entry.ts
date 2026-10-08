@@ -84,7 +84,7 @@ export default async function(req) {
 
       for (const ad of eligibleAds) {
         try {
-          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: fingerprint });
+          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: fingerprint }, { skipCooldown: true });
           if (result.ok) {
             pointsEarned += result.pointsCost;
           }
