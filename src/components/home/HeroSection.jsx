@@ -2,9 +2,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ArrowRight, Megaphone } from 'lucide-react';
-import HeroFloatingBadges from '@/components/home/HeroFloatingBadges';
-
-const VIDEO_URL = 'https://media.base44.com/videos/public/69fe21208143d5c488dd2503/ccc7bd5e1_Hero_Video_Clean.mp4';
+import HeroAnimation from '@/components/home/HeroAnimation';
 
 export default function HeroSection({ user, authLoading }) {
   return (
@@ -133,25 +131,15 @@ export default function HeroSection({ user, authLoading }) {
           </motion.div>
         </div>
 
-        {/* Coluna direita — vídeo */}
+        {/* Coluna direita — animação CSS pura */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="relative h-[340px] rounded-3xl border border-gold/20 shadow-[0_0_40px_hsl(45_100%_55%/0.15)] overflow-hidden"
+          className="relative h-[340px] rounded-3xl border border-gold/20 shadow-[0_0_40px_hsl(45_100%_55%/0.15)] overflow-hidden bg-card/40"
         >
-          <video
-            src={VIDEO_URL}
-            autoPlay
-            loop
-            muted
-            playsInline
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/10 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-          <HeroFloatingBadges />
+          <HeroAnimation />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
         </motion.div>
       </div>
     </section>
