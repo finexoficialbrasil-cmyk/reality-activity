@@ -217,7 +217,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Erro ao criar listing:', err);
-      toast.error('Erro ao criar anúncio de venda');
+      toast.error(err.message || 'Erro ao criar anúncio de venda');
     } finally {
       setCreatingListing(false);
     }

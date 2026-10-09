@@ -25,7 +25,8 @@ Deno.serve(async (req) => {
       return Response.json(errBody, { status: 400 });
     }
 
-    const listing = await base44.asServiceRole.entities.PointsListing.get(listing_id);
+    const listingArr = await base44.asServiceRole.entities.PointsListing.filter({ id: listing_id });
+    const listing = listingArr[0];
     if (!listing) {
       const errBody = { success: false, error: 'Anúncio não encontrado' };
       await recordIdempotency(base44, request_id, OP, user.email, errBody, 404);
