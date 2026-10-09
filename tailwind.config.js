@@ -19,6 +19,8 @@ module.exports = {
         gold: 'hsl(var(--gold))',
         'gold-dark': 'hsl(var(--gold-dark))',
         purple: 'hsl(var(--purple))',
+        orange: 'hsl(var(--orange))',
+        turquoise: 'hsl(var(--turquoise))',
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
