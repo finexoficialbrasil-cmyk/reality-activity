@@ -58,13 +58,10 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
-              <Zap className="w-5 h-5 text-background" />
-            </div>
             <img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Reality Activity"
-              className="h-8"
+              className="h-11 transition-transform group-hover:scale-105 drop-shadow-[0_0_12px_rgba(168,85,247,0.35)]"
             />
           </Link>
 
