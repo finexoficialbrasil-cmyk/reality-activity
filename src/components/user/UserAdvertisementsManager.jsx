@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LowBalanceAdsAlert from './LowBalanceAdsAlert';
+import PremiumConfirmDialog from '@/components/ui/PremiumConfirmDialog';
 
 export default function UserAdvertisementsManager({ user, userPoints, onEditAd, onReplenished }) {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) loadAds();
@@ -26,20 +29,22 @@ export default function UserAdvertisementsManager({ user, userPoints, onEditAd, 
     }
   };
 
-  const handleDelete = async (ad) => {
-    const remaining = ad.budget_remaining || 0;
-    const msg = remaining > 0
-      ? `Deletar este anúncio? ${remaining} pts do saldo restante serão devolvidos à sua conta.`
-      : 'Deletar este anúncio?';
-    if (!confirm(msg)) return;
+  const handleDelete = (ad) => setDeleteTarget(ad);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      const res = await base44.functions.invoke('deleteAdvertisementAndRefundPoints', { advertisement_id: ad.id });
+      const res = await base44.functions.invoke('deleteAdvertisementAndRefundPoints', { advertisement_id: deleteTarget.id });
       const refunded = res.data?.refunded || 0;
       toast.success(refunded > 0 ? `Anúncio deletado. ${refunded} pts devolvidos ao seu saldo.` : 'Anúncio deletado');
+      setDeleteTarget(null);
       loadAds();
     } catch (err) {
       console.error('Erro ao deletar:', err);
       toast.error('Erro ao deletar');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -135,6 +140,28 @@ export default function UserAdvertisementsManager({ user, userPoints, onEditAd, 
           </div>
         );
       })}
+
+      <PremiumConfirmDialog
+        open={!!deleteTarget}
+        title="Deletar anúncio?"
+        variant="danger"
+        confirmLabel="Deletar"
+        cancelLabel="Cancelar"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => !deleting && setDeleteTarget(null)}
+        message={
+          deleteTarget?.budget_remaining > 0 ? (
+            <>
+              Este anúncio será removido permanentemente e{' '}
+              <span className="font-bold text-gold">{deleteTarget?.budget_remaining} pts</span>{' '}
+              do saldo restante serão devolvidos à sua conta.
+            </>
+          ) : (
+            'Este anúncio será removido permanentemente. Esta ação não pode ser desfeita.'
+          )
+        }
+      />
     </motion.div>
   );
 }
