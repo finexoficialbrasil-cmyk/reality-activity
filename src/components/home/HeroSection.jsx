@@ -7,58 +7,151 @@ import HeroAnimation from '@/components/home/HeroAnimation';
 export default function HeroSection({ user, authLoading }) {
   return (
     <section className="relative pt-20 pb-10 px-4 overflow-hidden">
-      {/* ===== MOBILE: Card compacto ===== */}
+      {/* ===== MOBILE: Card premium ===== */}
       <div className="md:hidden">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-3xl border border-purple/30 bg-card/60 backdrop-blur p-5 overflow-hidden"
+          transition={{ duration: 0.5 }}
+          className="relative rounded-[28px] overflow-hidden"
+          style={{
+            background: 'linear-gradient(160deg, hsl(220 18% 9%) 0%, hsl(220 20% 6%) 100%)',
+            border: '1px solid hsl(270 80% 65% / 0.25)',
+            boxShadow: '0 20px 60px hsl(270 80% 65% / 0.12), 0 0 0 1px hsl(45 100% 55% / 0.05) inset',
+          }}
         >
-          <div className="cyber-grid absolute inset-0 opacity-30" />
-          <div className="relative z-10">
+          {/* Grid de fundo */}
+          <div className="cyber-grid absolute inset-0 opacity-25" />
+
+          {/* Glow radial dourado no topo */}
+          <div
+            className="absolute -top-20 -right-10 w-48 h-48 rounded-full opacity-30 blur-3xl"
+            style={{ background: 'radial-gradient(circle, hsl(45 100% 55%), transparent 70%)' }}
+          />
+          {/* Glow radial roxo embaixo */}
+          <div
+            className="absolute -bottom-16 -left-10 w-40 h-40 rounded-full opacity-20 blur-3xl"
+            style={{ background: 'radial-gradient(circle, hsl(270 80% 65%), transparent 70%)' }}
+          />
+
+          {/* Linha de brilho superior animada */}
+          <motion.div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: 'linear-gradient(90deg, transparent, hsl(45 100% 55% / 0.6), transparent)' }}
+            animate={{ x: ['-100%', '100%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          />
+
+          <div className="relative z-10 p-6">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-secondary/60 border border-gold/30 text-xs font-bold tracking-wide text-foreground">
-              <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-              Plataforma de Recompensas
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-5 rounded-full"
+              style={{
+                background: 'hsl(220 15% 13% / 0.8)',
+                border: '1px solid hsl(45 100% 55% / 0.35)',
+                boxShadow: '0 0 12px hsl(45 100% 55% / 0.1)',
+              }}
+            >
+              <motion.span
+                className="w-2 h-2 rounded-full bg-gold"
+                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              <span className="text-[11px] font-bold tracking-wide text-foreground">Plataforma de Recompensas</span>
+            </motion.div>
 
             {/* Headline */}
-            <h1 className="font-grotesk font-extrabold text-3xl leading-[1.15] tracking-tight mb-3 text-white">
+            <motion.h1
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-3 text-white"
+            >
               Cada clique vira{' '}
-              <span className="bg-gradient-to-r from-gold via-yellow-200 to-gold bg-clip-text text-transparent">
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: 'linear-gradient(135deg, hsl(45 100% 60%), hsl(50 100% 75%), hsl(38 90% 45%))',
+                  filter: 'drop-shadow(0 0 12px hsl(45 100% 55% / 0.4))',
+                }}
+              >
                 Pontos
               </span>{' '}
               de verdade.
-            </h1>
+            </motion.h1>
 
             {/* Body */}
-            <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-muted-foreground text-[13px] leading-relaxed mb-6"
+            >
               Descubra produtos incríveis, compartilhe com seus amigos e transforme cada compartilhamento em recompensas.
-            </p>
+            </motion.p>
 
             {/* CTA */}
-            {authLoading ? (
-              <div className="h-12 w-full rounded-2xl bg-secondary/40 border border-border animate-pulse" />
-            ) : !user ? (
-              <button
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple to-purple/80 text-white font-bold px-6 py-3.5 rounded-2xl hover:opacity-90 transition-all animate-pulse-gold"
-              >
-                <Zap className="w-4 h-4" />
-                Começar Grátis
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <Link
-                to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-6 py-4 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-              >
-                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <Megaphone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />
-                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            )}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              {authLoading ? (
+                <div className="h-14 w-full rounded-2xl bg-secondary/40 border border-border animate-pulse" />
+              ) : !user ? (
+                <button
+                  onClick={() => base44.auth.redirectToLogin()}
+                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
+                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
+                  }}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  <Zap className="w-5 h-5 relative z-10" fill="currentColor" />
+                  <span className="relative z-10 tracking-wide text-[15px]">Começar Grátis</span>
+                  <ArrowRight className="w-4 h-4 relative z-10" />
+                </button>
+              ) : (
+                <Link
+                  to="/dashboard?tab=anuncios"
+                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
+                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
+                  }}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  <Megaphone className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10 tracking-wide text-[15px]">Publicar Anúncio</span>
+                  <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
+            </motion.div>
+
+            {/* Mini stats row */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-border/40"
+            >
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-gold" fill="currentColor" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Compartilhe</span>
+              </div>
+              <div className="w-px h-3 bg-border/60" />
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-purple">Ganhe pontos</span>
+              </div>
+              <div className="w-px h-3 bg-border/60" />
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-gold">Resgate prêmios</span>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
