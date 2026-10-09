@@ -1,5 +1,13 @@
 // Shared logic for processing a single advertisement share.
-// Used by both processAdvertisementShare (single) and bulkShareAdvertisements (batch).
+// Used by both processAdvertisementShare (single) and bulkShareAdvertisements (batch),
+// and by trackMegaLinkClick (mega-link, with skipCooldown).
+//
+// PROTEÇÃO ATÔMICA: o débito do orçamento do anúncio é feito com updateMany
+// condicional (budget_remaining >= pointsCost), garantindo que o orçamento
+// nunca fique negativo e que duas requisições simultâneas não consumam mais
+// pontos do que existe disponível.
+
+import { atomicDebitField, atomicCreditBalance } from './atomicFinance.ts';
 
 export async function processSingleShare(base44, user, advertisement, platform, extraShareFields = {}, options = {}) {
   // Already fetched advertisement passed in; validate state
@@ -13,8 +21,8 @@ export async function processSingleShare(base44, user, advertisement, platform, 
   }
 
   // Check budget
-  const budgetRemaining = advertisement.budget_remaining || 0;
-  const rewardPerShare = advertisement.reward_per_share || 10;
+  const budgetRemaining = Number(advertisement.budget_remaining) || 0;
+  const rewardPerShare = Number(advertisement.reward_per_share) || 10;
 
   if (budgetRemaining <= 0) {
     return { ok: false, error: 'Orçamento do anúncio esgotado' };
@@ -23,9 +31,7 @@ export async function processSingleShare(base44, user, advertisement, platform, 
   // 24h cooldown per user/ad: if the user already earned points on this ad in
   // the last 24h, the share still happens but no points are credited.
   // SKIPPED for mega_link clicks — the per-visitor duplicate check is done by
-  // trackMegaLinkClick (same fingerprint + owner within 24h). Without this skip,
-  // the 2nd visitor's click finds the owner's shares from the 1st visitor and
-  // is incorrectly blocked, so only the first visitor ever earns points.
+  // trackMegaLinkClick (server-side fingerprint + per-IP cap).
   if (!options.skipCooldown) {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const recentShares = await base44.asServiceRole.entities.AdvertisementShare.filter({
@@ -64,6 +70,39 @@ export async function processSingleShare(base44, user, advertisement, platform, 
 
   // Pay what's left: if balance < reward, pay the balance and zero out
   const pointsCost = Math.min(budgetRemaining, rewardPerShare);
+  if (pointsCost <= 0) {
+    return { ok: false, error: 'Orçamento do anúncio esgotado' };
+  }
+
+  // === DÉBITO ATÔMICO DO ORÇAMENTO DO ANÚNCIO ===
+  // updateMany condicional: só debita se budget_remaining >= pointsCost.
+  // Retorna updated=1 (aplicou) ou updated=0 (orçamento insuficiente/concorrência).
+  const debit = await atomicDebitField(
+    base44,
+    'Advertisement',
+    advertisement.id,
+    'budget_remaining',
+    pointsCost,
+    { shares_count: 1, total_points_awarded: pointsCost }
+  );
+
+  if (!debit.ok) {
+    // Orçamento esgotado ou concorrência venceu — NÃO credita pontos ao usuário.
+    return { ok: false, error: debit.error || 'Orçamento do anúncio esgotado' };
+  }
+
+  const updatedAd = debit.record;
+  const newBudgetRemaining = Number(updatedAd.budget_remaining) || 0;
+  const budgetZeroed = newBudgetRemaining <= 0;
+
+  // Se zerou, ativa cooldown de 24h e marca como inativo (atualização separada, idempotente)
+  if (budgetZeroed) {
+    const cooldownUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await base44.asServiceRole.entities.Advertisement.update(advertisement.id, {
+      status: 'inactive',
+      cooldown_until: cooldownUntil
+    }).catch(() => {});
+  }
 
   // Create share record (service role — bypasses RLS admin-only)
   await base44.asServiceRole.entities.AdvertisementShare.create({
@@ -76,35 +115,10 @@ export async function processSingleShare(base44, user, advertisement, platform, 
     ...extraShareFields
   });
 
-  // Calculate new balance and check if should pause
-  const newBudgetRemaining = budgetRemaining - pointsCost;
-  const budgetZeroed = newBudgetRemaining <= 0;
-
-  // If zeroed, activate 24h cooldown
-  const cooldownUntil = budgetZeroed ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
-
-  // Update ad with new balance, status and cooldown
-  const updateData = {
-    shares_count: (advertisement.shares_count || 0) + 1,
-    total_points_awarded: (advertisement.total_points_awarded || 0) + pointsCost,
-    budget_remaining: Math.max(newBudgetRemaining, 0),
-    status: budgetZeroed ? 'inactive' : advertisement.status
-  };
-
-  if (cooldownUntil) {
-    updateData.cooldown_until = cooldownUntil;
-  }
-
-  await base44.asServiceRole.entities.Advertisement.update(advertisement.id, updateData);
-
-  // Credit points to the sharer (service role — bypasses RLS admin-only)
+  // Credit points to the sharer (atomic $inc, or create if first time)
   const userPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: user.email });
   if (userPoints.length > 0) {
-    await base44.asServiceRole.entities.UserPoints.update(userPoints[0].id, {
-      balance: (userPoints[0].balance || 0) + pointsCost,
-      total_earned: (userPoints[0].total_earned || 0) + pointsCost,
-      last_activity: new Date().toISOString()
-    });
+    await atomicCreditBalance(base44, 'UserPoints', userPoints[0].id, pointsCost);
   } else {
     await base44.asServiceRole.entities.UserPoints.create({
       user_email: user.email,

@@ -1,5 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { processSingleShare } from '../../shared/advertisementShare.ts';
+import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+
+const OP = 'share';
 
 export default async function(req) {
   try {
@@ -10,10 +13,18 @@ export default async function(req) {
       return Response.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const { advertisement_id, platform } = await req.json();
+    const { advertisement_id, platform, request_id } = await req.json();
+
+    // === IDEMPOTÊNCIA === reenvio da mesma requisição não processa de novo
+    const prior = await getIdempotentResult(base44, request_id, OP);
+    if (prior) {
+      return Response.json(prior.result.body, { status: prior.result_status || 200 });
+    }
 
     if (!advertisement_id || !platform) {
-      return Response.json({ error: 'Parâmetros obrigatórios faltando' }, { status: 400 });
+      const errBody = { error: 'Parâmetros obrigatórios faltando' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     // Fetch the ad
@@ -22,17 +33,21 @@ export default async function(req) {
     const result = await processSingleShare(base44, user, advertisement, platform);
 
     if (!result.ok) {
-      return Response.json({ error: result.error }, { status: 400 });
+      const errBody = { error: result.error };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
-    return Response.json({
+    const body = {
       success: true,
       pointsCost: result.pointsCost,
       alreadyEarned: result.alreadyEarned === true,
       message: result.alreadyEarned
         ? result.cooldownMessage
         : `-${result.pointsCost} pontos debitados do criador`
-    });
+    };
+    await recordIdempotency(base44, request_id, OP, user.email, body, 200);
+    return Response.json(body);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

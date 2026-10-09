@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { atomicDebitBalance, atomicCreditBalance } from '../../shared/atomicFinance.ts';
+
+const OP = 'transfer_email';
 
 Deno.serve(async (req) => {
   try {
@@ -9,62 +13,84 @@ Deno.serve(async (req) => {
     const {
       sender_email, sender_name,
       receiver_email, receiver_name,
-      points_amount, transaction_value, note, type, listing_id
+      points_amount, transaction_value, note, type, listing_id, request_id
     } = await req.json();
 
+    // === IDEMPOTÊNCIA ===
+    const prior = await getIdempotentResult(base44, request_id, OP);
+    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
+
     if (!sender_email || !receiver_email) {
-      return Response.json({ success: false, error: 'Emails são obrigatórios' }, { status: 400 });
+      const errBody = { success: false, error: 'Emails são obrigatórios' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
     if (sender_email === receiver_email) {
-      return Response.json({ success: false, error: 'Não pode transferir para si mesmo' }, { status: 400 });
+      const errBody = { success: false, error: 'Não pode transferir para si mesmo' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
     if (!points_amount || points_amount < 1) {
-      return Response.json({ success: false, error: 'Quantidade de pontos inválida' }, { status: 400 });
+      const errBody = { success: false, error: 'Quantidade de pontos inválida' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
     if (sender_email !== user.email) {
-      return Response.json({ success: false, error: 'Você só pode transferir seus próprios pontos' }, { status: 403 });
+      const errBody = { success: false, error: 'Você só pode transferir seus próprios pontos' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
+      return Response.json(errBody, { status: 403 });
+    }
+
+    const amount = Number(points_amount);
+
+    // Valida listing do marketplace E exige que o destinatário seja o vendedor real
+    if (type === 'marketplace' && listing_id) {
+      const listing = await base44.asServiceRole.entities.PointsListing.get(listing_id);
+      if (!listing || listing.status !== 'active') {
+        const errBody = { success: false, error: 'Anúncio já foi vendido ou removido' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
+      }
+      if (listing.points_amount !== amount) {
+        const errBody = { success: false, error: 'Quantidade não corresponde ao anúncio' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
+      }
+      // PROTEÇÃO: o destinatário informado deve ser o vendedor real do listing
+      if (receiver_email !== listing.seller_email) {
+        const errBody = { success: false, error: 'Destinatário inválido para este anúncio' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
+        return Response.json(errBody, { status: 403 });
+      }
     }
 
     // Saldo do remetente via UserPoints (service role para acesso total)
     const senderArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: sender_email });
     const senderPoints = senderArr[0];
-    if (!senderPoints || (senderPoints.balance || 0) < points_amount) {
-      return Response.json({ success: false, error: 'Saldo insuficiente' }, { status: 400 });
+    if (!senderPoints) {
+      const errBody = { success: false, error: 'Saldo insuficiente' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
-    // Valida listing do marketplace
-    if (type === 'marketplace' && listing_id) {
-      const listing = await base44.asServiceRole.entities.PointsListing.get(listing_id);
-      if (!listing || listing.status !== 'active') {
-        return Response.json({ success: false, error: 'Anúncio já foi vendido ou removido' }, { status: 400 });
-      }
-      if (listing.points_amount !== points_amount) {
-        return Response.json({ success: false, error: 'Quantidade não corresponde ao anúncio' }, { status: 400 });
-      }
+    // === DÉBITO ATÔMICO DO REMETENTE === (só debita se balance >= amount)
+    const debit = await atomicDebitBalance(base44, 'UserPoints', senderPoints.id, amount);
+    if (!debit.ok) {
+      const errBody = { success: false, error: debit.error };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
-    // Deduz do remetente
-    await base44.asServiceRole.entities.UserPoints.update(senderPoints.id, {
-      balance: senderPoints.balance - points_amount,
-      total_spent: (senderPoints.total_spent || 0) + points_amount,
-      last_activity: new Date().toISOString()
-    });
-
-    // Credita o destinatário
+    // Credita o destinatário (atômico)
     const receiverArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: receiver_email });
     if (receiverArr.length > 0) {
-      const rp = receiverArr[0];
-      await base44.asServiceRole.entities.UserPoints.update(rp.id, {
-        balance: (rp.balance || 0) + points_amount,
-        total_earned: (rp.total_earned || 0) + points_amount,
-        last_activity: new Date().toISOString()
-      });
+      await atomicCreditBalance(base44, 'UserPoints', receiverArr[0].id, amount);
     } else {
       await base44.asServiceRole.entities.UserPoints.create({
         user_email: receiver_email,
         user_name: receiver_name || 'Usuário',
-        balance: points_amount,
-        total_earned: points_amount,
+        balance: amount,
+        total_earned: amount,
         last_activity: new Date().toISOString()
       });
     }
@@ -75,9 +101,9 @@ Deno.serve(async (req) => {
       user_email: sender_email,
       user_name: sender_name || user.full_name || 'Usuário',
       type: senderTxType,
-      points: -points_amount,
+      points: -amount,
       description: note || (type === 'marketplace'
-        ? 'Compra de ' + points_amount + ' pts no marketplace'
+        ? 'Compra de ' + amount + ' pts no marketplace'
         : 'Transferência para ' + (receiver_name || '')),
       transfer_email: receiver_email,
       transfer_name: receiver_name || 'Usuário',
@@ -89,10 +115,10 @@ Deno.serve(async (req) => {
       user_email: receiver_email,
       user_name: receiver_name || 'Usuário',
       type: receiverTxType,
-      points: points_amount,
+      points: amount,
       description: note || (type === 'marketplace'
-        ? 'Venda de ' + points_amount + ' pts no marketplace'
-        : 'Recebeu ' + points_amount + ' pts de ' + (sender_name || '')),
+        ? 'Venda de ' + amount + ' pts no marketplace'
+        : 'Recebeu ' + amount + ' pts de ' + (sender_name || '')),
       transfer_email: sender_email,
       transfer_name: sender_name || 'Usuário',
       transaction_value: transaction_value || 0
@@ -104,7 +130,7 @@ Deno.serve(async (req) => {
       sender_name: sender_name || user.full_name || 'Usuário',
       receiver_email,
       receiver_name: receiver_name || 'Usuário',
-      points_amount,
+      points_amount: amount,
       transaction_value: transaction_value || 0,
       note: note || '',
       type: type || 'direct',
@@ -121,7 +147,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const newBalance = senderPoints.balance - points_amount;
+    const newBalance = Number(debit.record.balance) || 0;
 
     // Cancela anúncios ativos do remetente que ele não consegue mais cumprir (saldo insuficiente)
     const myListings = await base44.asServiceRole.entities.PointsListing.filter({ seller_email: sender_email, status: 'active' });
@@ -131,16 +157,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({
+    const resultBody = {
       success: true,
       message: 'Transferência realizada com sucesso!',
       data: {
-        points_transferred: points_amount,
+        points_transferred: amount,
         sender_new_balance: newBalance,
         receiver_email,
         type: type || 'direct'
       }
-    });
+    };
+    await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+    return Response.json(resultBody);
   } catch (error) {
     return Response.json({ success: false, error: error.message }, { status: 500 });
   }
