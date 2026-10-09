@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Building2, Play, Package, Star, TrendingUp, Users,
   Gift, BarChart3, ShieldCheck, Settings, Coins, Target,
-  ChevronLeft, ChevronRight, Globe, Tags, Banknote, SlidersHorizontal, ArrowRightLeft
+  ChevronLeft, ChevronRight, Globe, Tags, Banknote, SlidersHorizontal, ArrowRightLeft, Menu
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminCompanies from '@/components/admin/AdminCompanies';
@@ -53,6 +53,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState('stats');
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
 
   useEffect(() => {
@@ -89,8 +90,10 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Mobile overlay */}
+      {mobileOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />}
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full z-50 flex flex-col glass border-r border-border transition-all duration-300 ${collapsed ? 'w-16' : 'w-56'}`}>
+      <aside className={`fixed top-0 left-0 h-full z-50 flex flex-col glass border-r border-border transition-all duration-300 w-64 lg:w-auto ${collapsed ? 'lg:w-16' : 'lg:w-56'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
         <div className={`flex items-center gap-2 h-14 px-4 border-b border-border ${collapsed ? 'justify-center' : ''}`}>
           <div className="w-7 h-7 rounded-lg bg-gold flex items-center justify-center flex-shrink-0">
@@ -108,7 +111,7 @@ export default function Admin() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setActiveTab(tab.id); setMobileOpen(false); }}
               title={collapsed ? tab.label : undefined}
               className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
@@ -148,7 +151,7 @@ export default function Admin() {
         {/* Collapse Toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-muted transition-all"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-secondary border border-border hidden lg:flex items-center justify-center hover:bg-muted transition-all"
         >
           {collapsed
             ? <ChevronRight className="w-3 h-3 text-muted-foreground" />
@@ -158,9 +161,15 @@ export default function Admin() {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 min-h-screen transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-56'}`}>
+      <main className={`flex-1 min-h-screen transition-all duration-300 ${collapsed ? 'lg:ml-16' : 'lg:ml-56'}`}>
         {/* Top bar */}
-        <div className="sticky top-0 z-40 glass border-b border-border h-14 flex items-center px-6 gap-3">
+        <div className="sticky top-0 z-40 glass border-b border-border h-14 flex items-center px-4 lg:px-6 gap-3">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
           {activeTabData && (
             <div className="flex items-center gap-2">
               <activeTabData.icon className="w-4 h-4 text-gold" />
@@ -170,7 +179,7 @@ export default function Admin() {
         </div>
 
         {/* Page Content */}
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {pendingWithdrawals > 0 && activeTab !== 'withdrawals' && (
             <button
               onClick={() => setActiveTab('withdrawals')}

@@ -260,23 +260,35 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
         (ai.receiver_name_found || ai.name_found || '').toLowerCase().trim()
       ].join('|');
 
-      // Pagina por TODAS as compras do sistema (limite de 5000 por chamada)
-      const allPurchases: any[] = [];
-      let hasMore = true;
-      let skip = 0;
-      while (hasMore) {
-        const batch = await base44.asServiceRole.entities.PointsPurchase.list('-created_date', 5000, skip);
-        allPurchases.push(...batch);
-        hasMore = batch.length === 5000;
-        skip += 5000;
-        // Proteção: limite de 100.000 registros para evitar loop infinito
-        if (skip > 100000) break;
+      // ========================================================================
+      // DETECÇÃO DE DUPLICIDADE — queries direcionadas no servidor
+      // (substitui o scan completo de todas as compras do sistema)
+      // ========================================================================
+
+      // 1. URL exata do comprovante (mesma imagem reutilizada) — campo top-level
+      if (purchase.receipt_image_url) {
+        const urlMatches = await base44.asServiceRole.entities.PointsPurchase.filter({
+          receipt_image_url: purchase.receipt_image_url,
+          id: { $ne: purchase_id }
+        });
+        if (urlMatches.length > 0) {
+          duplicateSuspected = true;
+          duplicateMatchType = 'image_url';
+          const other = urlMatches[0];
+          const sameUser = other.user_email === purchase.user_email;
+          duplicateReason = sameUser
+            ? `Comprovante já utilizado em compra anterior (${other.transaction_id})`
+            : `Comprovante já utilizado por outro usuário (${other.transaction_id})`;
+        }
       }
 
-      // 1. Código da transação normalizado (chave primária — mais confiável)
-      if (txnCodeNorm && txnCodeNorm.length >= 6) {
-        const codeDuplicates = allPurchases.filter(p =>
-          p.id !== purchase_id &&
+      // 2. Código da transação normalizado (chave primária — mais confiável)
+      if (!duplicateSuspected && txnCodeNorm && txnCodeNorm.length >= 6) {
+        const codeMatches = await base44.asServiceRole.entities.PointsPurchase.filter({
+          'receipt_analysis.transaction_code_found': ai.transaction_code_found,
+          id: { $ne: purchase_id }
+        });
+        const codeDuplicates = codeMatches.filter(p =>
           normalizeCode(p.receipt_analysis?.transaction_code_found || '') === txnCodeNorm
         );
         if (codeDuplicates.length > 0) {
@@ -290,26 +302,13 @@ Seja rigoroso mas justo. Comprovantes legíveis e corretos devem ter confidence 
         }
       }
 
-      // 2. URL exata do comprovante (mesma imagem reutilizada)
-      if (!duplicateSuspected && purchase.receipt_image_url) {
-        const urlDuplicates = allPurchases.filter(p =>
-          p.id !== purchase_id &&
-          p.receipt_image_url === purchase.receipt_image_url
-        );
-        if (urlDuplicates.length > 0) {
-          duplicateSuspected = true;
-          duplicateMatchType = 'image_url';
-          const other = urlDuplicates[0];
-          const sameUser = other.user_email === purchase.user_email;
-          duplicateReason = sameUser
-            ? `Comprovante já utilizado em compra anterior (${other.transaction_id})`
-            : `Comprovante já utilizado por outro usuário (${other.transaction_id})`;
-        }
-      }
-
       // 3. Impressão digital composta (valor + data + recebedor) — fallback
-      if (!duplicateSuspected && fingerprint.length > 5) {
-        const fpDuplicates = allPurchases.filter(p => {
+      if (!duplicateSuspected && fingerprint.length > 5 && ai.amount_found != null) {
+        const fpMatches = await base44.asServiceRole.entities.PointsPurchase.filter({
+          'receipt_analysis.amount_found': ai.amount_found,
+          id: { $ne: purchase_id }
+        });
+        const fpDuplicates = fpMatches.filter(p => {
           if (p.id === purchase_id) return false;
           const pa = p.receipt_analysis || {};
           const otherFp = [
