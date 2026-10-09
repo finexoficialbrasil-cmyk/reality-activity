@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Zap, Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard, TrendingUp } from 'lucide-react';
+import { Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { usePublicData } from '@/hooks/usePublicData';
+import Logo from '@/components/layout/Logo';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -57,16 +58,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <img 
-              src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
-              alt="Reality Activity"
-              className="h-8"
-            />
-          </Link>
+          <Logo size={40} />
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-6">
