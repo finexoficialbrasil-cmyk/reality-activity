@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ArrowRight, Megaphone } from 'lucide-react';
 import HeroAnimation from '@/components/home/HeroAnimation';
+import HeroAnimationMobile from '@/components/home/HeroAnimationMobile';
 
 export default function HeroSection({ user, authLoading }) {
   return (
@@ -43,12 +44,22 @@ export default function HeroSection({ user, authLoading }) {
           />
 
           <div className="relative z-10 p-6">
+            {/* Animação compacta acima do texto */}
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="mb-2 -mt-1"
+            >
+              <HeroAnimationMobile />
+            </motion.div>
+
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-5 rounded-full"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full"
               style={{
                 background: 'hsl(220 15% 13% / 0.8)',
                 border: '1px solid hsl(45 100% 55% / 0.35)',
