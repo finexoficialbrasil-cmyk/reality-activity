@@ -115,10 +115,10 @@ export default function HeroSection({ user, authLoading }) {
               ) : !user ? (
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
+                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(285 85% 62%), hsl(290 85% 48%))',
-                    boxShadow: '0 8px 30px hsl(285 85% 60% / 0.4), inset 0 1px 0 hsl(280 80% 82% / 0.5)',
+                    background: 'linear-gradient(90deg, #E823E8, #8A2BE2)',
+                    boxShadow: '0 8px 30px rgba(232,35,232,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -129,10 +129,10 @@ export default function HeroSection({ user, authLoading }) {
               ) : (
                 <Link
                   to="/dashboard?tab=anuncios"
-                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
+                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(285 85% 62%), hsl(290 85% 48%))',
-                    boxShadow: '0 8px 30px hsl(285 85% 60% / 0.4), inset 0 1px 0 hsl(280 80% 82% / 0.5)',
+                    background: 'linear-gradient(90deg, #E823E8, #8A2BE2)',
+                    boxShadow: '0 8px 30px rgba(232,35,232,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -216,7 +216,8 @@ export default function HeroSection({ user, authLoading }) {
             ) : !user ? (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-primary-foreground font-bold px-7 py-3 rounded-2xl hover:bg-gold-dark transition-all animate-pulse-gold hover:scale-105"
+                className="inline-flex items-center gap-2 text-white font-bold px-7 py-3 rounded-2xl hover:scale-105 transition-all"
+                style={{ background: 'linear-gradient(90deg, #E823E8, #8A2BE2)', boxShadow: '0 8px 30px rgba(232,35,232,0.4)' }}
               >
                 <Zap className="w-4 h-4" />
                 Começar Grátis
@@ -224,7 +225,8 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-purple-300 to-gold-dark text-primary-foreground font-bold px-7 py-3.5 rounded-2xl border border-gold/30 shadow-[0_8px_30px_hsl(285_85%_60%/0.35)] hover:shadow-[0_8px_40px_hsl(285_85%_60%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-2xl border border-pink-500/30 hover:scale-105 active:scale-95 transition-all duration-300"
+                style={{ background: 'linear-gradient(90deg, #E823E8, #8A2BE2)', boxShadow: '0 8px 30px rgba(232,35,232,0.35)' }}
               >
                 <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
