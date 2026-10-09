@@ -168,12 +168,12 @@ export default function HeroAnimation() {
       {/* Badge "+25 pts" */}
       <motion.div
         className="absolute bottom-16 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(270 80% 65% / 0.4)' }}
+        style={{ borderColor: 'hsl(45 100% 55% / 0.5)', boxShadow: '0 0 14px hsl(45 100% 55% / 0.35)' }}
         animate={{ y: [0, 8, 0], opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 3, repeat: Infinity, delay: 0.5, ease: 'easeInOut' }}
       >
-        <Gift className="w-3.5 h-3.5 text-purple" />
-        <span className="text-xs font-bold text-purple font-grotesk">+25 pts</span>
+        <Gift className="w-3.5 h-3.5 text-coin" />
+        <span className="text-xs font-bold text-coin font-grotesk">+25 pts</span>
       </motion.div>
 
       {/* Badge "Compartilhado" */}
