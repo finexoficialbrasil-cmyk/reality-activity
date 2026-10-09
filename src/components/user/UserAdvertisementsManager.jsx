@@ -94,7 +94,7 @@ export default function UserAdvertisementsManager({ user, userPoints, onEditAd, 
               <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{ad.description}</p>
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 <span>{ad.shares_count || 0} compartilhamentos</span>
-                <span className="text-gold">Custo: {ad.cost_to_publish}pts / Recompensa: +{ad.reward_per_share}pts</span>
+                <span className="text-coin">Custo: {ad.cost_to_publish}pts / Recompensa: +{ad.reward_per_share}pts</span>
               </div>
               <div className="mb-3">
                 <div className="flex items-center justify-between text-xs mb-1">
@@ -103,7 +103,7 @@ export default function UserAdvertisementsManager({ user, userPoints, onEditAd, 
                 </div>
                 <div className="w-full bg-secondary/60 rounded-full h-2 overflow-hidden border border-border">
                   <div
-                    className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-coin to-coin-dark rounded-full transition-all"
                     style={{ width: `${spentPct}%` }}
                   />
                 </div>

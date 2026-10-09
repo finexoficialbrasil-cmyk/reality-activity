@@ -220,7 +220,7 @@ export default function AdminAdvertisersSpending() {
                         <div className="flex items-center justify-end gap-2">
                           <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-gold to-yellow-400 transition-all"
+                              className="h-full bg-gradient-to-r from-gold to-gold-dark transition-all"
                               style={{ width: `${Math.min(utilization, 100)}%` }}
                             />
                           </div>
