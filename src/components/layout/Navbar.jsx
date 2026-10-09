@@ -111,7 +111,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link to="/dashboard">
-                  <Button size="sm" className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold">
+                  <Button size="sm" className="font-bold text-white border border-red-300/40 hover:brightness-110" style={{ background: 'linear-gradient(135deg, #FF2800, #C81D00)', boxShadow: '0 6px 20px #FF280040' }}>
                     <LayoutDashboard className="w-4 h-4 mr-1.5" /> Dashboard
                   </Button>
                 </Link>
@@ -159,7 +159,8 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold mb-2">
+                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-white font-bold mb-2 border border-red-300/40"
+                  style={{ background: 'linear-gradient(135deg, #FF2800, #C81D00)', boxShadow: '0 6px 20px #FF280040' }}>
                   <LayoutDashboard className="w-5 h-5" />
                   <span>Meu Dashboard</span>
                 </Link>
