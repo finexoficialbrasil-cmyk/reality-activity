@@ -61,7 +61,7 @@ export default function Navbar() {
             <img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Reality Activity"
-              className="h-11 transition-transform group-hover:scale-105 drop-shadow-[0_0_12px_rgba(168,85,247,0.35)]"
+              className="h-10 transition-transform group-hover:scale-105"
             />
           </Link>
 

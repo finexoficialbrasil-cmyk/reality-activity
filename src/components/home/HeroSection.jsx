@@ -62,17 +62,15 @@ export default function HeroSection({ user, authLoading }) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full"
               style={{
                 background: 'hsl(220 15% 13% / 0.8)',
-                border: '1px solid #FF280059',
-                boxShadow: '0 0 12px #FF28001a',
+                border: '1px solid hsl(270 80% 65% / 0.3)',
               }}
             >
               <motion.span
-                className="w-2 h-2 rounded-full"
-                style={{ background: '#FF2800' }}
+                className="w-2 h-2 rounded-full bg-purple"
                 animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
-              <span className="text-[11px] font-bold tracking-wide" style={{ color: '#FF2800' }}>Plataforma de Recompensas</span>
+              <span className="text-[11px] font-bold tracking-wide text-foreground">Plataforma de Recompensas</span>
             </motion.div>
 
             {/* Headline */}
@@ -83,13 +81,7 @@ export default function HeroSection({ user, authLoading }) {
               className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-3 text-white"
             >
               Cada clique vira{' '}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: 'linear-gradient(135deg, #FF2800, #FF6B4D, #C81D00)',
-                  filter: 'drop-shadow(0 0 12px #FF280066)',
-                }}
-              >
+              <span className="text-white">
                 Pontos
               </span>{' '}
               de verdade.
@@ -175,12 +167,11 @@ export default function HeroSection({ user, authLoading }) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 mb-4 rounded-full glass text-xs font-bold tracking-wide"
-            style={{ border: '1px solid #FF280059', color: '#FF2800' }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 mb-4 rounded-full glass border border-purple/30 text-xs font-bold tracking-wide text-foreground"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#FF2800' }} />
-              <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: '#FF2800' }} />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple" />
             </span>
             Plataforma de Recompensas
           </motion.div>
@@ -192,13 +183,7 @@ export default function HeroSection({ user, authLoading }) {
             className="font-grotesk font-extrabold text-5xl leading-[1.1] tracking-tight mb-3 text-white"
           >
             Cada clique vira{' '}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage: 'linear-gradient(90deg, #FF2800, #FF6B4D, #C81D00)',
-                filter: 'drop-shadow(0 0 25px #FF28008c)',
-              }}
-            >
+            <span className="text-white">
               Pontos
             </span>{' '}
             de verdade.
