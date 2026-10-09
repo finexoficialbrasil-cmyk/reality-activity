@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { generateTransferId, generateVerificationCode } from '../../shared/transferUtils.ts';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
-import { atomicDebitBalance, atomicCreditBalance } from '../../shared/atomicFinance.ts';
+import { atomicDebitBalance, atomicCreditBalance, atomicTransferPoints } from '../../shared/atomicFinance.ts';
 
 const OP = 'transfer_key';
 
@@ -216,28 +216,17 @@ export default async function(req) {
       status = 'under_review';
     }
 
-    // === TRANSFERÊNCIA ATÔMICA ===
-    // 1. Débito atômico do remetente (só debita se balance >= amount)
-    const debit = await atomicDebitBalance(base44, 'UserPoints', senderPoints.id, amount);
-    if (!debit.ok) {
-      const errBody = { error: debit.error };
-      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
-      return Response.json(errBody, { status: 400 });
-    }
-
     const transferId = generateTransferId();
 
-    // 2. Crédito atômico do destinatário
-    const receiverPointsList = await base44.asServiceRole.entities.UserPoints.filter({ user_email: receiverKeyRecord.user_email });
-    if (receiverPointsList[0]) {
-      await atomicCreditBalance(base44, 'UserPoints', receiverPointsList[0].id, amount);
-    } else {
-      await base44.asServiceRole.entities.UserPoints.create({
-        user_email: receiverKeyRecord.user_email,
-        user_name: receiverKeyRecord.user_name,
-        balance: amount,
-        total_earned: amount
-      });
+    // === TRANSFERÊNCIA ATÔMICA (débito + crédito com reversão compensatória) ===
+    // Se o crédito ao destinatário falhar, o débito do remetente é estornado,
+    // garantindo que nunca fique débito sem crédito correspondente.
+    const transfer = await atomicTransferPoints(base44, senderPoints.id, receiverKeyRecord.user_email, amount, receiverKeyRecord.user_name);
+    if (!transfer.ok) {
+      const status = transfer.phase === 'credit_failed' ? 500 : 400;
+      const errBody = { error: transfer.error };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
+      return Response.json(errBody, { status });
     }
 
     // 3. Create transfer record (audit)

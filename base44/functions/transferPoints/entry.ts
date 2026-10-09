@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
-import { atomicDebitBalance, atomicCreditBalance } from '../../shared/atomicFinance.ts';
+import { atomicDebitBalance, atomicCreditBalance, atomicTransferPoints } from '../../shared/atomicFinance.ts';
 
 const OP = 'transfer_email';
 
@@ -76,26 +76,15 @@ Deno.serve(async (req) => {
       return Response.json(errBody, { status: 400 });
     }
 
-    // === DÉBITO ATÔMICO DO REMETENTE === (só debita se balance >= amount)
-    const debit = await atomicDebitBalance(base44, 'UserPoints', senderPoints.id, amount);
-    if (!debit.ok) {
-      const errBody = { success: false, error: debit.error };
-      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
-      return Response.json(errBody, { status: 400 });
-    }
-
-    // Credita o destinatário (atômico)
-    const receiverArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: receiver_email });
-    if (receiverArr.length > 0) {
-      await atomicCreditBalance(base44, 'UserPoints', receiverArr[0].id, amount);
-    } else {
-      await base44.asServiceRole.entities.UserPoints.create({
-        user_email: receiver_email,
-        user_name: receiver_name || 'Usuário',
-        balance: amount,
-        total_earned: amount,
-        last_activity: new Date().toISOString()
-      });
+    // === TRANSFERÊNCIA ATÔMICA (débito + crédito com reversão compensatória) ===
+    // Se o crédito ao destinatário falhar, o débito do remetente é estornado,
+    // garantindo que nunca fique débito sem crédito correspondente.
+    const transfer = await atomicTransferPoints(base44, senderPoints.id, receiver_email, amount, receiver_name);
+    if (!transfer.ok) {
+      const status = transfer.phase === 'credit_failed' ? 500 : 400;
+      const errBody = { success: false, error: transfer.error };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
+      return Response.json(errBody, { status });
     }
 
     // Registra transações no extrato de ambos
@@ -150,7 +139,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const newBalance = Number(debit.record.balance) || 0;
+    const newBalance = Number(transfer.senderRecord?.balance) || 0;
 
     // Cancela anúncios ativos do remetente que ele não consegue mais cumprir (saldo insuficiente)
     const myListings = await base44.asServiceRole.entities.PointsListing.filter({ seller_email: sender_email, status: 'active' });

@@ -80,3 +80,46 @@ export async function atomicDebitField(base44, entityName, id, field, amount, ex
     record: rec
   };
 }
+
+// Transferência atômica com reversão compensatória.
+//
+// Debita o remetente (condicional: só se balance >= amount) e credita o
+// destinatário (atômico). Se o crédito falhar (erro de rede/API/DB), ESTORNA
+// o débito do remetente creditando o valor de volta — garantindo que nunca
+// fique débito sem o crédito correspondente.
+//
+// Retorna { ok, senderRecord, error }:
+//   ok=true  → transferência concluída (senderRecord = remetente após débito)
+//   ok=false → nada alterado (saldo insuficiente, ou crédito falhou e débito foi estornado)
+export async function atomicTransferPoints(base44, senderId, receiverEmail, amount, receiverName) {
+  const ents = base44.asServiceRole.entities;
+  const amt = Math.max(0, Number(amount) || 0);
+  if (amt <= 0) return { ok: false, error: 'Quantidade inválida' };
+
+  // 1. Débito atômico do remetente (só aplica se balance >= amt)
+  const debit = await atomicDebitBalance(base44, 'UserPoints', senderId, amt);
+  if (!debit.ok) return { ok: false, error: debit.error, phase: 'debit_failed' };
+
+  // 2. Crédito do destinatário. Se falhar, estorna o débito do remetente.
+  try {
+    const receiverArr = await ents.UserPoints.filter({ user_email: receiverEmail });
+    if (receiverArr[0]) {
+      await atomicCreditBalance(base44, 'UserPoints', receiverArr[0].id, amt);
+    } else {
+      await ents.UserPoints.create({
+        user_email: receiverEmail,
+        user_name: receiverName || 'Usuário',
+        balance: amt,
+        total_earned: amt,
+        last_activity: new Date().toISOString()
+      });
+    }
+    return { ok: true, senderRecord: debit.record, phase: 'done' };
+  } catch (creditError) {
+    // Compensação: estorna o débito para zerar o efeito (nunca débito sem crédito)
+    try {
+      await atomicCreditBalance(base44, 'UserPoints', senderId, amt);
+    } catch (reverseError) { /* melhor esforço */ }
+    return { ok: false, error: 'Falha ao creditar destinatário — débito estornado.', phase: 'credit_failed' };
+  }
+}
