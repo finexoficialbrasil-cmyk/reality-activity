@@ -184,22 +184,21 @@ export default async function(req) {
         });
       } catch (e) { /* Email may fail */ }
 
+      // Não registra idempotência aqui: este é um estado intermediário.
+      // O replay do código de verificação deve poder reenviar, e a confirmação
+      // final (com o mesmo request_id) é que será deduplicada após o débito.
       const body2fa = { needs_verification: true, message: 'Código de segurança enviado para seu e-mail.', risk_level: riskLevel };
-      await recordIdempotency(base44, request_id, OP, user.email, body2fa, 200);
       return Response.json(body2fa);
     }
 
     // Validate 2FA code
     if (requires2fa && verification_code) {
       if (!senderKey.pending_2fa_code || senderKey.pending_2fa_code !== verification_code) {
-        const errBody = { error: 'Código de verificação inválido' };
-        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
-        return Response.json(errBody, { status: 400 });
+        // Não registra idempotência: permite retry com novo código.
+        return Response.json({ error: 'Código de verificação inválido' }, { status: 400 });
       }
       if (new Date(senderKey.pending_2fa_expiry) < now) {
-        const errBody = { error: 'Código de verificação expirado. Solicite novamente.' };
-        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
-        return Response.json(errBody, { status: 400 });
+        return Response.json({ error: 'Código de verificação expirado. Solicite novamente.' }, { status: 400 });
       }
       await base44.asServiceRole.entities.UserTransferKey.update(senderKey.id, {
         pending_2fa_code: '',

@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { atomicDebitField, atomicCreditBalance } from '../../shared/atomicFinance.ts';
+
+const OP = 'video_points';
 
 Deno.serve(async (req) => {
   try {
@@ -6,14 +10,25 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { video_id, watch_seconds } = await req.json();
-    if (!video_id) return Response.json({ error: 'video_id é obrigatório' }, { status: 400 });
+    const { video_id, watch_seconds, request_id } = await req.json();
 
-    // Busca o vídeo no servidor (fonte confiável de pontos/duração)
+    // === IDEMPOTÊNCIA ===
+    const prior = await getIdempotentResult(base44, request_id, OP);
+    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
+
+    if (!video_id) {
+      const errBody = { error: 'video_id é obrigatório' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
+    // Busca o vídeo no servidor (fonte confiável de pontos/duração/orçamento)
     const videos = await base44.asServiceRole.entities.Video.filter({ id: video_id });
     const video = videos[0];
     if (!video || !video.is_active) {
-      return Response.json({ error: 'Vídeo indisponível' }, { status: 404 });
+      const errBody = { error: 'Vídeo indisponível' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 404);
+      return Response.json(errBody, { status: 404 });
     }
 
     // Calcula pontos no servidor — ignora valores enviados pelo cliente
@@ -22,14 +37,42 @@ Deno.serve(async (req) => {
     const bonus = video.bonus_points || 50;
 
     const secs = Math.max(0, Math.min(Number(watch_seconds) || 0, duration));
-    if (secs <= 0) return Response.json({ error: 'Tempo insuficiente' }, { status: 400 });
+    if (secs <= 0) {
+      const errBody = { error: 'Tempo insuficiente' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
 
     const completed = secs >= duration;
     const pts = Math.floor(secs * pps) + (completed ? bonus : 0);
-    if (pts <= 0) return Response.json({ error: 'Pontos insuficientes' }, { status: 400 });
+    if (pts <= 0) {
+      const errBody = { error: 'Pontos insuficientes' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
 
-    // Trava de 24h: busca transações recentes do usuário+vídeo e valida a data em JS
-    // (usa o atributo built-in created_date — não depende de suporte a $gte no filter)
+    // === FINANCIAMENTO OBRIGATÓRIO ===
+    // Pontos de vídeo só podem ser creditados se houver orçamento financiado no vídeo.
+    // Sem orçamento, o vídeo NÃO gera pontos (impede passivo financeiro ilimitado).
+    const videoBudget = Number(video.budget_remaining) || 0;
+    if (videoBudget <= 0) {
+      const errBody = {
+        success: false,
+        error: 'Este vídeo não possui orçamento disponível para distribuir pontos. Aguarde o administrador abastecer a campanha.'
+      };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
+    // Limita os pontos ao orçamento disponível (paga o que restar)
+    const ptsToAward = Math.min(pts, videoBudget);
+    if (ptsToAward <= 0) {
+      const errBody = { error: 'Orçamento do vídeo esgotado' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
+    // Trava de 24h: busca transações recentes do usuário+vídeo
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recent = await base44.asServiceRole.entities.PointsTransaction.filter(
       { user_email: user.email, type: 'earned_watch', video_id },
@@ -41,57 +84,70 @@ Deno.serve(async (req) => {
       return d && d >= since24h;
     });
     if (watchedRecently) {
-      return Response.json({
+      const body = {
         success: false,
         reason: 'cooldown',
         message: 'Você já ganhou pontos assistindo este vídeo nas últimas 24h.'
-      });
+      };
+      await recordIdempotency(base44, request_id, OP, user.email, body, 200);
+      return Response.json(body);
     }
 
-    // Registra a transação
+    // === DÉBITO ATÔMICO DO ORÇAMENTO DO VÍDEO ===
+    // Só debita se budget_remaining >= ptsToAward (impede orçamento negativo e duplo crédito)
+    const debit = await atomicDebitField(
+      base44,
+      'Video',
+      video_id,
+      'budget_remaining',
+      ptsToAward,
+      { views_count: 1, total_points_awarded: ptsToAward }
+    );
+    if (!debit.ok) {
+      const errBody = { success: false, error: 'Orçamento do vídeo esgotado durante o processamento. Tente novamente.' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
+    // Registra a transação (origem rastreável: earned_watch + video_id)
     await base44.asServiceRole.entities.PointsTransaction.create({
       user_email: user.email,
       user_name: user.full_name,
       type: 'earned_watch',
-      points: pts,
+      points: ptsToAward,
       video_id,
       company_id: video.company_id,
       description: `Assistiu "${video.title}" por ${secs}s`,
       watch_seconds: secs
     });
 
-    // Atualiza saldo do usuário (upsert)
+    // Atualiza saldo do usuário (atômico, ou cria se primeira vez)
     const existing = await base44.asServiceRole.entities.UserPoints.filter({ user_email: user.email });
     if (existing.length > 0) {
+      await atomicCreditBalance(base44, 'UserPoints', existing[0].id, ptsToAward);
+      // incrementa videos_watched
       await base44.asServiceRole.entities.UserPoints.update(existing[0].id, {
-        balance: (existing[0].balance || 0) + pts,
-        total_earned: (existing[0].total_earned || 0) + pts,
-        videos_watched: (existing[0].videos_watched || 0) + 1,
-        last_activity: new Date().toISOString()
+        videos_watched: (existing[0].videos_watched || 0) + 1
       });
     } else {
       await base44.asServiceRole.entities.UserPoints.create({
         user_email: user.email,
         user_name: user.full_name,
-        balance: pts,
-        total_earned: pts,
+        balance: ptsToAward,
+        total_earned: ptsToAward,
         videos_watched: 1,
         last_activity: new Date().toISOString()
       });
     }
 
-    // Atualiza contadores do vídeo
-    await base44.asServiceRole.entities.Video.update(video_id, {
-      views_count: (video.views_count || 0) + 1,
-      total_points_awarded: (video.total_points_awarded || 0) + pts
-    });
-
-    return Response.json({
+    const resultBody = {
       success: true,
-      points: pts,
+      points: ptsToAward,
       watch_seconds: secs,
       completed
-    });
+    };
+    await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+    return Response.json(resultBody);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
+
+const OP = 'save_ad';
 
 export default async function(req) {
   try {
@@ -7,11 +11,17 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 });
 
     const body = await req.json();
-    const { mode, ad_id, title, description, type, link, category, budget_total, add_credit, reward_per_share, image_url, video_url } = body;
+    const { mode, ad_id, title, description, type, link, category, budget_total, add_credit, reward_per_share, image_url, video_url, request_id } = body;
+
+    // === IDEMPOTÊNCIA ===
+    const prior = await getIdempotentResult(base44, request_id, OP);
+    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
 
     // Valida campos obrigatórios
     if (!title || !link || !category) {
-      return Response.json({ error: 'Preencha todos os campos obrigatórios' }, { status: 400 });
+      const errBody = { error: 'Preencha todos os campos obrigatórios' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     // Busca saldo do usuário no servidor (fonte confiável)
@@ -19,23 +29,39 @@ export default async function(req) {
     const userPoints = userPointsList[0];
 
     if (mode === 'edit') {
-      // === EDIÇÃO ===
-      if (!ad_id) return Response.json({ error: 'ID do anúncio é obrigatório' }, { status: 400 });
+      if (!ad_id) {
+        const errBody = { error: 'ID do anúncio é obrigatório' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
+      }
 
-      // Busca o anúncio e valida propriedade
       const ad = await base44.asServiceRole.entities.Advertisement.get(ad_id);
-      if (!ad) return Response.json({ error: 'Anúncio não encontrado' }, { status: 404 });
+      if (!ad) {
+        const errBody = { error: 'Anúncio não encontrado' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 404);
+        return Response.json(errBody, { status: 404 });
+      }
 
       if (ad.user_email !== user.email && user.role !== 'admin') {
-        return Response.json({ error: 'Você não tem permissão para editar este anúncio' }, { status: 403 });
+        const errBody = { error: 'Você não tem permissão para editar este anúncio' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
+        return Response.json(errBody, { status: 403 });
       }
 
       const addAmount = Math.max(0, Number(add_credit) || 0);
 
-      // Valida saldo se vai adicionar créditos
+      // === DÉBITO ATÔMICO se vai adicionar créditos ===
       if (addAmount > 0) {
-        if (!userPoints || (userPoints.balance || 0) < addAmount) {
-          return Response.json({ error: `Saldo insuficiente. Você precisa de ${addAmount} pontos.` }, { status: 400 });
+        if (!userPoints) {
+          const errBody = { error: `Saldo insuficiente. Você precisa de ${addAmount} pontos.` };
+          await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+          return Response.json(errBody, { status: 400 });
+        }
+        const debit = await atomicDebitBalance(base44, 'UserPoints', userPoints.id, addAmount);
+        if (!debit.ok) {
+          const errBody = { error: `Saldo insuficiente. Você precisa de ${addAmount} pontos.` };
+          await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+          return Response.json(errBody, { status: 400 });
         }
       }
 
@@ -43,7 +69,6 @@ export default async function(req) {
       const newBudgetRemaining = (ad.budget_remaining || 0) + addAmount;
       const shouldReactivate = newBudgetRemaining > 0;
 
-      // Atualiza o anúncio (servidor)
       const updateData = {
         title,
         description: description || '',
@@ -60,14 +85,8 @@ export default async function(req) {
 
       await base44.asServiceRole.entities.Advertisement.update(ad_id, updateData);
 
-      // Debita pontos e registra transação se adicionou créditos
+      // Registra transação se adicionou créditos
       if (addAmount > 0) {
-        await base44.asServiceRole.entities.UserPoints.update(userPoints.id, {
-          balance: (userPoints.balance || 0) - addAmount,
-          total_spent: (userPoints.total_spent || 0) + addAmount,
-          last_activity: new Date().toISOString()
-        });
-
         await base44.asServiceRole.entities.PointsTransaction.create({
           user_email: user.email,
           user_name: user.full_name,
@@ -77,22 +96,36 @@ export default async function(req) {
         });
       }
 
-      return Response.json({
+      const resultBody = {
         success: true,
         message: 'Anúncio atualizado com sucesso!',
-        new_balance: (userPoints?.balance || 0) - addAmount,
+        new_balance: addAmount > 0 ? (Number(userPoints.balance) - addAmount) : (Number(userPoints?.balance) || 0),
         cost: addAmount
-      });
+      };
+      await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+      return Response.json(resultBody);
 
     } else {
       // === CRIAR ===
       const budget = Number(budget_total) || 0;
       if (budget < 1) {
-        return Response.json({ error: 'Orçamento deve ser maior que zero' }, { status: 400 });
+        const errBody = { error: 'Orçamento deve ser maior que zero' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
       }
 
-      if (!userPoints || (userPoints.balance || 0) < budget) {
-        return Response.json({ error: `Saldo insuficiente. Você precisa de ${budget} pontos.` }, { status: 400 });
+      if (!userPoints) {
+        const errBody = { error: `Saldo insuficiente. Você precisa de ${budget} pontos.` };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
+      }
+
+      // === DÉBITO ATÔMICO ===
+      const debit = await atomicDebitBalance(base44, 'UserPoints', userPoints.id, budget);
+      if (!debit.ok) {
+        const errBody = { error: `Saldo insuficiente. Você precisa de ${budget} pontos.` };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
       }
 
       // Cria o anúncio (servidor)
@@ -113,13 +146,6 @@ export default async function(req) {
         is_active: true
       });
 
-      // Debita pontos
-      await base44.asServiceRole.entities.UserPoints.update(userPoints.id, {
-        balance: (userPoints.balance || 0) - budget,
-        total_spent: (userPoints.total_spent || 0) + budget,
-        last_activity: new Date().toISOString()
-      });
-
       // Registra transação
       await base44.asServiceRole.entities.PointsTransaction.create({
         user_email: user.email,
@@ -129,12 +155,14 @@ export default async function(req) {
         description: `Orçamento de anúncio: ${title}`
       });
 
-      return Response.json({
+      const resultBody = {
         success: true,
         message: 'Anúncio publicado com sucesso!',
-        new_balance: (userPoints.balance || 0) - budget,
+        new_balance: Number(debit.record.balance) || 0,
         cost: budget
-      });
+      };
+      await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+      return Response.json(resultBody);
     }
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

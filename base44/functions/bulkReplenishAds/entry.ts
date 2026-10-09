@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.48';
+import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
+
+const OP = 'bulk_replenish';
 
 export default async function(req) {
   try {
@@ -7,15 +11,23 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 });
 
     const body = await req.json();
-    const { ad_ids, credit_per_ad } = body;
+    const { ad_ids, credit_per_ad, request_id } = body;
+
+    // === IDEMPOTÊNCIA ===
+    const prior = await getIdempotentResult(base44, request_id, OP);
+    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
 
     if (!Array.isArray(ad_ids) || ad_ids.length === 0) {
-      return Response.json({ error: 'Selecione ao menos um anúncio' }, { status: 400 });
+      const errBody = { error: 'Selecione ao menos um anúncio' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     const credit = Math.max(0, Number(credit_per_ad) || 0);
     if (credit <= 0) {
-      return Response.json({ error: 'Valor de crédito deve ser maior que zero' }, { status: 400 });
+      const errBody = { error: 'Valor de crédito deve ser maior que zero' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     // Busca saldo do usuário (fonte confiável)
@@ -24,10 +36,18 @@ export default async function(req) {
 
     const totalCost = credit * ad_ids.length;
 
-    if (!userPoints || (userPoints.balance || 0) < totalCost) {
-      return Response.json({
-        error: `Saldo insuficiente. Você precisa de ${totalCost} pontos (${credit} × ${ad_ids.length} anúncios).`
-      }, { status: 400 });
+    if (!userPoints) {
+      const errBody = { error: `Saldo insuficiente. Você precisa de ${totalCost} pontos.` };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
+    // === DÉBITO ATÔMICO DO CUSTO TOTAL === (só debita se balance >= totalCost)
+    const debit = await atomicDebitBalance(base44, 'UserPoints', userPoints.id, totalCost);
+    if (!debit.ok) {
+      const errBody = { error: `Saldo insuficiente. Você precisa de ${totalCost} pontos (${credit} × ${ad_ids.length} anúncios).` };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     // Processa cada anúncio: valida propriedade e adiciona créditos
@@ -59,17 +79,26 @@ export default async function(req) {
     }
 
     if (replenishedCount === 0) {
-      return Response.json({ error: 'Nenhum anúncio válido encontrado para repor' }, { status: 400 });
+      // Nenhum válido — reembolsa o débito (devolve pontos)
+      await base44.asServiceRole.entities.UserPoints.update(userPoints.id, {
+        balance: (Number(debit.record.balance) || 0) + totalCost,
+        total_spent: Math.max(0, (Number(debit.record.total_spent) || 0) - totalCost)
+      });
+      const errBody = { error: 'Nenhum anúncio válido encontrado para repor' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
     }
 
     const actualCost = credit * replenishedCount;
 
-    // Debita pontos do usuário (uma vez)
-    await base44.asServiceRole.entities.UserPoints.update(userPoints.id, {
-      balance: (userPoints.balance || 0) - actualCost,
-      total_spent: (userPoints.total_spent || 0) + actualCost,
-      last_activity: new Date().toISOString()
-    });
+    // Se nem todos foram repostos, reembolsa a diferença
+    if (replenishedCount < ad_ids.length) {
+      const refund = credit * (ad_ids.length - replenishedCount);
+      await base44.asServiceRole.entities.UserPoints.update(userPoints.id, {
+        balance: (Number(debit.record.balance) || 0) + refund,
+        total_spent: Math.max(0, (Number(debit.record.total_spent) || 0) - refund)
+      });
+    }
 
     // Registra transação única
     await base44.asServiceRole.entities.PointsTransaction.create({
@@ -80,14 +109,16 @@ export default async function(req) {
       description: `Reposição em massa: ${replenishedCount} anúncio(s) × ${credit} pts`
     });
 
-    return Response.json({
+    const resultBody = {
       success: true,
       message: `${replenishedCount} anúncio(s) reabastecido(s) com ${credit} pts cada`,
       replenished_count: replenishedCount,
       credit_per_ad: credit,
       total_cost: actualCost,
-      new_balance: (userPoints.balance || 0) - actualCost
-    });
+      new_balance: (Number(debit.record.balance) || 0) + (replenishedCount < ad_ids.length ? credit * (ad_ids.length - replenishedCount) : 0)
+    };
+    await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+    return Response.json(resultBody);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

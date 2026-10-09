@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Send, Search, AlertTriangle, ShieldCheck, ArrowLeft, Wallet, KeyRound, QrCode } from 'lucide-react';
 import QrScanner from './QrScanner';
 import { toast } from 'sonner';
+import { newRequestId } from '@/lib/requestId';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
@@ -21,6 +22,11 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+
+  // request_id estável para a intenção de transferência: reaproveitado entre o
+  // gatilho do 2FA e a confirmação, e em retries após queda de conexão. Limpo
+  // no sucesso/reset para que a próxima transferência gere um novo id.
+  const transferReqId = useRef(null);
 
   const balance = userPoints?.balance || 0;
   const amt = Number(amount) || 0;
@@ -69,11 +75,13 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
   const handleTransfer = async () => {
     setConfirmOpen(false);
     setTransferring(true);
+    if (!transferReqId.current) transferReqId.current = newRequestId();
     try {
       const response = await base44.functions.invoke('processTransfer', {
         receiver_key: receiverInfo.receiver_key,
         points_amount: amt,
-        sender_user_agent: navigator.userAgent
+        sender_user_agent: navigator.userAgent,
+        request_id: transferReqId.current
       });
       const data = response.data;
 
@@ -87,6 +95,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
 
       setResult(data);
       setStep('result');
+      transferReqId.current = null;
       if (onTransferComplete) onTransferComplete();
     } catch (e) {
       toast.error('Erro ao processar transferência');
@@ -103,7 +112,8 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
         receiver_key: receiverInfo.receiver_key,
         points_amount: amt,
         verification_code: verificationCode.trim(),
-        sender_user_agent: navigator.userAgent
+        sender_user_agent: navigator.userAgent,
+        request_id: transferReqId.current || newRequestId()
       });
       const data = response.data;
 
@@ -117,6 +127,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
       setResult(data);
       setStep('result');
       setVerificationCode('');
+      transferReqId.current = null;
       if (onTransferComplete) onTransferComplete();
     } catch (e) {
       toast.error('Erro ao verificar código');
@@ -132,6 +143,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
     setAmount('');
     setResult(null);
     setVerificationCode('');
+    transferReqId.current = null;
   };
 
   if (step === 'result' && result) {
