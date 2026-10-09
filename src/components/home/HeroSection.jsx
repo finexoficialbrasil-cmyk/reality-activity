@@ -108,10 +108,11 @@ export default function HeroSection({ user, authLoading }) {
               ) : !user ? (
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
+                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, #FF2800, #C81D00)',
-                    boxShadow: '0 8px 30px #FF280040, inset 0 1px 0 #FF6B4D80',
+                    background: 'linear-gradient(135deg, #FFD45A, #FFC928)',
+                    color: '#0B0D12',
+                    boxShadow: '0 8px 30px #FFC92840, inset 0 1px 0 #FFE68080',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -124,8 +125,8 @@ export default function HeroSection({ user, authLoading }) {
                   to="/dashboard?tab=anuncios"
                   className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, #FF2800, #C81D00)',
-                    boxShadow: '0 8px 30px #FF280040, inset 0 1px 0 #FF6B4D80',
+                    background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)',
+                    boxShadow: '0 8px 30px #FF4B2040, inset 0 1px 0 #FF8A5C80',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -217,10 +218,10 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 font-bold px-7 py-3.5 rounded-2xl text-white border border-red-300/40 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 font-bold px-7 py-3.5 rounded-2xl text-white border border-orange-400/40 transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{
-                  background: 'linear-gradient(135deg, #FF2800, #C81D00)',
-                  boxShadow: '0 8px 30px #FF280059',
+                  background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)',
+                  boxShadow: '0 8px 30px #FF4B2059',
                 }}
               >
                 <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
