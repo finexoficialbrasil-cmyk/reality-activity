@@ -15,14 +15,8 @@
       "description": "Email do usu\u00e1rio que originou a requisi\u00e7\u00e3o"
     },
     "result": {
-      "type": "object",
-      "description": "Resposta armazenada para replay idempotente",
-      "properties": {
-        "body": {},
-        "status": {
-          "type": "number"
-        }
-      }
+      "type": "string",
+      "description": "Resposta armazenada (JSON serializado) para replay idempotente"
     },
     "result_status": {
       "type": "number",

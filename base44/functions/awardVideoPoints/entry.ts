@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitField, atomicCreditBalance } from '../../shared/atomicFinance.ts';
 
 const OP = 'video_points';
@@ -14,7 +14,10 @@ Deno.serve(async (req) => {
 
     // === IDEMPOTÊNCIA ===
     const prior = await getIdempotentResult(base44, request_id, OP);
-    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
+    if (prior) {
+      const replay = decodeIdempotentResult(prior);
+      if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
 
     if (!video_id) {
       const errBody = { error: 'video_id é obrigatório' };

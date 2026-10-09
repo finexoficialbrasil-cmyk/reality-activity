@@ -50,14 +50,20 @@ export default function AdminPurchaseSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (settings.id) {
-        await base44.entities.PurchaseSettings.update(settings.id, settings);
+      const response = await base44.functions.invoke('saveFinancialSettings', {
+        purchase_settings: settings
+      });
+      const data = response.data;
+      if (data && data.financial_summary) {
+        const s = data.financial_summary;
+        const situacao = s.situation === 'prejuízo' ? '⚠️ PREJUÍZO' : s.situation === 'lucro' ? '✅ LUCRO' : '⚖️ EQUILÍBRIO';
+        toast.success(`Configurações salvas! ${situacao} (venda R$ ${s.price_per_point.toFixed(2)}/pto • recompra máx R$ ${s.max_buyback_rate.toFixed(2)}/pto)`);
       } else {
-        await base44.entities.PurchaseSettings.create(settings);
+        toast.success('Configurações salvas com sucesso!');
       }
-      toast.success('Configurações salvas com sucesso!');
     } catch (err) {
-      toast.error('Erro ao salvar: ' + (err.message || ''));
+      const msg = err?.response?.data?.message || err?.data?.message || err?.response?.data?.error || ('Erro ao salvar: ' + (err.message || ''));
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

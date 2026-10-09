@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { AlertCircle, Check, X, CheckCircle, PartyPopper, Sparkles, TrendingUp }
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/useCategories';
+import { newRequestId } from '@/lib/requestId';
 
 export default function UserAdvertisementForm({ user, userPoints, onAdCreated, ad }) {
   const [submitting, setSubmitting] = useState(false);
@@ -15,6 +16,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
   const CATEGORIES = activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }));
   const [success, setSuccess] = useState(null);
   const [linkError, setLinkError] = useState(null);
+  const adReqId = useRef(null);
   const [formData, setFormData] = useState(ad ? {
     title: ad.title,
     description: ad.description,
@@ -90,6 +92,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
     }
 
     setSubmitting(true);
+    if (!adReqId.current) adReqId.current = newRequestId();
     try {
       const isValid = await validateLink(formData.link);
       if (!isValid) {
@@ -111,10 +114,12 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         add_credit: Math.max(0, parseInt(formData.add_credit) || 0),
         reward_per_share: parseInt(formData.reward_per_share) || 10,
         image_url: formData.image_url,
-        video_url: formData.video_url
+        video_url: formData.video_url,
+        request_id: adReqId.current
       });
 
       const result = response.data;
+      adReqId.current = null;
 
       // Mostra tela de sucesso com relatório
       setSuccess({

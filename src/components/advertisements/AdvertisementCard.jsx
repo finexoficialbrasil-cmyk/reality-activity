@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useCategories } from '@/hooks/useCategories';
 import MoneyFloatEffect from '@/components/advertisements/MoneyFloatEffect';
 import { getBrandColor, getContrastColor } from '@/lib/brandColors';
+import { newRequestId } from '@/lib/requestId';
 
 const TelegramIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -156,7 +157,8 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
 
     base44.functions.invoke('processAdvertisementShare', {
       advertisement_id: ad.id,
-      platform
+      platform,
+      request_id: newRequestId()
     }).then(res => {
       if (res.data.alreadyEarned) {
         toast.info(res.data.message);

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.48';
-import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
 
 const OP = 'bulk_replenish';
@@ -15,7 +15,10 @@ export default async function(req) {
 
     // === IDEMPOTÊNCIA ===
     const prior = await getIdempotentResult(base44, request_id, OP);
-    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
+    if (prior) {
+      const replay = decodeIdempotentResult(prior);
+      if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
 
     if (!Array.isArray(ad_ids) || ad_ids.length === 0) {
       const errBody = { error: 'Selecione ao menos um anúncio' };

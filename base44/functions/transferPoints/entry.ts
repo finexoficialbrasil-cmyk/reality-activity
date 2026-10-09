@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { getIdempotentResult, recordIdempotency } from '../../shared/idempotency.ts';
+import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance, atomicCreditBalance } from '../../shared/atomicFinance.ts';
 
 const OP = 'transfer_email';
@@ -18,7 +18,10 @@ Deno.serve(async (req) => {
 
     // === IDEMPOTÊNCIA ===
     const prior = await getIdempotentResult(base44, request_id, OP);
-    if (prior) return Response.json(prior.result.body, { status: prior.result_status || 200 });
+    if (prior) {
+      const replay = decodeIdempotentResult(prior);
+      if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
 
     if (!sender_email || !receiver_email) {
       const errBody = { success: false, error: 'Emails são obrigatórios' };

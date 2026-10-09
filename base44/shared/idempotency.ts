@@ -28,10 +28,20 @@ export async function recordIdempotency(base44, request_id, operation, user_emai
       request_id,
       operation,
       user_email: user_email || '',
-      result: { body, status },
+      result: JSON.stringify(body),
       result_status: status
     });
   } catch (e) {
     // Ignora duplicidade — a proteção atômica já garantiu consistência.
+  }
+}
+
+// Decodifica o resultado armazenado para replay.
+export function decodeIdempotentResult(record) {
+  if (!record || !record.result) return null;
+  try {
+    return JSON.parse(record.result);
+  } catch (e) {
+    return null;
   }
 }

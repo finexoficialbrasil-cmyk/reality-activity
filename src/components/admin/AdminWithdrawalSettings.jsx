@@ -41,16 +41,26 @@ export default function AdminWithdrawalSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.WithdrawalSettings.update(settings.id, {
-        bch_enabled: settings.bch_enabled,
-        pix_enabled: settings.pix_enabled,
-        bch_buyback_rate: settings.bch_buyback_rate,
-        pix_buyback_rate: settings.pix_buyback_rate,
-        bch_warning: settings.bch_warning
+      const response = await base44.functions.invoke('saveFinancialSettings', {
+        withdrawal_settings: {
+          bch_enabled: settings.bch_enabled,
+          pix_enabled: settings.pix_enabled,
+          bch_buyback_rate: settings.bch_buyback_rate,
+          pix_buyback_rate: settings.pix_buyback_rate,
+          bch_warning: settings.bch_warning
+        }
       });
-      toast.success('Configurações salvas!');
+      const data = response.data;
+      if (data && data.financial_summary) {
+        const s = data.financial_summary;
+        const situacao = s.situation === 'prejuízo' ? '⚠️ PREJUÍZO' : s.situation === 'lucro' ? '✅ LUCRO' : '⚖️ EQUILÍBRIO';
+        toast.success(`Configurações salvas! ${situacao} (venda R$ ${s.price_per_point.toFixed(2)}/pto • recompra máx R$ ${s.max_buyback_rate.toFixed(2)}/pto)`);
+      } else {
+        toast.success('Configurações salvas!');
+      }
     } catch (e) {
-      toast.error('Erro ao salvar');
+      const msg = e?.response?.data?.message || e?.data?.message || e?.response?.data?.error || 'Erro ao salvar';
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

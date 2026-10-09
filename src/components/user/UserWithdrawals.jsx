@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Wallet, Bitcoin, AlertCircle, CheckCircle, Clock, XCircle, FileText, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { newRequestId } from '@/lib/requestId';
 
 export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
   const [settings, setSettings] = useState(null);
@@ -18,6 +19,8 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
     payment_data: '',
     pix_key_type: ''
   });
+  // request_id estável para a solicitação de saque (reaproveitado em retries, limpo no sucesso)
+  const withdrawalReqId = useRef(null);
 
   useEffect(() => {
     loadData();
@@ -75,17 +78,20 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
     if (pointsAmount > (userPoints?.balance || 0)) { toast.error('Saldo insuficiente'); return; }
 
     setSubmitting(true);
+    if (!withdrawalReqId.current) withdrawalReqId.current = newRequestId();
     try {
       // Processa saque no servidor (valida saldo, taxa e deduz pontos de forma segura)
       const response = await base44.functions.invoke('processWithdrawal', {
         points_amount: pointsAmount,
         method: formData.method,
         payment_data: formData.payment_data,
-        pix_key_type: formData.method === 'pix' ? formData.pix_key_type : undefined
+        pix_key_type: formData.method === 'pix' ? formData.pix_key_type : undefined,
+        request_id: withdrawalReqId.current
       });
 
       toast.success('Solicitação de saque enviada! Aguarde aprovação.');
       setFormData({ points_amount: '', method: '', payment_data: '', pix_key_type: '' });
+      withdrawalReqId.current = null;
       if (onWithdrawal) onWithdrawal();
       loadData();
     } catch (err) {
