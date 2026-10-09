@@ -131,7 +131,8 @@ export default function ShareAllButton({ user, ads, onShared }) {
       <div className="space-y-2.5">
         <Button
           onClick={handleCopy}
-          className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold text-base"
+          className="w-full h-12 text-white hover:opacity-90 font-bold text-base border-0"
+          style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 20px rgba(232,35,232,0.5), inset 0 1px 0 rgba(255,255,255,0.3)' }}
         >
           {copied ? (
             <>
@@ -200,7 +201,8 @@ export default function ShareAllButton({ user, ads, onShared }) {
         onClick={handleOpen}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold text-sm shadow-lg hover:from-gold-dark hover:to-gold-dark transition-all"
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-bold text-sm transition-all hover:opacity-95"
+        style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 22px rgba(232,35,232,0.55), 0 6px 24px rgba(138,43,226,0.45), inset 0 1px 0 rgba(255,255,255,0.3)' }}
       >
         <Zap className="w-5 h-5" />
         Compartilhar Tudo

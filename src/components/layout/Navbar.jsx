@@ -111,7 +111,8 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link to="/dashboard">
-                  <Button size="sm" className="bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold">
+                  <Button size="sm" className="text-white font-bold border-0 hover:opacity-90"
+                    style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                     <LayoutDashboard className="w-4 h-4 mr-1.5" /> Dashboard
                   </Button>
                 </Link>
@@ -124,7 +125,8 @@ export default function Navbar() {
                 <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="text-muted-foreground">
                   Entrar
                 </Button>
-                <Button size="sm" onClick={() => base44.auth.redirectToLogin()} className="bg-gold text-primary-foreground hover:bg-gold-dark font-semibold">
+                <Button size="sm" onClick={() => base44.auth.redirectToLogin()} className="text-white font-semibold border-0 hover:opacity-90"
+                  style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                   Criar Conta
                 </Button>
               </>
@@ -159,7 +161,8 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold mb-2">
+                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-white font-bold mb-2"
+                  style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 20px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}>
                   <LayoutDashboard className="w-5 h-5" />
                   <span>Meu Dashboard</span>
                 </Link>
@@ -176,7 +179,8 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Button onClick={() => base44.auth.redirectToLogin()} className="w-full bg-gold text-primary-foreground">
+              <Button onClick={() => base44.auth.redirectToLogin()} className="w-full text-white border-0"
+                style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 20px rgba(232,35,232,0.5)' }}>
                 Entrar / Criar Conta
               </Button>
             )}
