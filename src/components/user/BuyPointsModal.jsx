@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import ContactSellerDialog from '@/components/user/ContactSellerDialog';
+import { newRequestId } from '@/lib/requestId';
 
 const DEFAULT_PRICE_PER_POINT = 0.01; // R$ 0,01 por ponto (preço sugerido)
 
@@ -199,17 +200,15 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
 
     setCreatingListing(true);
     try {
-      await base44.entities.PointsListing.create({
-        seller_email: user.email,
-        seller_name: user.full_name,
+      const res = await base44.functions.invoke('createPointsListing', {
         points_amount: pts,
-        price_per_point: price / pts,
         total_price: price,
         whatsapp_number: whatsappDigits,
-        status: 'active'
+        request_id: newRequestId()
       });
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao criar anúncio');
 
-      toast.success('Seus pontos foram colocados à venda!');
+      toast.success('Seus pontos foram colocados à venda (reservados)!');
       setShowSellForm(false);
       setSellPoints('');
       setSellPrice('');

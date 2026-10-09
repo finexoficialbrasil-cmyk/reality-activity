@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
     const amount = Number(points_amount);
 
-    // Valida listing do marketplace E exige que o destinatário seja o vendedor real
+    // ===== MARKETPLACE (compra de listing) =====
     if (type === 'marketplace' && listing_id) {
       const listing = await base44.asServiceRole.entities.PointsListing.get(listing_id);
       if (!listing || listing.status !== 'active') {
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
         return Response.json(errBody, { status: 400 });
       }
-      if (listing.points_amount !== amount) {
+      if (Number(listing.points_amount) !== amount) {
         const errBody = { success: false, error: 'Quantidade não corresponde ao anúncio' };
         await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
         return Response.json(errBody, { status: 400 });
@@ -65,9 +65,125 @@ Deno.serve(async (req) => {
         await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
         return Response.json(errBody, { status: 403 });
       }
+
+      // === TRAVA ATÔMICA contra dupla venda: transição active→sold só uma vez.
+      // Dois compradores concorrentes: só um vence (updated===1). O orçamento do
+      // anúncio nunca pode ser "gasto" duas vezes.
+      const claim = await base44.asServiceRole.entities.PointsListing.updateMany(
+        { id: listing_id, status: 'active' },
+        { $set: { status: 'sold', buyer_email: sender_email, buyer_name: sender_name || user.full_name || 'Comprador', sold_at: new Date().toISOString() } }
+      );
+      if (!claim || claim.updated !== 1) {
+        const errBody = { success: false, error: 'Anúncio indisponível (vendido ou cancelado)' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 409);
+        return Response.json(errBody, { status: 409 });
+      }
+
+      if (listing.reserved) {
+        // Listing com pontos reservados na criação: credita o comprador (os pontos
+        // já foram debitados do vendedor). Nenhum débito extra — o orçamento não é
+        // gasto duas vezes (vendedor debitado 1x na criação, comprador creditado 1x).
+        const buyerArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: sender_email });
+        const buyerPoints = buyerArr[0];
+        if (!buyerPoints) {
+          // reverte a transição para não prender o anúncio
+          await base44.asServiceRole.entities.PointsListing.updateMany({ id: listing_id, status: 'sold' }, { $set: { status: 'active' } });
+          const errBody = { success: false, error: 'Conta do comprador não encontrada' };
+          await recordIdempotency(base44, request_id, OP, user.email, errBody, 500);
+          return Response.json(errBody, { status: 500 });
+        }
+        const credited = await atomicCreditBalance(base44, 'UserPoints', buyerPoints.id, amount);
+
+        await base44.asServiceRole.entities.PointsTransaction.create({
+          user_email: sender_email,
+          user_name: sender_name || user.full_name || 'Usuário',
+          type: 'marketplace_bought',
+          points: amount,
+          description: 'Compra de ' + amount + ' pts no marketplace',
+          transfer_email: receiver_email,
+          transfer_name: receiver_name || 'Usuário',
+          transaction_value: transaction_value || 0
+        });
+
+        await base44.asServiceRole.entities.PointsTransfer.create({
+          sender_email,
+          sender_name: sender_name || user.full_name || 'Usuário',
+          receiver_email,
+          receiver_name: receiver_name || 'Usuário',
+          points_amount: amount,
+          transaction_value: transaction_value || 0,
+          note: note || '',
+          type: 'marketplace',
+          listing_id
+        });
+
+        const resultBody = {
+          success: true,
+          message: 'Compra realizada com sucesso!',
+          data: { points_transferred: amount, sender_new_balance: Number(credited?.balance) || 0, receiver_email, type: 'marketplace' }
+        };
+        await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+        return Response.json(resultBody);
+      }
+
+      // Listing legado (sem reserva): fluxo antigo preservado — debita comprador, credita vendedor.
+      const senderArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: sender_email });
+      const senderPoints = senderArr[0];
+      if (!senderPoints) {
+        await base44.asServiceRole.entities.PointsListing.updateMany({ id: listing_id, status: 'sold' }, { $set: { status: 'active' } });
+        const errBody = { success: false, error: 'Saldo insuficiente' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+        return Response.json(errBody, { status: 400 });
+      }
+      const transfer = await atomicTransferPoints(base44, senderPoints.id, receiver_email, amount, receiver_name);
+      if (!transfer.ok) {
+        await base44.asServiceRole.entities.PointsListing.updateMany({ id: listing_id, status: 'sold' }, { $set: { status: 'active' } });
+        const status = transfer.phase === 'credit_failed' ? 500 : 400;
+        const errBody = { success: false, error: transfer.error };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
+        return Response.json(errBody, { status });
+      }
+      await base44.asServiceRole.entities.PointsTransaction.create({
+        user_email: sender_email,
+        user_name: sender_name || user.full_name || 'Usuário',
+        type: 'marketplace_bought',
+        points: -amount,
+        description: 'Compra de ' + amount + ' pts no marketplace',
+        transfer_email: receiver_email,
+        transfer_name: receiver_name || 'Usuário',
+        transaction_value: transaction_value || 0
+      });
+      await base44.asServiceRole.entities.PointsTransaction.create({
+        user_email: receiver_email,
+        user_name: receiver_name || 'Usuário',
+        type: 'marketplace_sold',
+        points: amount,
+        description: 'Venda de ' + amount + ' pts no marketplace',
+        transfer_email: sender_email,
+        transfer_name: sender_name || 'Usuário',
+        transaction_value: transaction_value || 0
+      });
+      await base44.asServiceRole.entities.PointsTransfer.create({
+        sender_email,
+        sender_name: sender_name || user.full_name || 'Usuário',
+        receiver_email,
+        receiver_name: receiver_name || 'Usuário',
+        points_amount: amount,
+        transaction_value: transaction_value || 0,
+        note: note || '',
+        type: 'marketplace',
+        listing_id
+      });
+      const resultBody = {
+        success: true,
+        message: 'Compra realizada com sucesso!',
+        data: { points_transferred: amount, sender_new_balance: Number(transfer.senderRecord?.balance) || 0, receiver_email, type: 'marketplace' }
+      };
+      await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
+      return Response.json(resultBody);
     }
 
-    // Saldo do remetente via UserPoints (service role para acesso total)
+    // ===== TRANSFERÊNCIA DIRETA =====
     const senderArr = await base44.asServiceRole.entities.UserPoints.filter({ user_email: sender_email });
     const senderPoints = senderArr[0];
     if (!senderPoints) {
@@ -75,10 +191,6 @@ Deno.serve(async (req) => {
       await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
       return Response.json(errBody, { status: 400 });
     }
-
-    // === TRANSFERÊNCIA ATÔMICA (débito + crédito com reversão compensatória) ===
-    // Se o crédito ao destinatário falhar, o débito do remetente é estornado,
-    // garantindo que nunca fique débito sem crédito correspondente.
     const transfer = await atomicTransferPoints(base44, senderPoints.id, receiver_email, amount, receiver_name);
     if (!transfer.ok) {
       const status = transfer.phase === 'credit_failed' ? 500 : 400;
@@ -86,37 +198,26 @@ Deno.serve(async (req) => {
       await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
       return Response.json(errBody, { status });
     }
-
-    // Registra transações no extrato de ambos
-    const senderTxType = type === 'marketplace' ? 'marketplace_bought' : 'transfer_sent';
     await base44.asServiceRole.entities.PointsTransaction.create({
       user_email: sender_email,
       user_name: sender_name || user.full_name || 'Usuário',
-      type: senderTxType,
+      type: 'transfer_sent',
       points: -amount,
-      description: note || (type === 'marketplace'
-        ? 'Compra de ' + amount + ' pts no marketplace'
-        : 'Transferência para ' + (receiver_name || '')),
+      description: note || ('Transferência para ' + (receiver_name || '')),
       transfer_email: receiver_email,
       transfer_name: receiver_name || 'Usuário',
       transaction_value: transaction_value || 0
     });
-
-    const receiverTxType = type === 'marketplace' ? 'marketplace_sold' : 'transfer_received';
     await base44.asServiceRole.entities.PointsTransaction.create({
       user_email: receiver_email,
       user_name: receiver_name || 'Usuário',
-      type: receiverTxType,
+      type: 'transfer_received',
       points: amount,
-      description: note || (type === 'marketplace'
-        ? 'Venda de ' + amount + ' pts no marketplace'
-        : 'Recebeu ' + amount + ' pts de ' + (sender_name || '')),
+      description: note || ('Recebeu ' + amount + ' pts de ' + (sender_name || '')),
       transfer_email: sender_email,
       transfer_name: sender_name || 'Usuário',
       transaction_value: transaction_value || 0
     });
-
-    // Registro da transferência (histórico)
     await base44.asServiceRole.entities.PointsTransfer.create({
       sender_email,
       sender_name: sender_name || user.full_name || 'Usuário',
@@ -125,30 +226,10 @@ Deno.serve(async (req) => {
       points_amount: amount,
       transaction_value: transaction_value || 0,
       note: note || '',
-      type: type || 'direct',
-      listing_id: listing_id || null
+      type: 'direct',
+      listing_id: null
     });
-
-    // Atualiza listing do marketplace
-    if (type === 'marketplace' && listing_id) {
-      await base44.asServiceRole.entities.PointsListing.update(listing_id, {
-        status: 'sold',
-        buyer_email: sender_email,
-        buyer_name: sender_name || user.full_name || 'Comprador',
-        sold_at: new Date().toISOString()
-      });
-    }
-
     const newBalance = Number(transfer.senderRecord?.balance) || 0;
-
-    // Cancela anúncios ativos do remetente que ele não consegue mais cumprir (saldo insuficiente)
-    const myListings = await base44.asServiceRole.entities.PointsListing.filter({ seller_email: sender_email, status: 'active' });
-    for (const l of myListings) {
-      if (l.points_amount > newBalance) {
-        await base44.asServiceRole.entities.PointsListing.update(l.id, { status: 'cancelled' });
-      }
-    }
-
     const resultBody = {
       success: true,
       message: 'Transferência realizada com sucesso!',
@@ -156,7 +237,7 @@ Deno.serve(async (req) => {
         points_transferred: amount,
         sender_new_balance: newBalance,
         receiver_email,
-        type: type || 'direct'
+        type: 'direct'
       }
     };
     await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/layout/Navbar';
 import ContactSellerDialog from '@/components/user/ContactSellerDialog';
+import { newRequestId } from '@/lib/requestId';
 import {
   ArrowLeft, Store, Search, Loader2, Tag, Clock,
   User, ShieldCheck, Filter, MessageCircle, TrendingUp,
@@ -134,24 +135,23 @@ export default function Marketplace() {
 
     setCreatingListing(true);
     try {
-      await base44.entities.PointsListing.create({
-        seller_email: user.email,
-        seller_name: user.full_name,
+      const res = await base44.functions.invoke('createPointsListing', {
         points_amount: pts,
-        price_per_point: price / pts,
         total_price: price,
         whatsapp_number: whatsappDigits,
-        status: 'active'
+        request_id: newRequestId()
       });
-      toast.success('Seus pontos foram colocados à venda!');
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao criar anúncio');
+      toast.success('Seus pontos foram colocados à venda (reservados)!');
       setShowSellForm(false);
       setSellPoints('');
       setSellPrice('');
       setSellWhatsapp('');
+      loadUser();
       loadListings();
     } catch (err) {
       console.error('Erro ao criar listing:', err);
-      toast.error('Erro ao criar anúncio de venda');
+      toast.error(err.message || 'Erro ao criar anúncio de venda');
     } finally {
       setCreatingListing(false);
     }
@@ -159,11 +159,16 @@ export default function Marketplace() {
 
   const handleCancelListing = async (listing) => {
     try {
-      await base44.entities.PointsListing.update(listing.id, { status: 'cancelled' });
-      toast.success('Anúncio cancelado');
+      const res = await base44.functions.invoke('cancelPointsListing', {
+        listing_id: listing.id,
+        request_id: newRequestId()
+      });
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao cancelar anúncio');
+      toast.success(res.data?.message || 'Anúncio cancelado');
+      loadUser();
       loadListings();
     } catch (err) {
-      toast.error('Erro ao cancelar anúncio');
+      toast.error(err.message || 'Erro ao cancelar anúncio');
     }
   };
 
