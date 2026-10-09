@@ -200,11 +200,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
         onClick={handleOpen}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all"
-        style={{
-          background: 'linear-gradient(135deg, #FF2800, #C81D00)',
-          boxShadow: '0 8px 24px #FF280040',
-        }}
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold text-sm shadow-lg hover:from-gold-dark hover:to-yellow-400 transition-all"
       >
         <Zap className="w-5 h-5" />
         Compartilhar Tudo

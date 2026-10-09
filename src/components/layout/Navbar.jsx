@@ -58,10 +58,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
+              <Zap className="w-5 h-5 text-background" />
+            </div>
             <img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
               alt="Reality Activity"
-              className="h-10 transition-transform group-hover:scale-105"
+              className="h-8"
             />
           </Link>
 
@@ -84,9 +87,9 @@ export default function Navbar() {
               <Flame className="w-3.5 h-3.5 text-orange-400" />
               <span className="text-xs font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} queimados</span>
             </div>
-            <Link to="/" className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-turquoise/10 border border-turquoise/30 hover:bg-turquoise/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
-              <TrendingUp className="w-3.5 h-3.5 text-turquoise" />
-              <span className="text-xs font-semibold text-turquoise">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
+            <Link to="/" className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
             </Link>
           </div>
 
@@ -108,7 +111,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link to="/dashboard">
-                  <Button size="sm" className="font-bold text-white border border-orange-400/40 hover:brightness-110" style={{ background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)', boxShadow: '0 6px 20px #FF4B2040' }}>
+                  <Button size="sm" className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold">
                     <LayoutDashboard className="w-4 h-4 mr-1.5" /> Dashboard
                   </Button>
                 </Link>
@@ -148,16 +151,15 @@ export default function Navbar() {
             <Flame className="w-4 h-4 text-orange-400" />
             <span className="text-sm font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} pts queimados</span>
           </div>
-          <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-turquoise/10 border border-turquoise/30">
-            <TrendingUp className="w-4 h-4 text-turquoise" />
-            <span className="text-sm font-semibold text-turquoise">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
+          <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
           </Link>
           <div className="border-t border-border pt-3">
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-white font-bold mb-2 border border-orange-400/40"
-                  style={{ background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)', boxShadow: '0 6px 20px #FF4B2040' }}>
+                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold mb-2">
                   <LayoutDashboard className="w-5 h-5" />
                   <span>Meu Dashboard</span>
                 </Link>

@@ -62,11 +62,12 @@ export default function HeroSection({ user, authLoading }) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full"
               style={{
                 background: 'hsl(220 15% 13% / 0.8)',
-                border: '1px solid hsl(270 80% 65% / 0.3)',
+                border: '1px solid hsl(45 100% 55% / 0.35)',
+                boxShadow: '0 0 12px hsl(45 100% 55% / 0.1)',
               }}
             >
               <motion.span
-                className="w-2 h-2 rounded-full bg-purple"
+                className="w-2 h-2 rounded-full bg-gold"
                 animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
@@ -81,7 +82,13 @@ export default function HeroSection({ user, authLoading }) {
               className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-3 text-white"
             >
               Cada clique vira{' '}
-              <span className="text-white">
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: 'linear-gradient(135deg, hsl(45 100% 60%), hsl(50 100% 75%), hsl(38 90% 45%))',
+                  filter: 'drop-shadow(0 0 12px hsl(45 100% 55% / 0.4))',
+                }}
+              >
                 Pontos
               </span>{' '}
               de verdade.
@@ -108,11 +115,10 @@ export default function HeroSection({ user, authLoading }) {
               ) : !user ? (
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl transition-all active:scale-[0.97]"
+                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, #FFD45A, #FFC928)',
-                    color: '#0B0D12',
-                    boxShadow: '0 8px 30px #FFC92840, inset 0 1px 0 #FFE68080',
+                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
+                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -123,10 +129,10 @@ export default function HeroSection({ user, authLoading }) {
               ) : (
                 <Link
                   to="/dashboard?tab=anuncios"
-                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
+                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)',
-                    boxShadow: '0 8px 30px #FF4B2040, inset 0 1px 0 #FF8A5C80',
+                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
+                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -168,11 +174,11 @@ export default function HeroSection({ user, authLoading }) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 mb-4 rounded-full glass border border-purple/30 text-xs font-bold tracking-wide text-foreground"
+            className="inline-flex items-center gap-2 px-3.5 py-1 mb-4 rounded-full glass border border-gold/40 text-xs font-bold tracking-wide text-gold"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold" />
             </span>
             Plataforma de Recompensas
           </motion.div>
@@ -184,7 +190,7 @@ export default function HeroSection({ user, authLoading }) {
             className="font-grotesk font-extrabold text-5xl leading-[1.1] tracking-tight mb-3 text-white"
           >
             Cada clique vira{' '}
-            <span className="text-white">
+            <span className="bg-gradient-to-r from-gold via-yellow-200 to-gold bg-clip-text text-transparent drop-shadow-[0_0_25px_hsl(45_100%_55%/0.55)]">
               Pontos
             </span>{' '}
             de verdade.
@@ -218,11 +224,7 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 font-bold px-7 py-3.5 rounded-2xl text-white border border-orange-400/40 transition-all duration-300 hover:scale-105 active:scale-95"
-                style={{
-                  background: 'linear-gradient(135deg, #FF6B3D, #FF4B20)',
-                  boxShadow: '0 8px 30px #FF4B2059',
-                }}
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-7 py-3.5 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
               >
                 <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />

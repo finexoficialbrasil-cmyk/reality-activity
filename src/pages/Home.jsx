@@ -109,7 +109,7 @@ export default function Home() {
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
           {!dataLoading && filteredAds.length > 0 && (
-            <div className="mb-4 flex justify-center">
+            <div className="mb-4">
               <ShareAllButton user={user} ads={filteredAds} onShared={handlePointsEarned} />
             </div>
           )}
