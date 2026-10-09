@@ -42,7 +42,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
   const { megaLink } = useMegaLink(user);
 
   const eligibleCount = (ads || []).filter(
-    ad => ad.status === 'approved' && ad.is_active !== false && ad.is_bulk_shareable !== false && (ad.budget_remaining || 0) > 0
+    ad => ad.is_active !== false && ad.is_bulk_shareable !== false && (ad.budget_remaining || 0) > 0
   ).length;
 
   const handleOpen = () => {

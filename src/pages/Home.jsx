@@ -24,7 +24,7 @@ export default function Home() {
   const { data: publicData, isLoading: dataLoading } = usePublicData();
   const CATEGORIES = [{ value: 'all', label: 'Todos' }, ...activeCategories.map(c => ({ value: c.value, label: `${c.icon || ''} ${c.label}`.trim() }))];
 
-  const advertisements = (publicData?.advertisements || []).filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0);
+  const advertisements = (publicData?.advertisements || []).filter(a => a.is_active && a.budget_remaining > 0);
 
   useEffect(() => {
     (async () => {

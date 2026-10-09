@@ -29,7 +29,7 @@ export default function Vitrine() {
       const res = await base44.functions.invoke('getPublicData', {});
       setCompanies(res.data.companies || []);
       setVideos(res.data.videos || []);
-      const approvedAds = (res.data.advertisements || []).filter(a => a.status === 'approved' && a.is_active);
+      const approvedAds = (res.data.advertisements || []).filter(a => a.is_active);
       setAdvertisements(approvedAds);
 
       // Carrega configurações do site (vídeo do CEO)
