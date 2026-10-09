@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
         reward_per_share: a.reward_per_share,
         is_active: a.is_active,
         is_bulk_shareable: a.is_bulk_shareable,
-        order: a.order
+        order: a.order,
+        user_name: a.user_name
       }));
 
     // Empresas públicas: strip email/phone (não necessários na interface pública)
