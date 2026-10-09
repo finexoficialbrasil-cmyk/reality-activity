@@ -3,6 +3,7 @@ import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '
 import { recordAudit } from '../../shared/auditLog.ts';
 import { getClientIp } from '../../shared/userGuard.ts';
 import { createLedgerEntry } from '../../shared/ledger.ts';
+import { adjustWithdrawalBurned } from '../../shared/burnedBalance.ts';
 
 const OP = 'withdrawal_decision';
 
@@ -135,6 +136,9 @@ export default async function(req) {
       rejection_reason: reason,
       processed_date: new Date().toISOString()
     });
+
+    // Decrementa contador consolidado de pontos queimados (idempotente via flag burned_counted)
+    await adjustWithdrawalBurned(base44, withdrawal, withdrawal.points_amount, false);
 
     // Ledger: devolução com saldo anterior/posterior
     if (userPoints) {

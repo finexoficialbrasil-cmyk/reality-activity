@@ -1,0 +1,35 @@
+{
+  "name": "FinancialSummary",
+  "type": "object",
+  "properties": {
+    "burned_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Total consolidado de pontos queimados em saques n\u00e3o rejeitados"
+    },
+    "last_reconciled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que o resumo foi reconciliado/migrado"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

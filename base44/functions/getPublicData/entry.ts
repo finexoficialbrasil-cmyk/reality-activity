@@ -4,13 +4,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req, { allowPublic: true });
 
-    const [videos, companies, allAds, withdrawals] = await Promise.all([
+    const [videos, companies, allAds, summary] = await Promise.all([
       base44.asServiceRole.entities.Video.filter({ is_active: true }, '-order', 12),
       base44.asServiceRole.entities.Company.filter({ is_active: true }, 'order', 20),
       base44.asServiceRole.entities.Advertisement.filter({ status: 'approved', is_active: true, budget_remaining: { $gt: 0 } }, '-reward_per_share', 500),
-      // Saldo queimado: asServiceRole não suporta aggregate nem options-form,
-      // então usa form posicional (array) com limite amplo
-      base44.asServiceRole.entities.WithdrawalRequest.filter({ status: { $ne: 'rejected' } }, '-created_date', 5000)
+      // Saldo queimado: lê o total consolidado de FinancialSummary (O(1) — sem varrer saques)
+      base44.asServiceRole.entities.FinancialSummary.list('', 1)
     ]);
 
     // Anúncios públicos: strip dados internos do anunciante (email/nome/motivos)
@@ -48,8 +47,8 @@ Deno.serve(async (req) => {
       order: c.order
     }));
 
-    // Saldo queimado = soma de pontos de todos os saques não rejeitados
-    const burnedBalance = withdrawals.reduce((sum, w) => sum + (w.points_amount || 0), 0);
+    // Saldo queimado = total consolidado em FinancialSummary (atualizado incrementalmente)
+    const burnedBalance = summary && summary.length > 0 ? (Number(summary[0].burned_balance) || 0) : 0;
 
     return Response.json({ videos, companies: publicCompanies, advertisements, burnedBalance });
   } catch (error) {

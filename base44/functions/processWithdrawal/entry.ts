@@ -4,6 +4,7 @@ import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
 import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
 import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
 import { createLedgerEntry } from '../../shared/ledger.ts';
+import { adjustBurnedBalance } from '../../shared/burnedBalance.ts';
 
 const OP = 'withdrawal';
 
@@ -103,8 +104,12 @@ export default async function(req) {
       pix_key_type: method === 'pix' ? pix_key_type : undefined,
       buyback_rate: buybackRate,
       final_value: finalValue,
-      status: 'pending'
+      status: 'pending',
+      burned_counted: true
     });
+
+    // Atualiza contador consolidado de pontos queimados (incremental; idempotente via ProcessedRequest)
+    await adjustBurnedBalance(base44, amount);
 
     // Registra transação no extrato (servidor) — ledger enriquecido
     await createLedgerEntry(base44, {
