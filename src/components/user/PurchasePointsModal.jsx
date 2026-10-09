@@ -202,7 +202,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   <Coins className="w-5 h-5 text-gold" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-grotesk font-bold bg-gradient-to-r from-gold to-yellow-300 bg-clip-text text-transparent">
+                  <h2 className="text-xl font-grotesk font-bold bg-gradient-to-r from-gold to-gold-dark bg-clip-text text-transparent">
                     Comprar Saldo
                   </h2>
                   <p className="text-xs text-muted-foreground">Adicione pontos ao seu saldo</p>
@@ -303,7 +303,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                     </div>
                     <Button
                       onClick={handleContinueToPayment}
-                      className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
+                      className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background hover:from-gold-dark hover:to-gold-dark font-bold rounded-xl"
                     >
                       Continuar para pagamento
                     </Button>
@@ -386,7 +386,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   </Button>
                   <Button
                     onClick={() => setStep('upload')}
-                    className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                    className="flex-1 h-12 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
                   >
                     Já paguei
                   </Button>
@@ -642,7 +642,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                  className="w-full h-11 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
                 >
                   Entendi, concluir
                 </Button>
@@ -697,7 +697,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                  className="w-full h-11 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
                 >
                   Entendi, fechar
                 </Button>
@@ -763,7 +763,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                 )}
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                  className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
                 >
                   Concluir
                 </Button>

@@ -131,7 +131,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
       <div className="space-y-2.5">
         <Button
           onClick={handleCopy}
-          className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold text-base"
+          className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold text-base"
         >
           {copied ? (
             <>
@@ -183,11 +183,11 @@ export default function ShareAllButton({ user, ads, onShared }) {
       </div>
 
       {/* Info: client sharing earns extra points */}
-      <div className="mt-2.5 p-3 rounded-xl bg-gold/5 border border-gold/30">
+      <div className="mt-2.5 p-3 rounded-xl bg-coin/5 border border-coin/30">
         <div className="flex items-start gap-2">
-          <Gift className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
+          <Gift className="w-4 h-4 text-coin flex-shrink-0 mt-0.5" />
           <p className="text-xs text-foreground/90">
-            <span className="font-bold text-gold">Bônus extra:</span> se o seu cliente abrir a vitrine e compartilhar um anúncio, <span className="font-semibold">você também ganha pontos</span> — quanto mais o seu link circular, mais você acumula!
+            <span className="font-bold text-coin">Bônus extra:</span> se o seu cliente abrir a vitrine e compartilhar um anúncio, <span className="font-semibold">você também ganha pontos</span> — quanto mais o seu link circular, mais você acumula!
           </p>
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
         onClick={handleOpen}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold text-sm shadow-lg hover:from-gold-dark hover:to-yellow-400 transition-all"
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold text-sm shadow-lg hover:from-gold-dark hover:to-gold-dark transition-all"
       >
         <Zap className="w-5 h-5" />
         Compartilhar Tudo

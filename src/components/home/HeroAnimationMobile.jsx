@@ -30,7 +30,7 @@ export default function HeroAnimationMobile() {
       {/* Glow central */}
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(circle at 50% 50%, hsl(45 100% 55% / 0.1) 0%, transparent 65%)' }}
+        style={{ background: 'radial-gradient(circle at 50% 50%, hsl(285 85% 60% / 0.1) 0%, transparent 65%)' }}
       />
 
       {/* Anéis pulsantes — apenas 2, leves */}
@@ -43,7 +43,7 @@ export default function HeroAnimationMobile() {
             height: 70 + i * 40,
             marginLeft: -(35 + i * 20),
             marginTop: -(35 + i * 20),
-            borderColor: i === 0 ? 'hsl(45 100% 55% / 0.25)' : 'hsl(270 80% 65% / 0.15)',
+            borderColor: i === 0 ? 'hsl(285 85% 60% / 0.25)' : 'hsl(270 80% 65% / 0.15)',
           }}
           animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.12, 0.35] }}
           transition={{ duration: 3, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }}
@@ -59,8 +59,8 @@ export default function HeroAnimationMobile() {
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center relative"
             style={{
-              background: 'linear-gradient(135deg, hsl(45 100% 55%), hsl(38 90% 42%))',
-              boxShadow: '0 0 28px hsl(45 100% 55% / 0.45), inset 0 0 14px hsl(45 100% 55% / 0.2)',
+              background: 'linear-gradient(135deg, hsl(285 85% 60%), hsl(290 85% 45%))',
+              boxShadow: '0 0 28px hsl(285 85% 60% / 0.45), inset 0 0 14px hsl(285 85% 60% / 0.2)',
             }}
           >
             <Zap className="w-7 h-7 text-background" fill="currentColor" />

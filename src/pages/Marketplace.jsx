@@ -199,7 +199,7 @@ export default function Marketplace() {
                   <Store className="w-7 h-7 text-gold" />
                 </div>
                 <div>
-                  <h1 className="font-grotesk font-bold text-2xl md:text-3xl bg-gradient-to-r from-gold to-yellow-300 bg-clip-text text-transparent">
+                  <h1 className="font-grotesk font-bold text-2xl md:text-3xl bg-gradient-to-r from-gold to-gold-dark bg-clip-text text-transparent">
                     Mercado de Pontos
                   </h1>
                   <p className="text-sm text-muted-foreground mt-0.5">
@@ -208,10 +208,10 @@ export default function Marketplace() {
                 </div>
               </div>
               <div className="flex items-center gap-3 bg-card border border-gold/20 rounded-2xl px-5 py-3">
-                <Wallet className="w-5 h-5 text-gold" />
+                <Wallet className="w-5 h-5 text-coin" />
                 <div>
                   <p className="text-xs text-muted-foreground">Seu saldo</p>
-                  <p className="text-lg font-grotesk font-bold text-gold">{userPoints.toLocaleString('pt-BR')} pts</p>
+                  <p className="text-lg font-grotesk font-bold text-coin">{userPoints.toLocaleString('pt-BR')} pts</p>
                 </div>
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function Marketplace() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-gold to-yellow-300 text-background shadow-lg'
+                    ? 'bg-gradient-to-r from-gold to-gold-dark text-primary-foreground shadow-lg'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
@@ -270,7 +270,7 @@ export default function Marketplace() {
               {!showSellForm ? (
                 <Button
                   onClick={() => setShowSellForm(true)}
-                  className="w-full h-14 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-2xl text-base"
+                  className="w-full h-14 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold rounded-2xl text-base"
                 >
                   <Tag className="w-5 h-5 mr-2" />
                   Vender Meus Pontos
@@ -279,7 +279,7 @@ export default function Marketplace() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-gradient-to-br from-gold/10 to-yellow-500/5 border border-gold/30 rounded-2xl p-6 space-y-4"
+                  className="bg-gradient-to-br from-gold/10 to-purple-500/5 border border-gold/30 rounded-2xl p-6 space-y-4"
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-bold text-gold flex items-center gap-2">
@@ -292,7 +292,7 @@ export default function Marketplace() {
 
                   <div className="flex items-center justify-between bg-secondary/40 rounded-xl px-4 py-2.5">
                     <span className="text-xs text-muted-foreground">Saldo disponível para vender</span>
-                    <span className="text-sm font-bold text-gold">{Number(userPoints || 0).toLocaleString('pt-BR')} pts</span>
+                    <span className="text-sm font-bold text-coin">{Number(userPoints || 0).toLocaleString('pt-BR')} pts</span>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4">
@@ -308,7 +308,7 @@ export default function Marketplace() {
                           min="1"
                           max={userPoints}
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold text-xs font-bold">pts</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-coin text-xs font-bold">pts</span>
                       </div>
                     </div>
                     <div>
@@ -342,14 +342,14 @@ export default function Marketplace() {
 
                   {sellPoints && sellPrice && (
                     <p className="text-xs text-muted-foreground">
-                      Preço por ponto: <span className="text-gold font-bold">R$ {(parseFloat(sellPrice) / parseInt(sellPoints)).toFixed(4)}</span>
+                      Preço por ponto: <span className="text-coin font-bold">R$ {(parseFloat(sellPrice) / parseInt(sellPoints)).toFixed(4)}</span>
                     </p>
                   )}
 
                   <Button
                     onClick={handleCreateListing}
                     disabled={creatingListing}
-                    className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl disabled:opacity-50"
+                    className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold rounded-xl disabled:opacity-50"
                   >
                     {creatingListing ? (
                       <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Publicando...</>

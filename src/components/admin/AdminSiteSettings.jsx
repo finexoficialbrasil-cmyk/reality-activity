@@ -124,7 +124,7 @@ export default function AdminSiteSettings() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold"
+          className="w-full bg-gradient-to-r from-gold to-gold-dark text-background hover:from-gold-dark hover:to-gold-dark font-bold"
         >
           {saving ? (
             <>

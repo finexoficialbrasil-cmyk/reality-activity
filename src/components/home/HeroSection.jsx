@@ -18,7 +18,7 @@ export default function HeroSection({ user, authLoading }) {
           style={{
             background: 'linear-gradient(160deg, hsl(220 18% 9%) 0%, hsl(220 20% 6%) 100%)',
             border: '1px solid hsl(270 80% 65% / 0.25)',
-            boxShadow: '0 20px 60px hsl(270 80% 65% / 0.12), 0 0 0 1px hsl(45 100% 55% / 0.05) inset',
+            boxShadow: '0 20px 60px hsl(270 80% 65% / 0.12), 0 0 0 1px hsl(285 85% 60% / 0.05) inset',
           }}
         >
           {/* Grid de fundo */}
@@ -27,7 +27,7 @@ export default function HeroSection({ user, authLoading }) {
           {/* Glow radial dourado no topo */}
           <div
             className="absolute -top-20 -right-10 w-48 h-48 rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(circle, hsl(45 100% 55%), transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, hsl(285 85% 60%), transparent 70%)' }}
           />
           {/* Glow radial roxo embaixo */}
           <div
@@ -38,7 +38,7 @@ export default function HeroSection({ user, authLoading }) {
           {/* Linha de brilho superior animada */}
           <motion.div
             className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, hsl(45 100% 55% / 0.6), transparent)' }}
+            style={{ background: 'linear-gradient(90deg, transparent, hsl(285 85% 60% / 0.6), transparent)' }}
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -62,8 +62,8 @@ export default function HeroSection({ user, authLoading }) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full"
               style={{
                 background: 'hsl(220 15% 13% / 0.8)',
-                border: '1px solid hsl(45 100% 55% / 0.35)',
-                boxShadow: '0 0 12px hsl(45 100% 55% / 0.1)',
+                border: '1px solid hsl(285 85% 60% / 0.35)',
+                boxShadow: '0 0 12px hsl(285 85% 60% / 0.1)',
               }}
             >
               <motion.span
@@ -85,8 +85,8 @@ export default function HeroSection({ user, authLoading }) {
               <span
                 className="bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: 'linear-gradient(135deg, hsl(45 100% 60%), hsl(50 100% 75%), hsl(38 90% 45%))',
-                  filter: 'drop-shadow(0 0 12px hsl(45 100% 55% / 0.4))',
+                  backgroundImage: 'linear-gradient(135deg, hsl(285 85% 65%), hsl(280 80% 78%), hsl(290 85% 50%))',
+                  filter: 'drop-shadow(0 0 12px hsl(285 85% 60% / 0.4))',
                 }}
               >
                 Pontos
@@ -117,8 +117,8 @@ export default function HeroSection({ user, authLoading }) {
                   onClick={() => base44.auth.redirectToLogin()}
                   className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
-                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
+                    background: 'linear-gradient(135deg, hsl(285 85% 62%), hsl(290 85% 48%))',
+                    boxShadow: '0 8px 30px hsl(285 85% 60% / 0.4), inset 0 1px 0 hsl(280 80% 82% / 0.5)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -131,8 +131,8 @@ export default function HeroSection({ user, authLoading }) {
                   to="/dashboard?tab=anuncios"
                   className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-background transition-all active:scale-[0.97]"
                   style={{
-                    background: 'linear-gradient(135deg, hsl(45 100% 58%), hsl(38 95% 50%))',
-                    boxShadow: '0 8px 30px hsl(45 100% 55% / 0.4), inset 0 1px 0 hsl(50 100% 80% / 0.5)',
+                    background: 'linear-gradient(135deg, hsl(285 85% 62%), hsl(290 85% 48%))',
+                    boxShadow: '0 8px 30px hsl(285 85% 60% / 0.4), inset 0 1px 0 hsl(280 80% 82% / 0.5)',
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -160,7 +160,7 @@ export default function HeroSection({ user, authLoading }) {
               </div>
               <div className="w-px h-3 bg-border/60" />
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold text-gold">Resgate prêmios</span>
+                <span className="text-[11px] font-semibold text-coin">Resgate prêmios</span>
               </div>
             </motion.div>
           </div>
@@ -190,7 +190,7 @@ export default function HeroSection({ user, authLoading }) {
             className="font-grotesk font-extrabold text-5xl leading-[1.1] tracking-tight mb-3 text-white"
           >
             Cada clique vira{' '}
-            <span className="bg-gradient-to-r from-gold via-yellow-200 to-gold bg-clip-text text-transparent drop-shadow-[0_0_25px_hsl(45_100%_55%/0.55)]">
+            <span className="bg-gradient-to-r from-gold via-purple-200 to-gold-dark bg-clip-text text-transparent drop-shadow-[0_0_25px_hsl(285_85%_60%/0.55)]">
               Pontos
             </span>{' '}
             de verdade.
@@ -216,7 +216,7 @@ export default function HeroSection({ user, authLoading }) {
             ) : !user ? (
               <button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="inline-flex items-center gap-2 bg-gold text-background font-bold px-7 py-3 rounded-2xl hover:bg-gold-dark transition-all animate-pulse-gold hover:scale-105"
+                className="inline-flex items-center gap-2 bg-gold text-primary-foreground font-bold px-7 py-3 rounded-2xl hover:bg-gold-dark transition-all animate-pulse-gold hover:scale-105"
               >
                 <Zap className="w-4 h-4" />
                 Começar Grátis
@@ -224,7 +224,7 @@ export default function HeroSection({ user, authLoading }) {
             ) : (
               <Link
                 to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-yellow-300 to-gold-dark text-background font-bold px-7 py-3.5 rounded-2xl border border-yellow-200/40 shadow-[0_8px_30px_hsl(45_100%_55%/0.35)] hover:shadow-[0_8px_40px_hsl(45_100%_55%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
+                className="group relative overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-gold via-purple-300 to-gold-dark text-primary-foreground font-bold px-7 py-3.5 rounded-2xl border border-gold/30 shadow-[0_8px_30px_hsl(285_85%_60%/0.35)] hover:shadow-[0_8px_40px_hsl(285_85%_60%/0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
               >
                 <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
@@ -240,7 +240,7 @@ export default function HeroSection({ user, authLoading }) {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="relative h-[340px] rounded-3xl border border-gold/20 shadow-[0_0_40px_hsl(45_100%_55%/0.15)] overflow-hidden bg-card/40"
+          className="relative h-[340px] rounded-3xl border border-gold/20 shadow-[0_0_40px_hsl(285_85%_60%/0.15)] overflow-hidden bg-card/40"
         >
           <HeroAnimation />
           <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />

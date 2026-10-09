@@ -40,7 +40,7 @@ export default function HeroAnimation() {
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(circle at 50% 50%, hsl(45 100% 55% / 0.12) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at 50% 50%, hsl(285 85% 60% / 0.12) 0%, transparent 60%)',
         }}
       />
 
@@ -54,7 +54,7 @@ export default function HeroAnimation() {
             height: 120 + i * 80,
             marginLeft: -(60 + i * 40),
             marginTop: -(60 + i * 40),
-            borderColor: i === 0 ? 'hsl(45 100% 55% / 0.3)' : i === 1 ? 'hsl(270 80% 65% / 0.2)' : 'hsl(190 100% 50% / 0.15)',
+            borderColor: i === 0 ? 'hsl(285 85% 60% / 0.3)' : i === 1 ? 'hsl(270 80% 65% / 0.2)' : 'hsl(190 100% 50% / 0.15)',
           }}
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.15, 0.4] }}
           transition={{ duration: 3, repeat: Infinity, delay: i * 0.6, ease: 'easeInOut' }}
@@ -70,8 +70,8 @@ export default function HeroAnimation() {
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center relative"
             style={{
-              background: 'linear-gradient(135deg, hsl(45 100% 55%), hsl(38 90% 42%))',
-              boxShadow: '0 0 40px hsl(45 100% 55% / 0.5), inset 0 0 20px hsl(45 100% 55% / 0.2)',
+              background: 'linear-gradient(135deg, hsl(285 85% 60%), hsl(290 85% 45%))',
+              boxShadow: '0 0 40px hsl(285 85% 60% / 0.5), inset 0 0 20px hsl(285 85% 60% / 0.2)',
             }}
           >
             <Zap className="w-10 h-10 text-background" fill="currentColor" />
@@ -153,7 +153,7 @@ export default function HeroAnimation() {
       {/* Badges flutuantes — "Novo clique" */}
       <motion.div
         className="absolute top-5 right-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(45 100% 55% / 0.4)' }}
+        style={{ borderColor: 'hsl(285 85% 60% / 0.4)' }}
         animate={{ y: [0, -6, 0], opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       >

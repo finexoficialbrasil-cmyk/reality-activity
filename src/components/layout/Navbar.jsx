@@ -59,7 +59,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center glow-gold">
-              <Zap className="w-5 h-5 text-background" />
+              <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <img 
               src="https://media.base44.com/images/public/69fe21208143d5c488dd2503/b517edfd8_5784ef057caa0bd01e47b4659fd6ccbb.webp" 
@@ -98,9 +98,9 @@ export default function Navbar() {
             {user ? (
               <>
                 {userPoints && (
-                  <Link to="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/30 hover:bg-gold/20 transition-all">
-                    <Star className="w-4 h-4 text-gold" />
-                    <span className="text-sm font-semibold text-gold">{userPoints.balance?.toLocaleString() ?? 0} pts</span>
+                  <Link to="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-coin/10 border border-coin/30 hover:bg-coin/20 transition-all">
+                    <Star className="w-4 h-4 text-coin" />
+                    <span className="text-sm font-semibold text-coin">{userPoints.balance?.toLocaleString() ?? 0} pts</span>
                   </Link>
                 )}
                 {user.role === 'admin' && (
@@ -111,7 +111,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <Link to="/dashboard">
-                  <Button size="sm" className="bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold">
+                  <Button size="sm" className="bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold">
                     <LayoutDashboard className="w-4 h-4 mr-1.5" /> Dashboard
                   </Button>
                 </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
                 <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="text-muted-foreground">
                   Entrar
                 </Button>
-                <Button size="sm" onClick={() => base44.auth.redirectToLogin()} className="bg-gold text-background hover:bg-gold-dark font-semibold">
+                <Button size="sm" onClick={() => base44.auth.redirectToLogin()} className="bg-gold text-primary-foreground hover:bg-gold-dark font-semibold">
                   Criar Conta
                 </Button>
               </>
@@ -159,14 +159,14 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-yellow-300 text-background font-bold mb-2">
+                  className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold mb-2">
                   <LayoutDashboard className="w-5 h-5" />
                   <span>Meu Dashboard</span>
                 </Link>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gold/10 border border-gold/30 mb-2">
-                  <Star className="w-4 h-4 text-gold" />
-                  <span className="text-sm font-semibold text-gold">{userPoints?.balance?.toLocaleString() ?? 0} pontos</span>
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-coin/10 border border-coin/30 mb-2">
+                  <Star className="w-4 h-4 text-coin" />
+                  <span className="text-sm font-semibold text-coin">{userPoints?.balance?.toLocaleString() ?? 0} pontos</span>
                 </Link>
                 <div className="text-xs text-muted-foreground py-2">
                   Olá, <span className="font-medium text-foreground">{user.full_name?.split(' ')[0]}</span>
@@ -176,7 +176,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Button onClick={() => base44.auth.redirectToLogin()} className="w-full bg-gold text-background">
+              <Button onClick={() => base44.auth.redirectToLogin()} className="w-full bg-gold text-primary-foreground">
                 Entrar / Criar Conta
               </Button>
             )}

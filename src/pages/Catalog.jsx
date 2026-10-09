@@ -394,7 +394,7 @@ export default function Catalog() {
                             !user
                               ? 'bg-gold/20 text-gold border border-gold/30 hover:bg-gold/30'
                               : canAfford
-                              ? 'bg-gold text-background hover:bg-gold-dark glow-gold'
+                              ? 'bg-gold text-primary-foreground hover:bg-gold-dark glow-gold'
                               : 'bg-muted text-muted-foreground cursor-not-allowed'
                           }`}
                         >

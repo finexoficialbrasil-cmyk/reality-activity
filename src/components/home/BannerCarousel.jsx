@@ -135,7 +135,7 @@ export default function BannerCarousel({ banners, companies = {}, autoPlay = tru
                     window.open(banner.banner_link, '_blank');
                   }}
                   whileHover={{ scale: 1.05, x: 5 }}
-                  className="inline-flex items-center gap-2 bg-gold text-background font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold text-sm"
+                  className="inline-flex items-center gap-2 bg-gold text-primary-foreground font-bold px-6 py-2.5 rounded-full hover:bg-gold-dark transition-all glow-gold text-sm"
                 >
                   <Sparkles className="w-4 h-4" />
                   Explorar

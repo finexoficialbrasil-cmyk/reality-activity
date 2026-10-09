@@ -183,7 +183,7 @@ export default function UserDashboard() {
           <div className="mb-8 flex gap-3 justify-center">
             <Button
               onClick={() => setShowPurchasePoints(true)}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold"
+              className="flex-1 sm:flex-none bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold"
             >
               <Star className="w-4 h-4 mr-2" />
               Comprar pts

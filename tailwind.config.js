@@ -18,6 +18,8 @@ module.exports = {
   			foreground: 'hsl(var(--foreground))',
         gold: 'hsl(var(--gold))',
         'gold-dark': 'hsl(var(--gold-dark))',
+        coin: 'hsl(var(--coin))',
+        'coin-dark': 'hsl(var(--coin-dark))',
         purple: 'hsl(var(--purple))',
   			card: {
   				DEFAULT: 'hsl(var(--card))',
@@ -71,7 +73,7 @@ module.exports = {
   		keyframes: {
   			'accordion-down': { from: { height: '0' }, to: { height: 'var(--radix-accordion-content-height)' } },
   			'accordion-up': { from: { height: 'var(--radix-accordion-content-height)' }, to: { height: '0' } },
-        'pulse-gold': { '0%, 100%': { boxShadow: '0 0 10px hsl(45 100% 55% / 0.3)' }, '50%': { boxShadow: '0 0 30px hsl(45 100% 55% / 0.7)' } },
+        'pulse-gold': { '0%, 100%': { boxShadow: '0 0 10px hsl(285 85% 60% / 0.3)' }, '50%': { boxShadow: '0 0 30px hsl(285 85% 60% / 0.7)' } },
         'float': { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } }
   		},
   		animation: {

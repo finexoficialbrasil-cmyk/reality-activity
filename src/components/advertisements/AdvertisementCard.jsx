@@ -233,11 +233,11 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-muted-foreground">Orçamento</span>
-            <span className="text-xs font-semibold text-gold">{ad.budget_remaining}/{ad.budget_total} pts</span>
+            <span className="text-xs font-semibold text-coin">{ad.budget_remaining}/{ad.budget_total} pts</span>
           </div>
           <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
             <div
-              className="h-full bg-gold transition-all"
+              className="h-full bg-coin transition-all"
               style={{ width: `${budgetPercentage}%` }}
             />
           </div>
@@ -247,9 +247,9 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
         <div className="mt-auto space-y-2 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gift className="w-4 h-4 text-gold" />
+              <Gift className="w-4 h-4 text-coin" />
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-gold">+{ad.reward_per_share} pts</span>
+                <span className="text-xs font-semibold text-coin">+{ad.reward_per_share} pts</span>
                 <span className="text-xs text-muted-foreground">por compartilhamento</span>
               </div>
             </div>

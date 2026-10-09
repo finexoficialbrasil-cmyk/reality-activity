@@ -273,7 +273,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                   <ArrowRightLeft className="w-5 h-5 text-gold" />
                 </motion.div>
                 <div>
-                  <h2 className="text-xl font-grotesk font-bold bg-gradient-to-r from-gold to-yellow-300 bg-clip-text text-transparent">
+                  <h2 className="text-xl font-grotesk font-bold bg-gradient-to-r from-gold to-gold-dark bg-clip-text text-transparent">
                     Mercado de Pontos
                   </h2>
                   <p className="text-xs text-muted-foreground">
@@ -304,7 +304,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-gold to-yellow-300 text-background shadow-lg'
+                      ? 'bg-gradient-to-r from-gold to-gold-dark text-background shadow-lg'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                 >
@@ -518,7 +518,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                     </div>
                     <Button
                       onClick={handleTransfer}
-                      className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl text-base mt-2"
+                      className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background hover:from-gold-dark hover:to-gold-dark font-bold rounded-xl text-base mt-2"
                     >
                       <Send className="w-4 h-4 mr-2" />
                       Confirmar Transferência
@@ -597,7 +597,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                   </Button>
                   <Button
                     onClick={confirmTransfer}
-                    className="flex-1 h-12 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl"
+                    className="flex-1 h-12 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
                   >
                     Confirmar
                   </Button>
@@ -682,7 +682,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                 {!showSellForm ? (
                   <Button
                     onClick={() => setShowSellForm(true)}
-                    className="w-full h-12 bg-gradient-to-r from-gold to-yellow-300 text-background hover:from-gold-dark hover:to-yellow-400 font-bold rounded-xl"
+                    className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background hover:from-gold-dark hover:to-gold-dark font-bold rounded-xl"
                   >
                     <Tag className="w-4 h-4 mr-2" />
                     Vender Meus Pontos
@@ -758,7 +758,7 @@ export default function TransferPointsModal({ user, isOpen, onClose, onSuccess, 
                       <Button
                         onClick={handleCreateListing}
                         disabled={creatingListing}
-                        className="w-full h-11 bg-gradient-to-r from-gold to-yellow-300 text-background font-bold rounded-xl text-sm disabled:opacity-50"
+                        className="w-full h-11 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl text-sm disabled:opacity-50"
                       >
                         {creatingListing ? (
                           <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Publicando...</>
