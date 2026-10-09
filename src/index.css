@@ -74,4 +74,6 @@
   .glow-pink { box-shadow: 0 0 20px hsl(330 100% 50% / 0.25); }
   .cyber-border { border: 1px solid hsl(190 100% 50% / 0.25); box-shadow: 0 0 12px hsl(190 100% 50% / 0.08), inset 0 0 12px hsl(190 100% 50% / 0.02); }
   .pixel-border { border: 2px dashed hsl(330 100% 50% / 0.6); box-shadow: 0 0 12px hsl(330 100% 50% / 0.2), inset 0 0 12px hsl(330 100% 50% / 0.05); }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
