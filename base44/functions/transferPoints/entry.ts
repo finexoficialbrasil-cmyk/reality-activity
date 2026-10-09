@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance, atomicCreditBalance, atomicTransferPoints } from '../../shared/atomicFinance.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE, isEmailBlocked } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'transfer_email';
 
@@ -9,6 +12,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ success: false, error: BLOCKED_MESSAGE }, { status: 403 });
 
     const {
       sender_email, sender_name,
@@ -21,6 +25,14 @@ Deno.serve(async (req) => {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'transfer', user.email, RATE_LIMITS.transfer.max, RATE_LIMITS.transfer.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { success: false, error: `Muitas transferências. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     if (!sender_email || !receiver_email) {
@@ -66,6 +78,13 @@ Deno.serve(async (req) => {
         return Response.json(errBody, { status: 403 });
       }
 
+      // === BLOQUEIO DO VENDEDOR (User.is_blocked) ===
+      if (await isEmailBlocked(base44, listing.seller_email)) {
+        const errBody = { success: false, error: 'O vendedor está bloqueado e não pode concluir a venda.' };
+        await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
+        return Response.json(errBody, { status: 403 });
+      }
+
       // === TRAVA ATÔMICA contra dupla venda: transição active→sold só uma vez.
       // Dois compradores concorrentes: só um vence (updated===1). O orçamento do
       // anúncio nunca pode ser "gasto" duas vezes.
@@ -94,15 +113,20 @@ Deno.serve(async (req) => {
         }
         const credited = await atomicCreditBalance(base44, 'UserPoints', buyerPoints.id, amount);
 
-        await base44.asServiceRole.entities.PointsTransaction.create({
+        await createLedgerEntry(base44, {
           user_email: sender_email,
           user_name: sender_name || user.full_name || 'Usuário',
           type: 'marketplace_bought',
           points: amount,
+          balance_after: Number(credited?.balance) || 0,
           description: 'Compra de ' + amount + ' pts no marketplace',
           transfer_email: receiver_email,
           transfer_name: receiver_name || 'Usuário',
-          transaction_value: transaction_value || 0
+          transaction_value: transaction_value || 0,
+          origin: 'marketplace',
+          destination: listing_id,
+          original_reference: listing_id,
+          request_id: request_id || ''
         });
 
         await base44.asServiceRole.entities.PointsTransfer.create({
@@ -143,17 +167,22 @@ Deno.serve(async (req) => {
         await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
         return Response.json(errBody, { status });
       }
-      await base44.asServiceRole.entities.PointsTransaction.create({
+      await createLedgerEntry(base44, {
         user_email: sender_email,
         user_name: sender_name || user.full_name || 'Usuário',
         type: 'marketplace_bought',
         points: -amount,
+        balance_after: Number(transfer.senderRecord?.balance) || 0,
         description: 'Compra de ' + amount + ' pts no marketplace',
         transfer_email: receiver_email,
         transfer_name: receiver_name || 'Usuário',
-        transaction_value: transaction_value || 0
+        transaction_value: transaction_value || 0,
+        origin: 'marketplace',
+        destination: listing_id,
+        original_reference: listing_id,
+        request_id: request_id || ''
       });
-      await base44.asServiceRole.entities.PointsTransaction.create({
+      await createLedgerEntry(base44, {
         user_email: receiver_email,
         user_name: receiver_name || 'Usuário',
         type: 'marketplace_sold',
@@ -161,7 +190,11 @@ Deno.serve(async (req) => {
         description: 'Venda de ' + amount + ' pts no marketplace',
         transfer_email: sender_email,
         transfer_name: sender_name || 'Usuário',
-        transaction_value: transaction_value || 0
+        transaction_value: transaction_value || 0,
+        origin: 'marketplace',
+        destination: sender_email,
+        original_reference: listing_id,
+        request_id: request_id || ''
       });
       await base44.asServiceRole.entities.PointsTransfer.create({
         sender_email,
@@ -198,17 +231,21 @@ Deno.serve(async (req) => {
       await recordIdempotency(base44, request_id, OP, user.email, errBody, status);
       return Response.json(errBody, { status });
     }
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    await createLedgerEntry(base44, {
       user_email: sender_email,
       user_name: sender_name || user.full_name || 'Usuário',
       type: 'transfer_sent',
       points: -amount,
+      balance_after: Number(transfer.senderRecord?.balance) || 0,
       description: note || ('Transferência para ' + (receiver_name || '')),
       transfer_email: receiver_email,
       transfer_name: receiver_name || 'Usuário',
-      transaction_value: transaction_value || 0
+      transaction_value: transaction_value || 0,
+      origin: 'transfer',
+      destination: receiver_email,
+      request_id: request_id || ''
     });
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    await createLedgerEntry(base44, {
       user_email: receiver_email,
       user_name: receiver_name || 'Usuário',
       type: 'transfer_received',
@@ -216,7 +253,10 @@ Deno.serve(async (req) => {
       description: note || ('Recebeu ' + amount + ' pts de ' + (sender_name || '')),
       transfer_email: sender_email,
       transfer_name: sender_name || 'Usuário',
-      transaction_value: transaction_value || 0
+      transaction_value: transaction_value || 0,
+      origin: 'transfer',
+      destination: sender_email,
+      request_id: request_id || ''
     });
     await base44.asServiceRole.entities.PointsTransfer.create({
       sender_email,

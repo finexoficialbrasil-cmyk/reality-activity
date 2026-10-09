@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'withdrawal';
 
@@ -9,6 +12,7 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
 
     const { points_amount, method, payment_data, pix_key_type, request_id } = await req.json();
 
@@ -17,6 +21,14 @@ export default async function(req) {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'withdrawal', user.email, RATE_LIMITS.withdrawal.max, RATE_LIMITS.withdrawal.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { error: `Muitas solicitações de saque. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     if (!method || !payment_data) {
@@ -94,13 +106,18 @@ export default async function(req) {
       status: 'pending'
     });
 
-    // Registra transação no extrato (servidor)
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    // Registra transação no extrato (servidor) — ledger enriquecido
+    await createLedgerEntry(base44, {
       user_email: user.email,
       user_name: user.full_name,
-      type: 'manual_adjust',
+      type: 'withdrawal_debit',
       points: -amount,
-      description: `Solicitação de saque via ${method === 'bitcoin_cash' ? 'Bitcoin Cash' : 'PIX'}`
+      balance_before: Number(userPoints.balance) || 0,
+      balance_after: Number(debit.record.balance) || 0,
+      description: `Solicitação de saque via ${method === 'bitcoin_cash' ? 'Bitcoin Cash' : 'PIX'}`,
+      origin: 'withdrawal',
+      destination: method,
+      request_id: request_id || ''
     });
 
     const body = {

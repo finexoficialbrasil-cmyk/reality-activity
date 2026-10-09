@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'save_ad';
 
@@ -9,6 +11,7 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
 
     const body = await req.json();
     const { mode, ad_id, title, description, type, link, category, budget_total, add_credit, reward_per_share, image_url, video_url, request_id } = body;
@@ -88,14 +91,19 @@ export default async function(req) {
 
       await base44.asServiceRole.entities.Advertisement.update(ad_id, updateData);
 
-      // Registra transação se adicionou créditos
+      // Registra transação se adicionou créditos (ledger enriquecido)
       if (addAmount > 0) {
-        await base44.asServiceRole.entities.PointsTransaction.create({
+        await createLedgerEntry(base44, {
           user_email: user.email,
           user_name: user.full_name,
           type: 'manual_adjust',
           points: -addAmount,
-          description: `Crédito adicionado ao anúncio: ${title}`
+          balance_before: Number(userPoints.balance) || 0,
+          balance_after: Number(debit.record.balance) || 0,
+          description: `Crédito adicionado ao anúncio: ${title}`,
+          origin: 'save_ad_edit',
+          destination: ad_id,
+          request_id: request_id || ''
         });
       }
 
@@ -149,13 +157,18 @@ export default async function(req) {
         is_active: true
       });
 
-      // Registra transação
-      await base44.asServiceRole.entities.PointsTransaction.create({
+      // Registra transação (ledger enriquecido)
+      await createLedgerEntry(base44, {
         user_email: user.email,
         user_name: user.full_name,
         type: 'manual_adjust',
         points: -budget,
-        description: `Orçamento de anúncio: ${title}`
+        balance_before: Number(userPoints.balance) || 0,
+        balance_after: Number(debit.record.balance) || 0,
+        description: `Orçamento de anúncio: ${title}`,
+        origin: 'save_ad_create',
+        destination: title,
+        request_id: request_id || ''
       });
 
       const resultBody = {

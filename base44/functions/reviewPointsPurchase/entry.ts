@@ -1,4 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { recordAudit } from '../../shared/auditLog.ts';
+import { getClientIp } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -41,12 +44,16 @@ Deno.serve(async (req) => {
         const totalPoints = (purchase.points_requested || 0) + (purchase.bonus_points || 0);
 
         const userPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: purchase.user_email });
+        let purchaseBalanceBefore = null;
+        let purchaseBalanceAfter = null;
         if (userPoints.length > 0) {
+          purchaseBalanceBefore = Number(userPoints[0].balance) || 0;
           await base44.asServiceRole.entities.UserPoints.update(userPoints[0].id, {
             balance: (userPoints[0].balance || 0) + totalPoints,
             total_earned: (userPoints[0].total_earned || 0) + totalPoints,
             last_activity: new Date().toISOString()
           });
+          purchaseBalanceAfter = purchaseBalanceBefore + totalPoints;
         } else {
           await base44.asServiceRole.entities.UserPoints.create({
             user_email: purchase.user_email,
@@ -55,20 +62,37 @@ Deno.serve(async (req) => {
             balance: totalPoints,
             last_activity: new Date().toISOString()
           });
+          purchaseBalanceBefore = 0;
+          purchaseBalanceAfter = totalPoints;
         }
 
-        await base44.asServiceRole.entities.PointsTransaction.create({
+        await createLedgerEntry(base44, {
           user_email: purchase.user_email,
           user_name: purchase.user_name,
           type: 'earned_bonus',
           points: totalPoints,
-          description: `Compra aprovada manualmente: ${purchase.points_requested} pts (R$ ${purchase.amount_paid})`
+          balance_before: purchaseBalanceBefore,
+          balance_after: purchaseBalanceAfter,
+          description: `Compra aprovada manualmente: ${purchase.points_requested} pts (R$ ${purchase.amount_paid})`,
+          origin: 'purchase_review',
+          destination: purchase_id,
+          original_reference: purchase.transaction_id || purchase_id
         });
 
         await base44.asServiceRole.entities.PointsPurchase.update(purchase_id, {
           points_credited: true
         });
       }
+
+      await recordAudit(base44, user, 'purchase_approve', {
+        target_type: 'PointsPurchase',
+        target_id: purchase_id,
+        target_email: purchase.user_email,
+        value_before: { status: purchase.status, points_credited: purchase.points_credited },
+        value_after: { status: 'approved', points_credited: true },
+        ip: getClientIp(req),
+        metadata: { points: (purchase.points_requested || 0) + (purchase.bonus_points || 0), amount: purchase.amount_paid }
+      });
 
       return Response.json({ success: true, message: 'Compra aprovada e pontos creditados' });
 
@@ -83,6 +107,16 @@ Deno.serve(async (req) => {
         reviewed_by: user.email,
         reviewed_date: new Date().toISOString(),
         rejection_reason
+      });
+
+      await recordAudit(base44, user, 'purchase_reject', {
+        target_type: 'PointsPurchase',
+        target_id: purchase_id,
+        target_email: purchase.user_email,
+        value_before: { status: purchase.status },
+        value_after: { status: 'rejected' },
+        reason: rejection_reason,
+        ip: getClientIp(req)
       });
 
       return Response.json({ success: true, message: 'Compra rejeitada' });

@@ -2,6 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { generateTransferId, generateVerificationCode } from '../../shared/transferUtils.ts';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance, atomicCreditBalance, atomicTransferPoints } from '../../shared/atomicFinance.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE, isEmailBlocked } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'transfer_key';
 
@@ -10,6 +13,7 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Não autorizado' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
 
     const reqBody = await req.json();
     const clientIp = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
@@ -21,6 +25,14 @@ export default async function(req) {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'transfer', user.email, RATE_LIMITS.transfer.max, RATE_LIMITS.transfer.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { error: `Muitas transferências. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     if (!receiver_key || !points_amount) {
@@ -90,6 +102,13 @@ export default async function(req) {
     }
     if (receiverKeyRecord.is_blocked) {
       const errBody = { error: 'A chave do destinatário está bloqueada' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
+      return Response.json(errBody, { status: 403 });
+    }
+
+    // === BLOQUEIO DO DESTINATÁRIO (User.is_blocked) ===
+    if (await isEmailBlocked(base44, receiverKeyRecord.user_email)) {
+      const errBody = { error: 'O destinatário está bloqueado e não pode receber transferências.' };
       await recordIdempotency(base44, request_id, OP, user.email, errBody, 403);
       return Response.json(errBody, { status: 403 });
     }
@@ -248,25 +267,39 @@ export default async function(req) {
       processed_date: now.toISOString()
     });
 
-    // 4. Create points transactions (ledger)
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    // 4. Create points transactions (ledger enriquecido)
+    const receiverPointsAfter = await base44.asServiceRole.entities.UserPoints.filter({ user_email: receiverKeyRecord.user_email });
+    const receiverBalanceAfter = receiverPointsAfter[0] ? Number(receiverPointsAfter[0].balance) || 0 : null;
+
+    await createLedgerEntry(base44, {
       user_email: user.email,
       user_name: user.full_name,
       type: 'transfer_sent',
       points: -amount,
+      balance_before: Number(senderPoints.balance) || 0,
+      balance_after: Number(transfer.senderRecord?.balance) || 0,
       transfer_email: receiverKeyRecord.user_email,
       transfer_name: receiverKeyRecord.user_name,
-      description: `Transferência ${transferId} para ${receiverKeyRecord.user_name}`
+      description: `Transferência ${transferId} para ${receiverKeyRecord.user_name}`,
+      origin: 'transfer',
+      destination: receiverKeyRecord.user_email,
+      original_reference: transferId,
+      request_id: request_id || ''
     });
 
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    await createLedgerEntry(base44, {
       user_email: receiverKeyRecord.user_email,
       user_name: receiverKeyRecord.user_name,
       type: 'transfer_received',
       points: amount,
+      balance_after: receiverBalanceAfter,
       transfer_email: user.email,
       transfer_name: user.full_name,
-      description: `Transferência ${transferId} recebida de ${user.full_name}`
+      description: `Transferência ${transferId} recebida de ${user.full_name}`,
+      origin: 'transfer',
+      destination: user.email,
+      original_reference: transferId,
+      request_id: request_id || ''
     });
 
     // 5. Update sender key stats

@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { processSingleShare } from '../../shared/advertisementShare.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
 
 export default async function(req) {
   try {
@@ -9,8 +11,17 @@ export default async function(req) {
     if (!user) {
       return Response.json({ error: 'Não autenticado' }, { status: 401 });
     }
+    if (isActorBlocked(user)) {
+      return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
+    }
 
     const { platform, max_ads } = await req.json();
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'share', user.email, RATE_LIMITS.share.max, RATE_LIMITS.share.windowSeconds);
+    if (!rl.allowed) {
+      return Response.json({ error: `Muitos compartilhamentos. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true }, { status: 429 });
+    }
 
     if (!platform) {
       return Response.json({ error: 'Plataforma de compartilhamento é obrigatória' }, { status: 400 });
@@ -47,7 +58,7 @@ export default async function(req) {
 
     for (const ad of adsToShare) {
       try {
-        const result = await processSingleShare(base44, user, ad, platform);
+        const result = await processSingleShare(base44, user, ad, platform, {}, { origin: 'bulk_share' });
         if (result.ok) {
           totalPoints += result.pointsCost;
           sharedAds.push({

@@ -8,6 +8,7 @@
 // pontos do que existe disponível.
 
 import { atomicDebitField, atomicCreditBalance } from './atomicFinance.ts';
+import { createLedgerEntry } from './ledger.ts';
 
 export async function processSingleShare(base44, user, advertisement, platform, extraShareFields = {}, options = {}) {
   // Already fetched advertisement passed in; validate state
@@ -117,8 +118,12 @@ export async function processSingleShare(base44, user, advertisement, platform, 
 
   // Credit points to the sharer (atomic $inc, or create if first time)
   const userPoints = await base44.asServiceRole.entities.UserPoints.filter({ user_email: user.email });
+  let sharerBalanceBefore = null;
+  let sharerBalanceAfter = null;
   if (userPoints.length > 0) {
-    await atomicCreditBalance(base44, 'UserPoints', userPoints[0].id, pointsCost);
+    sharerBalanceBefore = Number(userPoints[0].balance) || 0;
+    const credited = await atomicCreditBalance(base44, 'UserPoints', userPoints[0].id, pointsCost);
+    sharerBalanceAfter = Number(credited?.balance) || 0;
   } else {
     await base44.asServiceRole.entities.UserPoints.create({
       user_email: user.email,
@@ -127,26 +132,41 @@ export async function processSingleShare(base44, user, advertisement, platform, 
       balance: pointsCost,
       last_activity: new Date().toISOString()
     });
+    sharerBalanceBefore = 0;
+    sharerBalanceAfter = pointsCost;
   }
 
-  // Register transaction for sharer
-  await base44.asServiceRole.entities.PointsTransaction.create({
+  const requestId = options.request_id || '';
+  const origin = options.origin || 'share';
+
+  // Register transaction for sharer (ledger enriquecido)
+  await createLedgerEntry(base44, {
     user_email: user.email,
     user_name: user.full_name,
     type: 'earned_bonus',
     points: pointsCost,
+    balance_before: sharerBalanceBefore,
+    balance_after: sharerBalanceAfter,
     advertisement_id: advertisement.id,
-    description: `Compartilhamento de anúncio no ${platform}`
+    description: `Compartilhamento de anúncio no ${platform}`,
+    origin,
+    destination: advertisement.id,
+    original_reference: advertisement.id,
+    request_id: requestId
   });
 
-  // Register spend transaction for advertiser
-  await base44.asServiceRole.entities.PointsTransaction.create({
+  // Register spend transaction for advertiser (sem saldo de usuário — é orçamento do anúncio)
+  await createLedgerEntry(base44, {
     user_email: advertisement.user_email,
     user_name: advertisement.user_name,
     type: 'spent_redemption',
     points: -pointsCost,
     advertisement_id: advertisement.id,
-    description: `Compartilhamento de "${advertisement.title}" no ${platform}`
+    description: `Compartilhamento de "${advertisement.title}" no ${platform}`,
+    origin,
+    destination: user.email,
+    original_reference: advertisement.id,
+    request_id: requestId
   });
 
   return { ok: true, pointsCost };

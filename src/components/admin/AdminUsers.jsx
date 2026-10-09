@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Star, TrendingUp, Play, Search } from 'lucide-react';
+import { Star, TrendingUp, Play, Search, ShieldBan, ShieldCheck } from 'lucide-react';
+import { newRequestId } from '@/lib/requestId';
+import { toast } from 'sonner';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -9,6 +11,8 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [userTxs, setUserTxs] = useState([]);
+  const [userBlocked, setUserBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -22,9 +26,40 @@ export default function AdminUsers() {
     setLoading(false);
   };
 
-  const selectUser = (u) => {
+  const selectUser = async (u) => {
     setSelected(u);
     setUserTxs(transactions.filter(t => t.user_email === u.user_email));
+    setUserBlocked(false);
+    try {
+      const users = await base44.entities.User.filter({ email: u.user_email });
+      if (users[0]) setUserBlocked(!!users[0].is_blocked);
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleToggleBlock = async () => {
+    if (!selected) return;
+    const willBlock = !userBlocked;
+    const reason = willBlock ? window.prompt('Motivo do bloqueio (obrigatório):') : '';
+    if (willBlock && !reason) { toast.error('Motivo é obrigatório para bloquear'); return; }
+    setBlockLoading(true);
+    try {
+      const res = await base44.functions.invoke('setUserBlock', {
+        user_email: selected.user_email,
+        block: willBlock,
+        reason,
+        request_id: newRequestId()
+      });
+      if (res.data?.success) {
+        setUserBlocked(willBlock);
+        toast.success(res.data?.message || (willBlock ? 'Usuário bloqueado' : 'Usuário desbloqueado'));
+      } else {
+        toast.error(res.data?.error || 'Erro ao alterar bloqueio');
+      }
+    } catch (e) {
+      toast.error(e?.response?.data?.error || e?.data?.error || 'Erro ao alterar bloqueio');
+    } finally {
+      setBlockLoading(false);
+    }
   };
 
   const filtered = users.filter(u =>
@@ -118,6 +153,22 @@ export default function AdminUsers() {
                     <div className="text-xs text-muted-foreground">{s.label}</div>
                   </div>
                 ))}
+              </div>
+
+              <div className="mb-4">
+                <button
+                  onClick={handleToggleBlock}
+                  disabled={blockLoading}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    userBlocked
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20'
+                      : 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20'
+                  } disabled:opacity-50`}
+                >
+                  {userBlocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldBan className="w-4 h-4" />}
+                  {blockLoading ? 'Processando...' : userBlocked ? 'Desbloquear Usuário' : 'Bloquear Usuário'}
+                </button>
+                {userBlocked && <p className="text-xs text-red-400 text-center mt-1.5">Usuário bloqueado — operações financeiras suspensas</p>}
               </div>
 
               <h4 className="text-sm font-medium mb-3">Últimas Transações</h4>

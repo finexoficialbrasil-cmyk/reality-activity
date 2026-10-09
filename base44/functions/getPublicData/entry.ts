@@ -7,19 +7,50 @@ Deno.serve(async (req) => {
     const [videos, companies, allAds, withdrawals] = await Promise.all([
       base44.asServiceRole.entities.Video.filter({ is_active: true }, '-order', 12),
       base44.asServiceRole.entities.Company.filter({ is_active: true }, 'order', 20),
-      base44.asServiceRole.entities.Advertisement.list('-reward_per_share', 500),
+      base44.asServiceRole.entities.Advertisement.filter({ status: 'approved', is_active: true, budget_remaining: { $gt: 0 } }, '-reward_per_share', 500),
       base44.asServiceRole.entities.WithdrawalRequest.filter({ status: { $ne: 'rejected' } }, '-created_date', 500)
     ]);
 
+    // Anúncios públicos: strip dados internos do anunciante (email/nome/motivos)
     const advertisements = allAds
-      .filter(a => a.status === 'approved' && a.is_active && a.budget_remaining > 0)
-      .sort((a, b) => (b.reward_per_share || 0) - (a.reward_per_share || 0) || (new Date(b.created_date).getTime() - new Date(a.created_date).getTime()));
+      .sort((a, b) => (b.reward_per_share || 0) - (a.reward_per_share || 0) || (new Date(b.created_date).getTime() - new Date(a.created_date).getTime()))
+      .map(a => ({
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        type: a.type,
+        image_url: a.image_url,
+        video_url: a.video_url,
+        link: a.link,
+        category: a.category,
+        budget_total: a.budget_total,
+        budget_remaining: a.budget_remaining,
+        reward_per_share: a.reward_per_share,
+        is_active: a.is_active,
+        is_bulk_shareable: a.is_bulk_shareable,
+        order: a.order
+      }));
+
+    // Empresas públicas: strip email/phone (não necessários na interface pública)
+    const publicCompanies = companies.map(c => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      logo_url: c.logo_url,
+      cover_image_url: c.cover_image_url,
+      description: c.description,
+      category: c.category,
+      website: c.website,
+      is_partner: c.is_partner,
+      is_active: c.is_active,
+      order: c.order
+    }));
 
     // Saldo queimado = soma de pontos de todos os saques não rejeitados
     const burnedBalance = withdrawals
       .reduce((sum, w) => sum + (w.points_amount || 0), 0);
 
-    return Response.json({ videos, companies, advertisements, burnedBalance });
+    return Response.json({ videos, companies: publicCompanies, advertisements, burnedBalance });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

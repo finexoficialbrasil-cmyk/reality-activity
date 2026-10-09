@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { processSingleShare } from '../../shared/advertisementShare.ts';
 import { resolveOwnerEmail } from '../../shared/megaLinkSlug.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isEmailBlocked, getClientIp } from '../../shared/userGuard.ts';
 
 // Antifraude do Mega-Link:
 // - Fingerprint server-side (NUNCA confia em localStorage/visitor_id do cliente):
@@ -41,6 +43,18 @@ export default async function(req) {
     }
     const ownerEmail = resolved.email;
     const ownerName = resolved.name;
+
+    // === BLOQUEIO DO DONO DO MEGA-LINK ===
+    if (await isEmailBlocked(base44, ownerEmail)) {
+      return Response.json({ error: 'O proprietário deste Mega-Link está bloqueado.' }, { status: 403 });
+    }
+
+    // === RATE LIMIT (por IP — pode ser anônimo) ===
+    const clientIp = getClientIp(req);
+    const rl = await checkRateLimit(base44, 'mega_link', clientIp || 'unknown', RATE_LIMITS.mega_link.max, RATE_LIMITS.mega_link.windowSeconds);
+    if (!rl.allowed) {
+      return Response.json({ error: `Muitos cliques no Mega-Link. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true }, { status: 429 });
+    }
 
     // === FINGERPRINT SERVER-SIDE ===
     // Tenta identificar o usuário autenticado (sinal mais forte). Se anônimo,
@@ -158,7 +172,7 @@ export default async function(req) {
 
       for (const ad of eligibleAds) {
         try {
-          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: fingerprint }, { skipCooldown: true });
+          const result = await processSingleShare(base44, pseudoUser, ad, 'mega_link', { visitor_ip: fingerprint }, { skipCooldown: true, origin: 'mega_link' });
           if (result.ok) {
             pointsEarned += result.pointsCost;
           }

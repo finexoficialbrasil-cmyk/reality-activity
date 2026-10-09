@@ -1,0 +1,55 @@
+{
+  "name": "RateLimit",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Chave \u00fanica do bucket: operation:identifier:windowBucket"
+    },
+    "operation": {
+      "type": "string",
+      "description": "Nome da opera\u00e7\u00e3o protegida (ex: withdrawal, transfer, share, mega_link, create_listing, twofa_attempt)"
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Identificador do limitador (email do usu\u00e1rio ou IP)"
+    },
+    "count": {
+      "type": "number",
+      "default": 0,
+      "description": "Contagem de requisi\u00e7\u00f5es neste bucket"
+    },
+    "window_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "In\u00edcio da janela do bucket"
+    }
+  },
+  "required": [
+    "key",
+    "operation",
+    "identifier"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

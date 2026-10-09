@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { processSingleShare } from '../../shared/advertisementShare.ts';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
 
 const OP = 'share';
 
@@ -12,6 +14,9 @@ export default async function(req) {
     if (!user) {
       return Response.json({ error: 'Não autenticado' }, { status: 401 });
     }
+    if (isActorBlocked(user)) {
+      return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
+    }
 
     const { advertisement_id, platform, request_id } = await req.json();
 
@@ -20,6 +25,14 @@ export default async function(req) {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'share', user.email, RATE_LIMITS.share.max, RATE_LIMITS.share.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { error: `Muitos compartilhamentos. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     if (!advertisement_id || !platform) {
@@ -31,7 +44,7 @@ export default async function(req) {
     // Fetch the ad
     const advertisement = await base44.asServiceRole.entities.Advertisement.get(advertisement_id);
 
-    const result = await processSingleShare(base44, user, advertisement, platform);
+    const result = await processSingleShare(base44, user, advertisement, platform, {}, { request_id: request_id || '', origin: 'share' });
 
     if (!result.ok) {
       const errBody = { error: result.error };

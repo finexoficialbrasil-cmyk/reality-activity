@@ -7,6 +7,24 @@
         "admin",
         "user"
       ]
+    },
+    "is_blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Usu\u00e1rio bloqueado \u2014 n\u00e3o pode executar opera\u00e7\u00f5es financeiras"
+    },
+    "blocked_reason": {
+      "type": "string",
+      "description": "Motivo do bloqueio"
+    },
+    "blocked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora do bloqueio"
+    },
+    "blocked_by": {
+      "type": "string",
+      "description": "Email do admin que bloqueou"
     }
   },
   "required": [

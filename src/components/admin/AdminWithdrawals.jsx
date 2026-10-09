@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, X, DollarSign, FileText, Bitcoin, Wallet, Clock, CheckCircle, XCircle, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { newRequestId } from '@/lib/requestId';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
@@ -36,46 +37,41 @@ export default function AdminWithdrawals() {
 
   const handleApprove = async (w) => {
     try {
-      await base44.entities.WithdrawalRequest.update(w.id, { status: 'processing' });
-      toast.success('Saque aprovado - em processamento');
-      loadWithdrawals();
+      const res = await base44.functions.invoke('processWithdrawalDecision', {
+        withdrawal_id: w.id,
+        action: 'approve',
+        request_id: newRequestId()
+      });
+      if (res.data?.success) {
+        toast.success('Saque aprovado - em processamento');
+        loadWithdrawals();
+      } else {
+        toast.error(res.data?.error || 'Erro ao aprovar');
+      }
     } catch (e) {
-      toast.error('Erro ao aprovar');
+      toast.error(e?.response?.data?.error || e?.data?.error || 'Erro ao aprovar');
     }
   };
 
   const handleReject = async () => {
     if (!rejectReason) { toast.error('Informe o motivo da recusa'); return; }
     try {
-      const pts = await base44.entities.UserPoints.filter({ user_email: rejectModal.user_email });
-      if (pts.length > 0) {
-        const p = pts[0];
-        await base44.entities.UserPoints.update(p.id, {
-          balance: p.balance + rejectModal.points_amount,
-          total_spent: (p.total_spent || 0) - rejectModal.points_amount
-        });
+      const res = await base44.functions.invoke('processWithdrawalDecision', {
+        withdrawal_id: rejectModal.id,
+        action: 'reject',
+        reason: rejectReason,
+        request_id: newRequestId()
+      });
+      if (res.data?.success) {
+        toast.success(res.data?.message || 'Saque recusado e pontos retornados');
+        setRejectModal(null);
+        setRejectReason('');
+        loadWithdrawals();
+      } else {
+        toast.error(res.data?.error || 'Erro ao recusar');
       }
-
-      await base44.entities.WithdrawalRequest.update(rejectModal.id, {
-        status: 'rejected',
-        rejection_reason: rejectReason,
-        processed_date: new Date().toISOString()
-      });
-
-      await base44.entities.PointsTransaction.create({
-        user_email: rejectModal.user_email,
-        user_name: rejectModal.user_name,
-        type: 'manual_adjust',
-        points: rejectModal.points_amount,
-        description: 'Saque recusado - pontos retornados'
-      });
-
-      toast.success('Saque recusado e pontos retornados');
-      setRejectModal(null);
-      setRejectReason('');
-      loadWithdrawals();
     } catch (e) {
-      toast.error('Erro ao recusar');
+      toast.error(e?.response?.data?.error || e?.data?.error || 'Erro ao recusar');
     }
   };
 

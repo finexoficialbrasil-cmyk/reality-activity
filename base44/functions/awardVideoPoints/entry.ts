@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitField, atomicCreditBalance } from '../../shared/atomicFinance.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'video_points';
 
@@ -9,6 +12,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ error: BLOCKED_MESSAGE }, { status: 403 });
 
     const { video_id, watch_seconds, request_id } = await req.json();
 
@@ -17,6 +21,14 @@ Deno.serve(async (req) => {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'share', user.email, RATE_LIMITS.share.max, RATE_LIMITS.share.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { error: `Muitas solicitações. Tente novamente em ${rl.retry_after_seconds || 600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     if (!video_id) {
@@ -112,22 +124,14 @@ Deno.serve(async (req) => {
       return Response.json(errBody, { status: 400 });
     }
 
-    // Registra a transação (origem rastreável: earned_watch + video_id)
-    await base44.asServiceRole.entities.PointsTransaction.create({
-      user_email: user.email,
-      user_name: user.full_name,
-      type: 'earned_watch',
-      points: ptsToAward,
-      video_id,
-      company_id: video.company_id,
-      description: `Assistiu "${video.title}" por ${secs}s`,
-      watch_seconds: secs
-    });
-
     // Atualiza saldo do usuário (atômico, ou cria se primeira vez)
     const existing = await base44.asServiceRole.entities.UserPoints.filter({ user_email: user.email });
+    let videoBalanceBefore = null;
+    let videoBalanceAfter = null;
     if (existing.length > 0) {
-      await atomicCreditBalance(base44, 'UserPoints', existing[0].id, ptsToAward);
+      videoBalanceBefore = Number(existing[0].balance) || 0;
+      const credited = await atomicCreditBalance(base44, 'UserPoints', existing[0].id, ptsToAward);
+      videoBalanceAfter = Number(credited?.balance) || 0;
       // incrementa videos_watched
       await base44.asServiceRole.entities.UserPoints.update(existing[0].id, {
         videos_watched: (existing[0].videos_watched || 0) + 1
@@ -141,7 +145,27 @@ Deno.serve(async (req) => {
         videos_watched: 1,
         last_activity: new Date().toISOString()
       });
+      videoBalanceBefore = 0;
+      videoBalanceAfter = ptsToAward;
     }
+
+    // Registra a transação (ledger enriquecido)
+    await createLedgerEntry(base44, {
+      user_email: user.email,
+      user_name: user.full_name,
+      type: 'earned_watch',
+      points: ptsToAward,
+      balance_before: videoBalanceBefore,
+      balance_after: videoBalanceAfter,
+      video_id,
+      company_id: video.company_id,
+      description: `Assistiu "${video.title}" por ${secs}s`,
+      watch_seconds: secs,
+      origin: 'video',
+      destination: video_id,
+      original_reference: video_id,
+      request_id: request_id || ''
+    });
 
     const resultBody = {
       success: true,

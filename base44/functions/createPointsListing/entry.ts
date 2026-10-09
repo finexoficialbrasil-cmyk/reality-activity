@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { getIdempotentResult, recordIdempotency, decodeIdempotentResult } from '../../shared/idempotency.ts';
 import { atomicDebitBalance } from '../../shared/atomicFinance.ts';
+import { checkRateLimit, RATE_LIMITS } from '../../shared/rateLimit.ts';
+import { isActorBlocked, BLOCKED_MESSAGE } from '../../shared/userGuard.ts';
+import { createLedgerEntry } from '../../shared/ledger.ts';
 
 const OP = 'create_listing';
 
@@ -9,6 +12,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (isActorBlocked(user)) return Response.json({ success: false, error: BLOCKED_MESSAGE }, { status: 403 });
 
     const { points_amount, total_price, whatsapp_number, request_id } = await req.json();
 
@@ -17,6 +21,14 @@ Deno.serve(async (req) => {
     if (prior) {
       const replay = decodeIdempotentResult(prior);
       if (replay) return Response.json(replay, { status: prior.result_status || 200 });
+    }
+
+    // === RATE LIMIT ===
+    const rl = await checkRateLimit(base44, 'create_listing', user.email, RATE_LIMITS.create_listing.max, RATE_LIMITS.create_listing.windowSeconds);
+    if (!rl.allowed) {
+      const errBody = { success: false, error: `Muitas ofertas criadas. Tente novamente em ${rl.retry_after_seconds || 3600}s.`, rate_limited: true };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 429);
+      return Response.json(errBody, { status: 429 });
     }
 
     const pts = Math.floor(Number(points_amount) || 0);
@@ -72,14 +84,20 @@ Deno.serve(async (req) => {
       reserved: true
     });
 
-    // Extrato: reserva de pontos
-    await base44.asServiceRole.entities.PointsTransaction.create({
+    // Extrato: reserva de pontos (ledger enriquecido)
+    await createLedgerEntry(base44, {
       user_email: user.email,
       user_name: user.full_name,
-      type: 'manual_adjust',
+      type: 'marketplace_listed',
       points: -pts,
+      balance_before: Number(sellerPoints.balance) || 0,
+      balance_after: Number(debit.record.balance) || 0,
       description: 'Pontos reservados para venda no marketplace',
-      transaction_value: 0
+      transaction_value: 0,
+      origin: 'create_listing',
+      destination: listing.id,
+      original_reference: listing.id,
+      request_id: request_id || ''
     });
 
     const resultBody = {

@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { recordAudit } from '../../shared/auditLog.ts';
+import { getClientIp } from '../../shared/userGuard.ts';
 
 // Proteção financeira definitiva: impede configurar um valor de recompra/saque
 // superior ao preço pelo qual o ponto foi efetivamente financiado (venda).
@@ -73,6 +75,16 @@ export default async function(req) {
     // Recarrega para retornar o estado final
     const finalPurchase = (await base44.asServiceRole.entities.PurchaseSettings.list())[0] || {};
     const finalWithdrawal = (await base44.asServiceRole.entities.WithdrawalSettings.list())[0] || {};
+
+    // === TRILHA DE AUDITORIA ===
+    await recordAudit(base44, user, 'financial_settings_update', {
+      target_type: 'PurchaseSettings',
+      target_id: currentPurchase.id || finalPurchase.id || '',
+      value_before: { purchase: currentPurchase, withdrawal: currentWithdrawal },
+      value_after: { purchase: finalPurchase, withdrawal: finalWithdrawal },
+      ip: getClientIp(req),
+      metadata: { purchase_sent: !!purchase_settings, withdrawal_sent: !!withdrawal_settings }
+    });
 
     const finalPrice = Number(finalPurchase.price_per_point) || 0;
     const pixRate = Number(finalWithdrawal.pix_buyback_rate) || 0;

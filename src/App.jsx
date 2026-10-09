@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -38,9 +39,13 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/vitrine" element={<Vitrine />} />
       <Route path="/catalog" element={<Catalog />} />
-      <Route path="/dashboard" element={<UserDashboard />} />
-      <Route path="/marketplace" element={<Marketplace />} />
-      <Route path="/admin" element={<Admin />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/" replace />} />}>
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+      </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/" replace />} requireAdmin />}>
+        <Route path="/admin" element={<Admin />} />
+      </Route>
       <Route path="/vitrine/u/:userSlug" element={<MegaLinkVitrine />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
