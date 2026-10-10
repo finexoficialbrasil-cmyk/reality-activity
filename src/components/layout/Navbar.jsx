@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard, TrendingUp } from 'lucide-react';
+import { Menu, X, Star, LogOut, User, ShieldCheck, Flame, LayoutDashboard, TrendingUp, Store } from 'lucide-react';
 import { usePublicData } from '@/hooks/usePublicData';
 import Logo from '@/components/layout/Logo';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
+  const [marketplaceBalance, setMarketplaceBalance] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -31,6 +32,9 @@ export default function Navbar() {
         setUser(me);
         const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
         if (pts.length > 0) setUserPoints(pts[0]);
+        const listings = await base44.entities.PointsListing.filter({ seller_email: me.email, status: 'active' });
+        const mpBalance = listings.reduce((sum, l) => sum + (l.points_amount || 0), 0);
+        setMarketplaceBalance(mpBalance);
       }
     };
 
@@ -89,6 +93,16 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             {user ? (
               <>
+                {marketplaceBalance > 0 && (
+                  <Link
+                    to="/marketplace"
+                    title="Saldo do marketplace disponível"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                  >
+                    <Store className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-xs font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+                  </Link>
+                )}
                 {userPoints && (
                   <Link to="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-coin/10 border border-coin/30 hover:bg-coin/20 transition-all">
                     <Star className="w-4 h-4 text-coin" />
