@@ -117,7 +117,7 @@ export default function Marketplace() {
       toast.success(res.data?.message || 'Interesse registrado!');
       loadListings();
     } catch (err) {
-      toast.error(err.message || 'Erro ao manifestar interesse');
+      toast.error(err.response?.data?.error || err.message || 'Erro ao manifestar interesse');
     } finally {
       setDeclaringId(null);
     }
@@ -189,7 +189,7 @@ export default function Marketplace() {
       loadListings();
     } catch (err) {
       console.error('Erro ao criar listing:', err);
-      toast.error(err.message || 'Erro ao criar anúncio de venda');
+      toast.error(err.response?.data?.error || err.message || 'Erro ao criar anúncio de venda');
     } finally {
       setCreatingListing(false);
     }
@@ -206,7 +206,7 @@ export default function Marketplace() {
       loadUser();
       loadListings();
     } catch (err) {
-      toast.error(err.message || 'Erro ao cancelar anúncio');
+      toast.error(err.response?.data?.error || err.message || 'Erro ao cancelar anúncio');
     }
   };
 

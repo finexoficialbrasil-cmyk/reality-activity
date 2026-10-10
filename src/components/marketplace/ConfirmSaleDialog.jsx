@@ -57,7 +57,7 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
       onConfirmed?.(res.data);
       onClose();
     } catch (err) {
-      toast.error(err.message || 'Erro ao confirmar venda');
+      toast.error(err.response?.data?.error || err.message || 'Erro ao confirmar venda');
     } finally {
       setConfirming(false);
     }
