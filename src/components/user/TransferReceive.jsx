@@ -34,19 +34,25 @@ export default function TransferReceive({ user }) {
   };
 
   const handleShare = async () => {
+    const shareText = `Envie pontos para mim usando esta chave: ${transferKey}`;
+    const shareUrl = window.location.origin;
+    // Sempre copia para a área de transferência como garantia
+    try {
+      await navigator.clipboard.writeText(transferKey);
+    } catch (_) {}
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Minha Chave de Recebimento',
-          text: `Envie pontos para mim usando esta chave: ${transferKey}`,
+          text: shareText,
+          url: shareUrl,
         });
+        return;
       } catch (e) {
-        // cancelled
+        // cancelado ou falhou — cai no fallback abaixo
       }
-    } else {
-      handleCopy();
-      toast.info('Chave copiada para a área de transferência');
     }
+    toast.success('Chave copiada! Cole e envie para quem quiser.');
   };
 
   if (loading) {
