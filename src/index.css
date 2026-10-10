@@ -66,7 +66,7 @@
   .text-gold { color: hsl(var(--gold)); }
   .bg-gold { background-color: hsl(var(--gold)); }
   .border-gold { border-color: hsl(var(--gold)); }
-  .glow-gold { box-shadow: 0 0 20px hsl(var(--gold) / 0.3); }
+  .glow-gold { box-shadow: 0 0 24px hsl(var(--gold) / 0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
   .glow-coin { box-shadow: 0 0 20px hsl(var(--coin) / 0.35); }
   .glow-purple { box-shadow: 0 0 20px hsl(270 80% 65% / 0.3); }
   .glass { background: hsl(220 18% 9% / 0.8); backdrop-filter: blur(12px); }

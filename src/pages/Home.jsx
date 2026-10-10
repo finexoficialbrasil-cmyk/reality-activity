@@ -94,7 +94,7 @@ export default function Home() {
                 onClick={() => setSelectedCategory(cat.value)}
                 className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border flex-shrink-0 ${
                   selectedCategory === cat.value
-                    ? 'bg-gold text-primary-foreground border-gold glow-gold scale-105'
+                    ? 'text-white border-transparent scale-105 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] shadow-[0_0_16px_rgba(232,35,232,0.5),inset_0_1px_0_rgba(255,255,255,0.3)]'
                     : 'bg-card/60 border-border text-muted-foreground hover:text-foreground hover:border-gold/40 hover:bg-card'
                 }`}
               >
