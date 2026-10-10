@@ -83,8 +83,9 @@ Deno.serve(async (req) => {
     }
 
     // === TRAVA ATÔMICA: só atualiza se ainda está active e sem buyer_id ===
+    // buyer_id: null cobre tanto campo inexistente quanto null (MongoDB)
     const claim = await base44.asServiceRole.entities.PointsListing.updateMany(
-      { id: listing_id, status: 'active', buyer_id: { $exists: false } },
+      { id: listing_id, status: 'active', buyer_id: null },
       {
         $set: {
           buyer_id: user.id,
