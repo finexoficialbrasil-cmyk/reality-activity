@@ -258,7 +258,7 @@ export default function Marketplace() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-gold to-gold-dark text-primary-foreground shadow-lg'
+                    ? 'bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] shadow-lg'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
@@ -275,7 +275,7 @@ export default function Marketplace() {
               {!showSellForm ? (
                 <Button
                   onClick={() => setShowSellForm(true)}
-                  className="w-full h-14 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground hover:from-gold-dark hover:to-gold-dark font-bold rounded-2xl text-base"
+                  className="w-full h-14 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] hover:opacity-90 font-bold rounded-2xl text-base"
                 >
                   <Tag className="w-5 h-5 mr-2" />
                   Vender Meus Pontos
@@ -354,7 +354,7 @@ export default function Marketplace() {
                   <Button
                     onClick={handleCreateListing}
                     disabled={creatingListing}
-                    className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-primary-foreground font-bold rounded-xl disabled:opacity-50"
+                    className="w-full h-12 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl disabled:opacity-50"
                   >
                     {creatingListing ? (
                       <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Publicando...</>

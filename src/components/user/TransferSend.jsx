@@ -165,7 +165,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Para:</span><span className="font-semibold">{receiverInfo?.receiver_name}</span></div>
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Quantidade:</span><span className="font-semibold text-gold">{amt.toLocaleString('pt-BR')} pts</span></div>
         </div>
-        <Button onClick={reset} className="bg-gold text-background hover:bg-gold-dark">Nova Transferência</Button>
+        <Button onClick={reset} className="font-bold">Nova Transferência</Button>
       </motion.div>
     );
   }
@@ -196,7 +196,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
               className="text-center text-lg tracking-widest"
             />
           </div>
-          <Button onClick={handleVerifyCode} disabled={transferring} className="w-full bg-gold text-background hover:bg-gold-dark">
+          <Button onClick={handleVerifyCode} disabled={transferring} className="w-full font-bold">
             {transferring ? 'Verificando...' : 'Confirmar Transferência'}
           </Button>
         </div>
@@ -268,7 +268,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
       )}
 
       {receiverInfo && (
-        <Button onClick={handleConfirmClick} disabled={transferring || !amt || amt > balance} className="w-full bg-gold text-background hover:bg-gold-dark">
+        <Button onClick={handleConfirmClick} disabled={transferring || !amt || amt > balance} className="w-full font-bold">
           <Send className="w-4 h-4 mr-2" /> Confirmar Transferência
         </Button>
       )}
@@ -290,7 +290,7 @@ export default function TransferSend({ user, userPoints, onTransferComplete }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancelar</Button>
-            <Button onClick={handleTransfer} className="bg-gold text-background hover:bg-gold-dark">Confirmar Transferência</Button>
+            <Button onClick={handleTransfer} className="font-bold">Confirmar Transferência</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

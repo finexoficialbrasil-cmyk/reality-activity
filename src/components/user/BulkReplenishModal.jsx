@@ -127,7 +127,7 @@ export default function BulkReplenishModal({ selectedAds, userPoints, onClose, o
           <Button
             onClick={handleSubmit}
             disabled={!hasEnough || submitting}
-            className="flex-1 bg-gold text-background hover:bg-gold-dark font-bold"
+            className="flex-1 font-bold"
           >
             {submitting ? (
               <>

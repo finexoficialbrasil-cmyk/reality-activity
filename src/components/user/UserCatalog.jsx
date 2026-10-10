@@ -222,7 +222,7 @@ export default function UserCatalog({ user, userPoints, onRedeemed }) {
                       disabled={redeeming === product.id || !canAfford}
                       className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
                         canAfford
-                          ? 'bg-gold text-background hover:bg-gold-dark'
+                          ? 'bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_14px_rgba(232,35,232,0.5)]'
                           : 'bg-muted text-muted-foreground cursor-not-allowed'
                       }`}
                     >

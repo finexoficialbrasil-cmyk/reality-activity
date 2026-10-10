@@ -494,7 +494,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         <div className="flex gap-2">
           <Button
             type="submit"
-            className="bg-gold text-background hover:bg-gold-dark flex-1"
+            className="font-bold flex-1"
             disabled={submitting || !userPoints || (ad ? userPoints.balance < (Math.max(0, parseInt(formData.add_credit) || 0)) : userPoints.balance < formData.budget_total)}
           >
             {submitting ? (ad ? '⏳ Atualizando...' : '⏳ Publicando...') : (ad ? '✏️ Atualizar Anúncio' : '🚀 Publicar Anúncio')}

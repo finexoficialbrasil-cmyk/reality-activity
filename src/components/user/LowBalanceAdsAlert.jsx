@@ -85,7 +85,7 @@ export default function LowBalanceAdsAlert({ ads, onReplenish, userPoints, onRep
             <Button
               size="sm"
               onClick={() => setShowBulkModal(true)}
-              className="bg-gold text-background hover:bg-gold-dark font-bold"
+              className="font-bold"
             >
               <Plus className="w-4 h-4" />
               Repor Selecionados

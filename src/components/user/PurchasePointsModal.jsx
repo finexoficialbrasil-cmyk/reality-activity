@@ -303,7 +303,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                     </div>
                     <Button
                       onClick={handleContinueToPayment}
-                      className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background hover:from-gold-dark hover:to-gold-dark font-bold rounded-xl"
+                      className="w-full h-12 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] hover:opacity-90 font-bold rounded-xl"
                     >
                       Continuar para pagamento
                     </Button>
@@ -386,7 +386,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   </Button>
                   <Button
                     onClick={() => setStep('upload')}
-                    className="flex-1 h-12 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
+                    className="flex-1 h-12 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl"
                   >
                     Já paguei
                   </Button>
@@ -642,7 +642,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-11 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
+                  className="w-full h-11 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl"
                 >
                   Entendi, concluir
                 </Button>
@@ -697,7 +697,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
 
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-11 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
+                  className="w-full h-11 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl"
                 >
                   Entendi, fechar
                 </Button>
@@ -763,7 +763,7 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                 )}
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}
-                  className="w-full h-12 bg-gradient-to-r from-gold to-gold-dark text-background font-bold rounded-xl"
+                  className="w-full h-12 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl"
                 >
                   Concluir
                 </Button>

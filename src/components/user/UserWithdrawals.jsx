@@ -248,7 +248,7 @@ export default function UserWithdrawals({ user, userPoints, onWithdrawal }) {
 
           <Button
             type="submit"
-            className="w-full bg-gold text-background hover:bg-gold-dark"
+            className="w-full font-bold"
             disabled={submitting || !formData.method || !formData.payment_data || (formData.method === 'pix' && !formData.pix_key_type) || pointsAmount < 100 || pointsAmount > (userPoints?.balance || 0)}
           >
             {submitting ? '⏳ Enviando...' : '💰 Solicitar Resgate'}

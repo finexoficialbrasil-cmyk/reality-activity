@@ -100,7 +100,7 @@ export default function TransferReceive({ user }) {
           <p className="font-mono font-bold text-xl tracking-wider text-gold break-all">{transferKey}</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCopy} className="flex-1 bg-gold text-background hover:bg-gold-dark">
+          <Button onClick={handleCopy} className="flex-1 font-bold">
             <Copy className="w-4 h-4 mr-2" /> Copiar
           </Button>
           <Button onClick={() => setShowQR(!showQR)} variant="outline" className="flex-1">
