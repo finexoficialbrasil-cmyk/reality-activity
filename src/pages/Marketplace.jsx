@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/layout/Navbar';
 import ContactSellerDialog from '@/components/user/ContactSellerDialog';
+import VibrantAlert from '@/components/ui/VibrantAlert';
 import { newRequestId } from '@/lib/requestId';
 import {
   ArrowLeft, Store, Search, Loader2, Tag, Clock,
@@ -482,12 +483,9 @@ export default function Marketplace() {
               )}
 
               {/* Aviso de segurança */}
-              <div className="flex items-start gap-3 p-4 bg-accent/10 border border-accent/20 rounded-2xl">
-                <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-accent leading-relaxed">
-                  A RealityActivity é apenas uma plataforma de intermediação. A negociação e o pagamento são combinados diretamente entre as partes via WhatsApp. Sempre confira os dados do vendedor antes de efetuar o pagamento.
-                </p>
-              </div>
+              <VibrantAlert severity="warning" icon={ShieldCheck}>
+                A RealityActivity é apenas uma plataforma de intermediação. A negociação e o pagamento são combinados diretamente entre as partes via WhatsApp. Sempre confira os dados do vendedor antes de efetuar o pagamento.
+              </VibrantAlert>
             </motion.div>
           )}
 

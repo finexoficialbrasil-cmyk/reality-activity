@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import VibrantAlert from '@/components/ui/VibrantAlert';
 import {
   X, Coins, TrendingUp, Upload, CheckCircle, Loader2, Copy,
   Building2, User, CreditCard, FileText, ShieldCheck, AlertCircle, Sparkles, Clock
@@ -429,10 +430,9 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   </div>
                 )}
 
-                <div className="flex items-start gap-3 p-3 bg-accent/10 border border-accent/20 rounded-xl">
-                  <Sparkles className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-accent">Nossa IA vai analisar o comprovante automaticamente. Se tudo estiver correto, seu saldo é liberado na hora!</p>
-                </div>
+                <VibrantAlert severity="info" icon={Sparkles}>
+                  Nossa IA vai analisar o comprovante automaticamente. Se tudo estiver correto, seu saldo é liberado na hora!
+                </VibrantAlert>
 
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={() => setStep('payment')} className="flex-1 h-12 rounded-xl">
@@ -689,11 +689,9 @@ export default function PurchasePointsModal({ user, isOpen, onClose, onSuccess }
                   </div>
                 </div>
 
-                <div className="bg-accent/10 border border-accent/20 rounded-xl p-3">
-                  <p className="text-xs text-accent leading-relaxed">
-                    Cada comprovante só pode ser utilizado uma vez. Envie um novo comprovante de pagamento para validar sua compra.
-                  </p>
-                </div>
+                <VibrantAlert severity="warning">
+                  Cada comprovante só pode ser utilizado uma vez. Envie um novo comprovante de pagamento para validar sua compra.
+                </VibrantAlert>
 
                 <Button
                   onClick={() => { resetFlow(); onClose(); }}

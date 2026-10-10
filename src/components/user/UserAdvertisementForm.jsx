@@ -8,6 +8,7 @@ import { AlertCircle, Check, X, CheckCircle, PartyPopper, Sparkles, TrendingUp }
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useCategories } from '@/hooks/useCategories';
+import VibrantAlert from '@/components/ui/VibrantAlert';
 import { newRequestId } from '@/lib/requestId';
 
 export default function UserAdvertisementForm({ user, userPoints, onAdCreated, ad }) {
@@ -324,10 +325,9 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
 
         {formData.type === 'video' ? (
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-accent/10 border border-accent/20 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-accent">📹 Vídeos geram pontos por segundo assistido, não por compartilhamento. O vídeo rodará automaticamente ao clicar.</p>
-            </div>
+            <VibrantAlert severity="blue" icon={AlertCircle}>
+              📹 Vídeos geram pontos por segundo assistido, não por compartilhamento. O vídeo rodará automaticamente ao clicar.
+            </VibrantAlert>
             <div>
               <label className="text-sm font-medium mb-2 block">Link do Vídeo YouTube *</label>
               <Input
