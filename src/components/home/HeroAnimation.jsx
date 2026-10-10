@@ -15,10 +15,10 @@ const XIcon = ({ className }) => (
 );
 
 const SOCIAL_ICONS = [
-  { Icon: WhatsAppIcon, color: '#25D366', angle: 0, delay: 0 },
-  { Icon: FacebookIcon, color: '#1877F2', angle: 90, delay: 0.3 },
-  { Icon: InstagramIcon, color: '#E1306C', angle: 180, delay: 0.6 },
-  { Icon: XIcon, color: '#ffffff', angle: 270, delay: 0.9 },
+  { Icon: WhatsAppIcon, color: '#25D366', glow: 'rgba(37,211,102,0.6)', angle: 0, delay: 0 },
+  { Icon: FacebookIcon, color: '#1877F2', glow: 'rgba(24,119,242,0.6)', angle: 90, delay: 0.3 },
+  { Icon: InstagramIcon, color: '#E1306C', glow: 'rgba(225,48,108,0.6)', angle: 180, delay: 0.6 },
+  { Icon: XIcon, color: '#ffffff', glow: 'rgba(255,255,255,0.4)', angle: 270, delay: 0.9 },
 ];
 
 const FLOATING_COINS = [
@@ -34,47 +34,56 @@ export default function HeroAnimation() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* Fundo cyber-grid animado */}
-      <div className="absolute inset-0 cyber-grid opacity-40" />
+      <div className="absolute inset-0 cyber-grid opacity-60" />
 
-      {/* Glow radial central */}
+      {/* Glow radial central — mais intenso e vibrante */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(circle at 50% 50%, hsl(285 85% 60% / 0.12) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at 50% 50%, hsl(285 90% 60% / 0.25) 0%, hsl(290 85% 50% / 0.12) 30%, transparent 65%)',
         }}
       />
 
-      {/* Anéis pulsantes concêntricos */}
+      {/* Segundo glow — magenta para mais profundidade */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(circle at 50% 50%, hsl(330 100% 55% / 0.12) 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Anéis pulsantes concêntricos — mais visíveis */}
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="absolute left-1/2 top-1/2 rounded-full border"
+          className="absolute left-1/2 top-1/2 rounded-full border-2"
           style={{
             width: 120 + i * 80,
             height: 120 + i * 80,
             marginLeft: -(60 + i * 40),
             marginTop: -(60 + i * 40),
-            borderColor: i === 0 ? 'hsl(285 85% 60% / 0.3)' : i === 1 ? 'hsl(270 80% 65% / 0.2)' : 'hsl(190 100% 50% / 0.15)',
+            borderColor: i === 0 ? 'hsl(285 90% 60% / 0.55)' : i === 1 ? 'hsl(270 85% 65% / 0.4)' : 'hsl(190 100% 55% / 0.3)',
+            boxShadow: i === 0 ? '0 0 20px hsl(285 90% 60% / 0.3)' : 'none',
           }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.15, 0.4] }}
+          animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0.2, 0.6] }}
           transition={{ duration: 3, repeat: Infinity, delay: i * 0.6, ease: 'easeInOut' }}
         />
       ))}
 
-      {/* Núcleo central — Zap pulsante */}
+      {/* Núcleo central — Zap pulsante, maior e com glow forte */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.12, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
           <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center relative"
+            className="w-24 h-24 rounded-2xl flex items-center justify-center relative"
             style={{
-              background: 'linear-gradient(135deg, hsl(285 85% 60%), hsl(290 85% 45%))',
-              boxShadow: '0 0 40px hsl(285 85% 60% / 0.5), inset 0 0 20px hsl(285 85% 60% / 0.2)',
+              background: 'linear-gradient(135deg, hsl(285 90% 62%), hsl(320 100% 55%) 50%, hsl(290 85% 48%))',
+              boxShadow: '0 0 50px hsl(285 90% 60% / 0.7), 0 0 100px hsl(320 100% 55% / 0.4), inset 0 0 25px hsl(285 90% 60% / 0.3)',
             }}
           >
-            <Zap className="w-10 h-10 text-background" fill="currentColor" />
+            <Zap className="w-12 h-12 text-white" fill="currentColor" style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }} />
             {/* Brilho rotativo */}
             <motion.div
               className="absolute inset-0 rounded-2xl overflow-hidden"
@@ -84,7 +93,7 @@ export default function HeroAnimation() {
               <div
                 className="absolute -inset-1/2"
                 style={{
-                  background: 'conic-gradient(from 0deg, transparent 0%, hsl(45 100% 70% / 0.4) 25%, transparent 50%)',
+                  background: 'conic-gradient(from 0deg, transparent 0%, hsl(45 100% 70% / 0.5) 25%, transparent 50%)',
                 }}
               />
             </motion.div>
@@ -92,8 +101,8 @@ export default function HeroAnimation() {
         </motion.div>
       </div>
 
-      {/* Ícones sociais orbitando */}
-      {SOCIAL_ICONS.map(({ Icon, color, angle, delay }, i) => (
+      {/* Ícones social orbitando — bordas e glows mais vibrantes */}
+      {SOCIAL_ICONS.map(({ Icon, color, glow, angle, delay }, i) => (
         <motion.div
           key={i}
           className="absolute left-1/2 top-1/2"
@@ -104,33 +113,30 @@ export default function HeroAnimation() {
           <motion.div
             className="absolute"
             style={{
-              width: 44,
-              height: 44,
-              marginLeft: -22,
-              marginTop: -22,
+              width: 48,
+              height: 48,
+              marginLeft: -24,
+              marginTop: -24,
               transform: `rotate(${angle}deg) translateX(130px) rotate(${-angle}deg)`,
             }}
           >
             <motion.div
-              className="w-11 h-11 rounded-xl flex items-center justify-center backdrop-blur-sm border"
+              className="w-12 h-12 rounded-xl flex items-center justify-center backdrop-blur-sm border-2"
               style={{
-                background: 'hsl(220 18% 9% / 0.8)',
-                borderColor: `${color}40`,
-                boxShadow: `0 0 16px ${color}30`,
+                background: 'hsl(220 18% 9% / 0.85)',
+                borderColor: `${color}`,
+                boxShadow: `0 0 22px ${glow}, inset 0 0 12px ${glow}`,
               }}
-              animate={{ scale: [1, 1.15, 1] }}
+              animate={{ scale: [1, 1.18, 1] }}
               transition={{ duration: 2, repeat: Infinity, delay: delay + 0.5, ease: 'easeInOut' }}
             >
-              <Icon className="w-5 h-5" />
-              <div style={{ color }} className="absolute">
-                <Icon className="w-5 h-5" />
-              </div>
+              <Icon className="w-6 h-6" style={{ color }} />
             </motion.div>
           </motion.div>
         </motion.div>
       ))}
 
-      {/* Moedas flutuantes */}
+      {/* Moedas flutuantes — mais brilho e rotação 3D */}
       {FLOATING_COINS.map((coin, i) => (
         <motion.div
           key={i}
@@ -140,26 +146,27 @@ export default function HeroAnimation() {
             top: coin.y,
             width: coin.size,
             height: coin.size,
-            background: 'linear-gradient(135deg, hsl(45 100% 60%), hsl(38 90% 45%))',
-            boxShadow: '0 0 12px hsl(45 100% 55% / 0.4)',
+            background: 'linear-gradient(135deg, hsl(50 100% 62%), hsl(40 95% 48%))',
+            boxShadow: '0 0 18px hsl(45 100% 58% / 0.6), inset 0 0 8px hsl(50 100% 75% / 0.5)',
           }}
-          animate={{ y: [0, -12, 0], rotate: [0, 10, 0], opacity: [0.7, 1, 0.7] }}
+          animate={{ y: [0, -14, 0], rotate: [0, 360, 0], opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 3 + i * 0.3, repeat: Infinity, delay: coin.delay, ease: 'easeInOut' }}
         >
-          <Coins className="text-background" style={{ width: coin.size * 0.55, height: coin.size * 0.55 }} fill="currentColor" />
+          <Coins className="text-amber-900" style={{ width: coin.size * 0.55, height: coin.size * 0.55 }} fill="currentColor" />
         </motion.div>
       ))}
 
       {/* Badges flutuantes — "Novo clique" */}
       <motion.div
-        className="absolute top-5 right-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(285 85% 60% / 0.4)' }}
-        animate={{ y: [0, -6, 0], opacity: [0.8, 1, 0.8] }}
+        className="absolute top-5 right-5 flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 bg-card/90 backdrop-blur-sm"
+        style={{ borderColor: 'hsl(285 90% 60% / 0.7)', boxShadow: '0 0 18px hsl(285 90% 60% / 0.4)' }}
+        animate={{ y: [0, -6, 0], opacity: [0.9, 1, 0.9] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       >
         <motion.span
-          className="w-2 h-2 rounded-full bg-gold"
-          animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+          className="w-2.5 h-2.5 rounded-full bg-gold"
+          style={{ boxShadow: '0 0 10px hsl(285 90% 60% / 0.8)' }}
+          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         />
         <span className="text-xs font-bold text-gold font-grotesk">Novo clique</span>
@@ -167,61 +174,62 @@ export default function HeroAnimation() {
 
       {/* Badge "+25 pts" */}
       <motion.div
-        className="absolute bottom-16 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(45 100% 55% / 0.5)', boxShadow: '0 0 14px hsl(45 100% 55% / 0.35)' }}
-        animate={{ y: [0, 8, 0], opacity: [0.8, 1, 0.8] }}
+        className="absolute bottom-16 left-5 flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 bg-card/90 backdrop-blur-sm"
+        style={{ borderColor: 'hsl(45 100% 58% / 0.7)', boxShadow: '0 0 18px hsl(45 100% 58% / 0.5)' }}
+        animate={{ y: [0, 8, 0], opacity: [0.9, 1, 0.9] }}
         transition={{ duration: 3, repeat: Infinity, delay: 0.5, ease: 'easeInOut' }}
       >
-        <Gift className="w-3.5 h-3.5 text-coin" />
+        <Gift className="w-4 h-4 text-coin" />
         <span className="text-xs font-bold text-coin font-grotesk">+25 pts</span>
       </motion.div>
 
       {/* Badge "Compartilhado" */}
       <motion.div
-        className="absolute bottom-5 right-8 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(130 60% 50% / 0.4)' }}
-        animate={{ y: [0, -6, 0], opacity: [0.8, 1, 0.8] }}
+        className="absolute bottom-5 right-8 flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 bg-card/90 backdrop-blur-sm"
+        style={{ borderColor: 'hsl(130 65% 50% / 0.7)', boxShadow: '0 0 18px hsl(130 65% 50% / 0.4)' }}
+        animate={{ y: [0, -6, 0], opacity: [0.9, 1, 0.9] }}
         transition={{ duration: 2.8, repeat: Infinity, delay: 1, ease: 'easeInOut' }}
       >
-        <Share2 className="w-3.5 h-3.5 text-green-500" />
-        <span className="text-xs font-bold text-green-500 font-grotesk">Compartilhado</span>
+        <Share2 className="w-4 h-4 text-green-400" />
+        <span className="text-xs font-bold text-green-400 font-grotesk">Compartilhado</span>
       </motion.div>
 
-      {/* Partículas de brilho */}
-      {Array.from({ length: 8 }).map((_, i) => (
+      {/* Partículas de brilho — mais densas e vibrantes */}
+      {Array.from({ length: 14 }).map((_, i) => (
         <motion.div
           key={`sparkle-${i}`}
           className="absolute rounded-full"
           style={{
-            width: 4,
-            height: 4,
-            left: `${15 + (i * 11) % 70}%`,
-            top: `${20 + (i * 17) % 60}%`,
-            background: i % 2 === 0 ? 'hsl(45 100% 65%)' : 'hsl(270 80% 70%)',
+            width: i % 3 === 0 ? 6 : 4,
+            height: i % 3 === 0 ? 6 : 4,
+            left: `${10 + (i * 7) % 80}%`,
+            top: `${15 + (i * 13) % 65}%`,
+            background: i % 3 === 0 ? 'hsl(50 100% 65%)' : i % 3 === 1 ? 'hsl(285 90% 65%)' : 'hsl(330 100% 60%)',
+            boxShadow: `0 0 8px ${i % 3 === 0 ? 'hsl(50 100% 65%)' : i % 3 === 1 ? 'hsl(285 90% 65%)' : 'hsl(330 100% 60%)'}`,
           }}
-          animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: i * 0.25, ease: 'easeInOut' }}
+          animate={{ scale: [0, 1.3, 0], opacity: [0, 1, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
         />
       ))}
 
       {/* Linha de tendência no canto inferior esquerdo */}
       <motion.div
-        className="absolute bottom-5 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card/80 backdrop-blur-sm"
-        style={{ borderColor: 'hsl(130 60% 50% / 0.4)' }}
-        animate={{ opacity: [0.7, 1, 0.7] }}
+        className="absolute bottom-5 left-5 flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 bg-card/90 backdrop-blur-sm"
+        style={{ borderColor: 'hsl(130 65% 50% / 0.7)', boxShadow: '0 0 16px hsl(130 65% 50% / 0.35)' }}
+        animate={{ opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <TrendingUp className="w-3.5 h-3.5 text-green-500" />
-        <span className="text-xs font-bold text-green-500 font-grotesk">Crescendo</span>
+        <TrendingUp className="w-4 h-4 text-green-400" />
+        <span className="text-xs font-bold text-green-400 font-grotesk">Crescendo</span>
       </motion.div>
 
       {/* Coração pulsante no canto superior esquerdo */}
       <motion.div
         className="absolute top-6 left-6"
-        animate={{ scale: [1, 1.2, 1] }}
+        animate={{ scale: [1, 1.3, 1] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <Heart className="w-5 h-5 text-pink-500" fill="currentColor" />
+        <Heart className="w-6 h-6 text-pink-500" fill="currentColor" style={{ filter: 'drop-shadow(0 0 8px rgba(236,72,153,0.6))' }} />
       </motion.div>
     </div>
   );
