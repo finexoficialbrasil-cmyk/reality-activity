@@ -9,7 +9,6 @@ import Logo from '@/components/layout/Logo';
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
-  const [marketplaceBalance, setMarketplaceBalance] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -23,6 +22,7 @@ export default function Navbar() {
   const { data: publicData } = usePublicData();
   const burnedBalance = publicData?.burnedBalance || 0;
   const totalPrizePool = (publicData?.advertisements || []).reduce((sum, ad) => sum + (ad.budget_total || 0), 0);
+  const marketplaceBalance = publicData?.marketplaceBalance || 0;
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -32,11 +32,6 @@ export default function Navbar() {
         setUser(me);
         const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
         if (pts.length > 0) setUserPoints(pts[0]);
-        const marketplace = await base44.entities.PointsListing.aggregate({
-          query: { status: 'active', seller_email: { $ne: me.email } },
-          sum: 'points_amount'
-        });
-        setMarketplaceBalance(marketplace.rows[0]?.sum_points_amount || 0);
       }
     };
 
@@ -128,6 +123,14 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <button
+                  onClick={() => base44.auth.redirectToLogin('/marketplace')}
+                  title="Total de pontos disponíveis no marketplace"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                >
+                  <Store className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+                </button>
                 <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="text-muted-foreground">
                   Entrar
                 </Button>
@@ -163,10 +166,17 @@ export default function Navbar() {
             <TrendingUp className="w-4 h-4 text-emerald-400" />
             <span className="text-sm font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
           </Link>
-          <Link to="/marketplace" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-            <Store className="w-4 h-4 text-blue-400" />
-            <span className="text-sm font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
-          </Link>
+          {user ? (
+            <Link to="/marketplace" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <Store className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+            </Link>
+          ) : (
+            <button onClick={() => { setMenuOpen(false); base44.auth.redirectToLogin('/marketplace'); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <Store className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+            </button>
+          )}
           <div className="border-t border-border pt-3">
             {user ? (
               <>
