@@ -80,7 +80,17 @@ export default function ShareAllButton({ user, ads, onShared }) {
         url = `https://t.me/share/url?url=${encodeURIComponent(megaLink)}&text=${encodeURIComponent(msg)}`;
         break;
       case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(megaLink)}&quote=${encodeURIComponent(msg)}`;
+        if (isMob && navigator.share) {
+          navigator.share({ title: 'Minha vitrine Reality Activity', text: msg, url: megaLink }).catch(() => {});
+          setShowShareOpts(false);
+          return;
+        } else {
+          // Desktop: Facebook ignora o parâmetro quote (descontinuado) — só aceita a URL.
+          // Copia o texto para o usuário colar manualmente no post.
+          navigator.clipboard.writeText(msg).catch(() => {});
+          toast.success('Texto copiado! Cole no post do Facebook 📋');
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(megaLink)}`;
+        }
         break;
       case 'twitter':
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`;
