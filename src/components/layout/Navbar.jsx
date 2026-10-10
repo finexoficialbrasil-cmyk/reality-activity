@@ -93,16 +93,14 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             {user ? (
               <>
-                {marketplaceBalance > 0 && (
-                  <Link
-                    to="/marketplace"
-                    title="Saldo do marketplace disponível"
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
-                  >
-                    <Store className="w-3.5 h-3.5 text-blue-400" />
-                    <span className="text-xs font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
-                  </Link>
-                )}
+                <Link
+                  to="/marketplace"
+                  title="Saldo do marketplace disponível"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                >
+                  <Store className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+                </Link>
                 {userPoints && (
                   <Link to="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-coin/10 border border-coin/30 hover:bg-coin/20 transition-all">
                     <Star className="w-4 h-4 text-coin" />
