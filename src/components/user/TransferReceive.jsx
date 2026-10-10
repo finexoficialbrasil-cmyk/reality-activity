@@ -34,17 +34,31 @@ export default function TransferReceive({ user }) {
   };
 
   const handleShare = async () => {
-    const shareText = `Envie pontos para mim usando esta chave: ${transferKey}`;
+    const instructions = `Para me enviar pontos:\n1. Abra a Reality Activity\n2. Vá em Enviar Pontos\n3. Escaneie o QR Code abaixo ou digite a chave: ${transferKey}`;
     const shareUrl = window.location.origin;
-    // Sempre copia para a área de transferência como garantia
-    try {
-      await navigator.clipboard.writeText(transferKey);
-    } catch (_) {}
+
+    // Tenta compartilhar a imagem do QR Code + instruções
     if (navigator.share) {
       try {
+        const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(transferKey)}`;
+        const res = await fetch(qrImgUrl);
+        const blob = await res.blob();
+        const file = new File([blob], 'minha-chave-qr.png', { type: blob.type || 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Minha Chave de Recebimento — Reality Activity',
+            text: instructions,
+            url: shareUrl,
+            files: [file],
+          });
+          return;
+        }
+
+        // Suporta share mas não arquivos — compartilha só texto
         await navigator.share({
-          title: 'Minha Chave de Recebimento',
-          text: shareText,
+          title: 'Minha Chave de Recebimento — Reality Activity',
+          text: `${instructions}\n\nAcesse: ${shareUrl}`,
           url: shareUrl,
         });
         return;
@@ -52,7 +66,13 @@ export default function TransferReceive({ user }) {
         // cancelado ou falhou — cai no fallback abaixo
       }
     }
-    toast.success('Chave copiada! Cole e envie para quem quiser.');
+
+    // Desktop sem share: copia a chave e mostra o QR na tela
+    try {
+      await navigator.clipboard.writeText(transferKey);
+    } catch (_) {}
+    setShowQR(true);
+    toast.success('Chave copiada! Compartilhe o QR Code exibido abaixo.');
   };
 
   if (loading) {
