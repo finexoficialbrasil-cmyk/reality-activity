@@ -81,12 +81,12 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+              <Flame className="w-4 h-4 text-orange-400" />
               <span className="text-xs font-semibold text-orange-400">{burnedBalance.toLocaleString('pt-BR')} queimados</span>
             </div>
-            <Link to="/" className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <Link to="/" className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all" title="Total disponível para ganhar compartilhando anúncios">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
             </Link>
           </div>
@@ -98,15 +98,15 @@ export default function Navbar() {
                 <Link
                   to="/marketplace"
                   title="Saldo do marketplace disponível"
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
                 >
-                  <Store className="w-3.5 h-3.5 text-blue-400" />
+                  <Store className="w-4 h-4 text-blue-400" />
                   <span className="text-xs font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
                 </Link>
                 {userPoints && (
                   <Link to="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-coin/10 border border-coin/30 hover:bg-coin/20 transition-all">
                     <Star className="w-4 h-4 text-coin" />
-                    <span className="text-sm font-semibold text-coin">{userPoints.balance?.toLocaleString() ?? 0} pts</span>
+                    <span className="text-xs font-semibold text-coin">{userPoints.balance?.toLocaleString() ?? 0} pts</span>
                   </Link>
                 )}
                 {user.role === 'admin' && (
