@@ -6,12 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/layout/Navbar';
 import ContactSellerDialog from '@/components/user/ContactSellerDialog';
+import ConfirmSaleDialog from '@/components/marketplace/ConfirmSaleDialog';
+import MarketplaceRanking from '@/components/marketplace/MarketplaceRanking';
 import VibrantAlert from '@/components/ui/VibrantAlert';
 import { newRequestId } from '@/lib/requestId';
 import {
   ArrowLeft, Store, Search, Loader2, Tag, Clock,
   User, ShieldCheck, Filter, MessageCircle, TrendingUp,
-  Wallet, Plus, X, Sparkles, ArrowRightLeft, CheckCircle
+  Wallet, Plus, X, Sparkles, ArrowRightLeft, CheckCircle,
+  Handshake, Trophy, ShoppingBag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -25,7 +28,7 @@ export default function Marketplace() {
   const [userPointsRecord, setUserPointsRecord] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [activeTab, setActiveTab] = useState('marketplace'); // marketplace | history
+  const [activeTab, setActiveTab] = useState('marketplace'); // marketplace | history | ranking
 
   // Marketplace
   const [listings, setListings] = useState([]);
@@ -35,9 +38,12 @@ export default function Marketplace() {
   const [filterMaxPrice, setFilterMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('recent'); // recent | price_asc | points_desc
   const [contactListing, setContactListing] = useState(null);
+  const [confirmSaleListing, setConfirmSaleListing] = useState(null);
+  const [declaringId, setDeclaringId] = useState(null);
 
   // Histórico
   const [transfers, setTransfers] = useState([]);
+  const [marketplaceTx, setMarketplaceTx] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Vender pontos
@@ -97,21 +103,49 @@ export default function Marketplace() {
     }
   }, [user?.email, filterMinPts, filterMaxPrice, sortBy]);
 
+  const handleDeclareInterest = async (listing) => {
+    setDeclaringId(listing.id);
+    try {
+      const res = await base44.functions.invoke('declarePurchaseInterest', {
+        listing_id: listing.id,
+        request_id: newRequestId()
+      });
+      if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao manifestar interesse');
+      toast.success(res.data?.message || 'Interesse registrado!');
+      loadListings();
+    } catch (err) {
+      toast.error(err.message || 'Erro ao manifestar interesse');
+    } finally {
+      setDeclaringId(null);
+    }
+  };
+
+  const handleSaleConfirmed = async () => {
+    loadUser();
+    loadListings();
+  };
+
   const loadHistory = useCallback(async () => {
     if (!user) return;
     setLoadingHistory(true);
     try {
-      const [sent, received] = await Promise.all([
+      const [sent, received, marketTx] = await Promise.all([
         base44.entities.PointsTransfer.filter({ sender_email: user.email }, '-created_date', 50),
-        base44.entities.PointsTransfer.filter({ receiver_email: user.email }, '-created_date', 50)
+        base44.entities.PointsTransfer.filter({ receiver_email: user.email }, '-created_date', 50),
+        base44.entities.PointsTransaction.filter(
+          { user_email: user.email, type: { $in: ['marketplace_sold', 'marketplace_bought'] } },
+          '-created_date', 50
+        )
       ]);
       const merged = [...sent, ...received]
         .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
         .slice(0, 50);
       setTransfers(merged);
+      setMarketplaceTx(marketTx || []);
     } catch (err) {
       console.error('Erro ao carregar histórico:', err);
       setTransfers([]);
+      setMarketplaceTx([]);
     } finally {
       setLoadingHistory(false);
     }
@@ -249,10 +283,11 @@ export default function Marketplace() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl mb-6 max-w-md">
+          <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl mb-6 max-w-2xl">
             {[
               { id: 'marketplace', label: 'Marketplace', icon: Store },
-              { id: 'history', label: 'Histórico', icon: Clock }
+              { id: 'history', label: 'Histórico', icon: Clock },
+              { id: 'ranking', label: 'Ranking', icon: Trophy }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -374,19 +409,46 @@ export default function Marketplace() {
                   </h3>
                   <div className="space-y-2">
                     {myListings.map((l) => (
-                      <div key={l.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                        <div>
-                          <p className="text-sm font-semibold text-gold">{l.points_amount.toLocaleString('pt-BR')} pts</p>
-                          <p className="text-xs text-muted-foreground">{formatCurrency(l.total_price)} • R$ {l.price_per_point?.toFixed(4)}/pt</p>
+                      <div key={l.id} className="p-3 bg-secondary/30 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-gold">{l.points_amount.toLocaleString('pt-BR')} pts</p>
+                            <p className="text-xs text-muted-foreground">{formatCurrency(l.total_price)} • R$ {l.price_per_point?.toFixed(4)}/pt</p>
+                          </div>
+                          {l.buyer_id ? (
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmSaleListing(l)}
+                              className="h-8 text-xs text-white font-bold border-0 hover:opacity-90"
+                              style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 14px rgba(232,35,232,0.5)' }}
+                            >
+                              <Handshake className="w-3.5 h-3.5 mr-1" /> Confirmar Venda
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCancelListing(l)}
+                              className="h-8 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            >
+                              Cancelar
+                            </Button>
+                          )}
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCancelListing(l)}
-                          className="h-8 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10"
-                        >
-                          Cancelar
-                        </Button>
+                        {l.buyer_id && (
+                          <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-purple-500/10 flex items-center justify-center flex-shrink-0">
+                              <User className="w-3.5 h-3.5 text-gold" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-foreground truncate">Comprador: {l.buyer_name}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">{l.buyer_email}</p>
+                            </div>
+                            <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 border-gold/30 text-gold whitespace-nowrap">
+                              Em negociação
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -471,12 +533,48 @@ export default function Marketplace() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => setContactListing(listing)}
-                        className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" /> Conversar no WhatsApp
-                      </Button>
+                      {listing.buyer_id ? (
+                        <div className="space-y-2">
+                          {listing.buyer_id === user?.id ? (
+                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gold/10 border border-gold/30">
+                              <Handshake className="w-4 h-4 text-gold flex-shrink-0" />
+                              <span className="text-xs font-semibold text-gold">Você manifestou interesse — aguarde o vendedor confirmar</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                              <Clock className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                              <span className="text-xs font-semibold text-orange-400">Em negociação com outro comprador</span>
+                            </div>
+                          )}
+                          <Button
+                            onClick={() => setContactListing(listing)}
+                            className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" /> Conversar no WhatsApp
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => handleDeclareInterest(listing)}
+                            disabled={declaringId === listing.id}
+                            className="w-full h-11 text-white font-bold border-0 hover:opacity-90 rounded-xl text-sm"
+                            style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}
+                          >
+                            {declaringId === listing.id ? (
+                              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Registrando...</>
+                            ) : (
+                              <><Handshake className="w-4 h-4 mr-2" /> Tenho Interesse / Comprar</>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => setContactListing(listing)}
+                            className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" /> Conversar no WhatsApp
+                          </Button>
+                        </div>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -491,70 +589,143 @@ export default function Marketplace() {
 
           {/* ==================== TAB: HISTÓRICO ==================== */}
           {activeTab === 'history' && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+              {/* Vendas e compras do Marketplace */}
               {loadingHistory ? (
                 <div className="py-16 text-center">
                   <Loader2 className="w-10 h-10 animate-spin text-gold mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground">Carregando histórico...</p>
                 </div>
-              ) : transfers.length === 0 ? (
-                <div className="py-16 text-center space-y-3 bg-card border border-border rounded-2xl">
-                  <Clock className="w-14 h-14 text-muted-foreground/30 mx-auto" />
-                  <p className="text-sm font-medium text-foreground">Nenhuma transferência realizada</p>
-                  <p className="text-xs text-muted-foreground">Suas transferências aparecerão aqui</p>
-                </div>
               ) : (
-                transfers.map((t, idx) => {
-                  const isSender = t.sender_email === user?.email;
-                  return (
-                    <motion.div
-                      key={t.id}
-                      initial={{ opacity: 0, x: isSender ? -10 : 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.03 }}
-                      className="flex items-center gap-4 p-5 bg-card border border-border rounded-2xl hover:border-gold/20 transition-colors"
-                    >
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isSender ? 'bg-red-500/15' : 'bg-green-500/15'
-                      }`}>
-                        {isSender
-                          ? <ArrowRightLeft className="w-5 h-5 text-red-400 rotate-180" />
-                          : <CheckCircle className="w-5 h-5 text-green-400" />
-                        }
+                <>
+                  {marketplaceTx.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold flex items-center gap-2 mb-3">
+                        <Store className="w-4 h-4 text-gold" /> Vendas e Compras no Marketplace
+                      </h3>
+                      <div className="space-y-2">
+                        {marketplaceTx.map((tx, idx) => {
+                          const isSeller = tx.type === 'marketplace_sold';
+                          return (
+                            <motion.div
+                              key={tx.id}
+                              initial={{ opacity: 0, x: isSeller ? -10 : 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.03 }}
+                              className="flex items-center gap-4 p-4 bg-card border border-gold/20 rounded-2xl hover:border-gold/30 transition-colors"
+                            >
+                              <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                isSeller ? 'bg-purple/15' : 'bg-green-500/15'
+                              }`}>
+                                {isSeller
+                                  ? <TrendingUp className="w-5 h-5 text-purple" />
+                                  : <ShoppingBag className="w-5 h-5 text-green-400" />
+                                }
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate">
+                                  {isSeller ? `Vendido para: ${tx.transfer_name}` : `Comprado de: ${tx.transfer_name}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                                  {formatDate(tx.created_date)}
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-gold/30 text-gold">
+                                    {isSeller ? 'Venda' : 'Compra'} Marketplace
+                                  </Badge>
+                                  <span className="text-[10px]">ID: {tx.request_id?.slice(0, 12) || tx.original_reference?.slice(0, 12) || '—'}</span>
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`text-base font-bold ${isSeller ? 'text-purple' : 'text-green-400'}`}>
+                                  {Math.abs(tx.points)?.toLocaleString('pt-BR')} pts
+                                </p>
+                                {tx.transaction_value > 0 && (
+                                  <p className="text-xs text-muted-foreground">{formatCurrency(tx.transaction_value)}</p>
+                                )}
+                              </div>
+                            </motion.div>
+                          );
+                        })}
                       </div>
+                    </div>
+                  )}
 
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">
-                          {isSender ? `Para: ${t.receiver_name}` : `De: ${t.sender_name}`}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(t.created_date)}
-                          {t.type === 'marketplace' && (
-                            <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0 border-gold/30 text-gold">
-                              Marketplace
-                            </Badge>
-                          )}
-                        </p>
+                  {/* Transferências comuns */}
+                  {transfers.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold flex items-center gap-2 mb-3">
+                        <ArrowRightLeft className="w-4 h-4 text-muted-foreground" /> Transferências entre Usuários
+                      </h3>
+                      <div className="space-y-2">
+                        {transfers.map((t, idx) => {
+                          const isSender = t.sender_email === user?.email;
+                          return (
+                            <motion.div
+                              key={t.id}
+                              initial={{ opacity: 0, x: isSender ? -10 : 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.03 }}
+                              className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-gold/20 transition-colors"
+                            >
+                              <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                isSender ? 'bg-red-500/15' : 'bg-green-500/15'
+                              }`}>
+                                {isSender
+                                  ? <ArrowRightLeft className="w-5 h-5 text-red-400 rotate-180" />
+                                  : <CheckCircle className="w-5 h-5 text-green-400" />
+                                }
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate">
+                                  {isSender ? `Para: ${t.receiver_name}` : `De: ${t.sender_name}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{formatDate(t.created_date)}</p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`text-base font-bold ${isSender ? 'text-red-400' : 'text-green-400'}`}>
+                                  {isSender ? '-' : '+'}{t.points_amount?.toLocaleString('pt-BR')} pts
+                                </p>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
                       </div>
+                    </div>
+                  )}
 
-                      <div className="text-right flex-shrink-0">
-                        <p className={`text-base font-bold ${isSender ? 'text-red-400' : 'text-green-400'}`}>
-                          {isSender ? '-' : '+'}{t.points_amount?.toLocaleString('pt-BR')} pts
-                        </p>
-                        {t.transaction_value > 0 && (
-                          <p className="text-xs text-muted-foreground">{formatCurrency(t.transaction_value)}</p>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })
+                  {marketplaceTx.length === 0 && transfers.length === 0 && (
+                    <div className="py-16 text-center space-y-3 bg-card border border-border rounded-2xl">
+                      <Clock className="w-14 h-14 text-muted-foreground/30 mx-auto" />
+                      <p className="text-sm font-medium text-foreground">Nenhuma transação realizada</p>
+                      <p className="text-xs text-muted-foreground">Suas vendas, compras e transferências aparecerão aqui</p>
+                    </div>
+                  )}
+                </>
               )}
+            </motion.div>
+          )}
+
+          {/* ==================== TAB: RANKING ==================== */}
+          {activeTab === 'ranking' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-5 h-5 text-gold" />
+                <h3 className="text-base font-bold text-foreground">Ranking do Marketplace</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                Considera apenas transações efetivamente concluídas no Marketplace. Transferências comuns, saques e compras diretas da plataforma não são contabilizadas.
+              </p>
+              <MarketplaceRanking />
             </motion.div>
           )}
         </div>
       </div>
 
       <ContactSellerDialog listing={contactListing} onClose={() => setContactListing(null)} />
+      <ConfirmSaleDialog
+        listing={confirmSaleListing}
+        onClose={() => setConfirmSaleListing(null)}
+        onConfirmed={handleSaleConfirmed}
+      />
     </div>
   );
 }

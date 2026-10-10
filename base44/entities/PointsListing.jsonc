@@ -51,15 +51,35 @@
       "default": false,
       "description": "Indica se os pontos foram reservados (debitados) do vendedor na cria\u00e7\u00e3o do an\u00fancio"
     },
+    "buyer_id": {
+      "type": "string",
+      "description": "ID real do usu\u00e1rio comprador que manifestou interesse (vinculado ao listing)"
+    },
     "buyer_email": {
-      "type": "string"
+      "type": "string",
+      "description": "Email do comprador identificado"
     },
     "buyer_name": {
-      "type": "string"
+      "type": "string",
+      "description": "Nome do comprador identificado"
+    },
+    "buyer_declared_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora em que o comprador manifestou interesse"
     },
     "sold_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "sale_confirmed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora em que o vendedor confirmou a venda e os pontos foram transferidos ao comprador"
+    },
+    "sale_request_id": {
+      "type": "string",
+      "description": "Identificador de idempot\u00eancia da confirma\u00e7\u00e3o de venda"
     }
   },
   "required": [

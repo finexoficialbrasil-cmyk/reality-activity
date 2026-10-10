@@ -65,5 +65,7 @@ export const RATE_LIMITS = {
   share: { max: 25, windowSeconds: 600 },             // 25 compartilhamentos / 10 min
   mega_link: { max: 40, windowSeconds: 600 },         // 40 cliques mega-link / 10 min (por IP)
   create_listing: { max: 8, windowSeconds: 3600 },    // 8 ofertas marketplace / hora
+  declare_interest: { max: 15, windowSeconds: 600 },  // 15 manifestações de interesse / 10 min
+  confirm_sale: { max: 10, windowSeconds: 600 },      // 10 confirmações de venda / 10 min
   twofa_attempt: { max: 6, windowSeconds: 600 }       // 6 tentativas 2FA / 10 min
 };
