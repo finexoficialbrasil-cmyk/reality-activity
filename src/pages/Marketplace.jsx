@@ -473,7 +473,7 @@ export default function Marketplace() {
 
                       <Button
                         onClick={() => setContactListing(listing)}
-                        className="w-full h-11 bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm"
+                        className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
                       >
                         <MessageCircle className="w-4 h-4 mr-2" /> Conversar no WhatsApp
                       </Button>

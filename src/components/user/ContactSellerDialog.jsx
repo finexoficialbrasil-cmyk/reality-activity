@@ -64,7 +64,7 @@ export default function ContactSellerDialog({ listing, onClose }) {
           <Button
             onClick={openWhatsApp}
             disabled={!accepted}
-            className="w-full h-11 bg-[#25D366] text-white hover:bg-[#1ebe5d] font-bold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-bold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             Conversar com o Vendedor
