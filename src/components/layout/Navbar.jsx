@@ -163,6 +163,10 @@ export default function Navbar() {
             <TrendingUp className="w-4 h-4 text-emerald-400" />
             <span className="text-sm font-semibold text-emerald-400">{totalPrizePool.toLocaleString('pt-BR')} pts em premiação</span>
           </Link>
+          <Link to="/marketplace" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <Store className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-semibold text-blue-400">{marketplaceBalance.toLocaleString('pt-BR')} pts marketplace</span>
+          </Link>
           <div className="border-t border-border pt-3">
             {user ? (
               <>
