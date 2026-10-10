@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     if (isActorBlocked(user)) return Response.json({ success: false, error: BLOCKED_MESSAGE }, { status: 403 });
 
-    const { listing_id, request_id } = await req.json();
+    const { listing_id, request_id, points_quantity } = await req.json();
 
     // === IDEMPOTÊNCIA ===
     const prior = await getIdempotentResult(base44, request_id, OP);
@@ -58,6 +58,16 @@ Deno.serve(async (req) => {
       return Response.json(errBody, { status: 400 });
     }
 
+    // === Validação de quantidade parcial ===
+    const availablePts = Math.max(0, Math.floor(Number(listing.points_amount) || 0));
+    let declaredQty = Math.max(0, Math.floor(Number(points_quantity) || 0));
+    if (declaredQty > 0 && declaredQty > availablePts) {
+      const errBody = { success: false, error: `Quantidade solicitada (${declaredQty}) superior ao disponível (${availablePts})` };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+    if (declaredQty <= 0) declaredQty = availablePts; // se não informado, considera total disponível
+
     // Já tem um comprador diferente deste usuário?
     if (listing.buyer_id && listing.buyer_id !== user.id) {
       const errBody = { success: false, error: 'Este anúncio já tem um comprador identificado' };
@@ -80,7 +90,8 @@ Deno.serve(async (req) => {
           buyer_id: user.id,
           buyer_email: user.email,
           buyer_name: user.full_name,
-          buyer_declared_at: new Date().toISOString()
+          buyer_declared_at: new Date().toISOString(),
+          buyer_declared_quantity: declaredQty
         }
       }
     );

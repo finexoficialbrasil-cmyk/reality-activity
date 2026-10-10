@@ -77,11 +77,13 @@ Deno.serve(async (req) => {
       seller_email: user.email,
       seller_name: user.full_name,
       points_amount: pts,
+      original_points_amount: pts,
       price_per_point: price / pts,
       total_price: price,
       whatsapp_number: whatsapp,
       status: 'active',
-      reserved: true
+      reserved: true,
+      partial_sales_count: 0
     });
 
     // Extrato: reserva de pontos (ledger enriquecido)

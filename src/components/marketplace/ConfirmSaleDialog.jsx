@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, X, Loader2, User, Coins, DollarSign, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, X, Loader2, User, Coins, DollarSign, AlertTriangle, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { newRequestId } from '@/lib/requestId';
 import { toast } from 'sonner';
@@ -9,12 +10,25 @@ import { toast } from 'sonner';
 export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
   const [confirming, setConfirming] = useState(false);
   const [paymentReceived, setPaymentReceived] = useState(false);
+  const [saleQty, setSaleQty] = useState(0);
+
+  useEffect(() => {
+    if (listing) {
+      const rem = Number(listing.points_amount) || 0;
+      const dec = Math.max(0, Math.floor(Number(listing.buyer_declared_quantity) || 0));
+      setSaleQty(dec > 0 ? Math.min(dec, rem) : rem);
+    }
+  }, [listing?.id]);
 
   if (!listing) return null;
 
-  const pts = Number(listing.points_amount) || 0;
-  const total = Number(listing.total_price) || 0;
+  const remaining = Number(listing.points_amount) || 0;
   const perPoint = Number(listing.price_per_point) || 0;
+  const declaredQty = Math.max(0, Math.floor(Number(listing.buyer_declared_quantity) || 0));
+  const maxQty = declaredQty > 0 ? Math.min(declaredQty, remaining) : remaining;
+
+  const saleValue = (saleQty || 0) * perPoint;
+  const newRemaining = remaining - (saleQty || 0);
   const formatCurrency = (v) => parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const handleConfirm = async () => {
@@ -22,10 +36,20 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
       toast.error('Confirme que você recebeu o pagamento do comprador');
       return;
     }
+    const qty = Math.max(0, Math.floor(Number(saleQty) || 0));
+    if (qty <= 0 || qty > remaining) {
+      toast.error(`Quantidade inválida. Disponível: ${remaining} pts`);
+      return;
+    }
+    if (declaredQty > 0 && qty > declaredQty) {
+      toast.error(`Não pode vender mais que o solicitado pelo comprador (${declaredQty} pts)`);
+      return;
+    }
     setConfirming(true);
     try {
       const res = await base44.functions.invoke('confirmMarketplaceSale', {
         listing_id: listing.id,
+        points_quantity: qty,
         request_id: newRequestId()
       });
       if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao confirmar venda');
@@ -84,14 +108,54 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
 
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
               <div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Coins className="w-3 h-3" /> Pontos</p>
-                <p className="text-lg font-bold text-coin">{pts.toLocaleString('pt-BR')} pts</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Coins className="w-3 h-3" /> Disponível no anúncio</p>
+                <p className="text-lg font-bold text-coin">{remaining.toLocaleString('pt-BR')} pts</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Valor</p>
-                <p className="text-lg font-bold text-foreground">{formatCurrency(total)}</p>
-                <p className="text-xs text-muted-foreground">{formatCurrency(perPoint)}/pt</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Package className="w-3 h-3" /> Comprador quer</p>
+                <p className="text-lg font-bold text-gold">{declaredQty > 0 ? `${declaredQty.toLocaleString('pt-BR')} pts` : 'Total'}</p>
               </div>
+            </div>
+          </div>
+
+          {/* Quantity selector */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-muted-foreground">
+              Quantidade a vender nesta transação
+            </label>
+            <div className="relative">
+              <Input
+                type="number"
+                value={saleQty}
+                onChange={(e) => setSaleQty(Math.max(1, Math.min(maxQty, parseInt(e.target.value) || 0)))}
+                className="h-12 pr-12 bg-secondary/50 border-gold/30 focus:border-gold text-lg font-bold text-coin"
+                min="1"
+                max={maxQty}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-coin text-sm font-bold">pts</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                Máximo: {maxQty.toLocaleString('pt-BR')} pts
+              </span>
+              <span className="text-muted-foreground">
+                {formatCurrency(perPoint)}/pt
+              </span>
+            </div>
+          </div>
+
+          {/* Sale summary */}
+          <div className="grid grid-cols-2 gap-3 bg-gradient-to-br from-gold/10 to-purple-500/5 rounded-xl p-4 border border-gold/20">
+            <div>
+              <p className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Valor desta venda</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(saleValue)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground flex items-center gap-1"><Coins className="w-3 h-3" /> Restante após venda</p>
+              <p className="text-xl font-bold text-coin">{newRemaining.toLocaleString('pt-BR')} pts</p>
+              {newRemaining === 0 && (
+                <p className="text-[10px] text-green-400 font-semibold">Anúncio será totalmente vendido</p>
+              )}
             </div>
           </div>
 
@@ -104,7 +168,7 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
               className="accent-gold mt-0.5 w-4 h-4 flex-shrink-0"
             />
             <span className="text-sm text-foreground leading-relaxed">
-              Confirmo que <strong>recebi o pagamento</strong> de {formatCurrency(total)} do comprador via WhatsApp.
+              Confirmo que <strong>recebi o pagamento</strong> de {formatCurrency(saleValue)} do comprador via WhatsApp.
             </span>
           </label>
 
@@ -112,7 +176,11 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
           <div className="flex items-start gap-2 text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3">
             <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
             <p>
-              Ao confirmar, os <strong className="text-coin">{pts.toLocaleString('pt-BR')} pontos reservados</strong> serão transferidos ao comprador. Esta operação é <strong>irreversível</strong> e não pode ser desfeita.
+              Ao confirmar, <strong className="text-coin">{(saleQty || 0).toLocaleString('pt-BR')} pontos</strong> serão transferidos ao comprador.
+              {newRemaining > 0
+                ? <> O anúncio permanece ativo com <strong className="text-coin">{newRemaining.toLocaleString('pt-BR')} pts</strong> restantes.</>
+                : ' Esta operação é <strong>irreversível</strong>.'
+              }
             </p>
           </div>
 
@@ -123,7 +191,7 @@ export default function ConfirmSaleDialog({ listing, onClose, onConfirmed }) {
             </Button>
             <Button
               onClick={handleConfirm}
-              disabled={confirming || !paymentReceived}
+              disabled={confirming || !paymentReceived || !saleQty}
               className="flex-1 h-11 text-white font-bold border-0 hover:opacity-90"
               style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}
             >

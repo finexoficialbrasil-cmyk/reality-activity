@@ -40,6 +40,7 @@ export default function Marketplace() {
   const [contactListing, setContactListing] = useState(null);
   const [confirmSaleListing, setConfirmSaleListing] = useState(null);
   const [declaringId, setDeclaringId] = useState(null);
+  const [declareQuantities, setDeclareQuantities] = useState({});
 
   // Histórico
   const [transfers, setTransfers] = useState([]);
@@ -106,8 +107,10 @@ export default function Marketplace() {
   const handleDeclareInterest = async (listing) => {
     setDeclaringId(listing.id);
     try {
+      const qty = parseInt(declareQuantities[listing.id]) || listing.points_amount;
       const res = await base44.functions.invoke('declarePurchaseInterest', {
         listing_id: listing.id,
+        points_quantity: qty,
         request_id: newRequestId()
       });
       if (!res.data?.success) throw new Error(res.data?.error || 'Erro ao manifestar interesse');
@@ -436,17 +439,25 @@ export default function Marketplace() {
                           )}
                         </div>
                         {l.buyer_id && (
-                          <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-purple-500/10 flex items-center justify-center flex-shrink-0">
-                              <User className="w-3.5 h-3.5 text-gold" />
+                          <div className="mt-2.5 pt-2.5 border-t border-border space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-purple-500/10 flex items-center justify-center flex-shrink-0">
+                                <User className="w-3.5 h-3.5 text-gold" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-foreground truncate">Comprador: {l.buyer_name}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">{l.buyer_email}</p>
+                              </div>
+                              <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 border-gold/30 text-gold whitespace-nowrap">
+                                Em negociação
+                              </Badge>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-foreground truncate">Comprador: {l.buyer_name}</p>
-                              <p className="text-[11px] text-muted-foreground truncate">{l.buyer_email}</p>
+                            <div className="flex items-center gap-2 px-1">
+                              <p className="text-[11px] text-muted-foreground">
+                                Quer: <span className="text-coin font-bold">{(l.buyer_declared_quantity || l.points_amount).toLocaleString('pt-BR')} pts</span>
+                              </p>
+                              <span className="text-[10px] text-muted-foreground">de {l.points_amount.toLocaleString('pt-BR')} disp.</span>
                             </div>
-                            <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 border-gold/30 text-gold whitespace-nowrap">
-                              Em negociação
-                            </Badge>
                           </div>
                         )}
                       </div>
@@ -555,18 +566,35 @@ export default function Marketplace() {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <Button
-                            onClick={() => handleDeclareInterest(listing)}
-                            disabled={declaringId === listing.id}
-                            className="w-full h-11 text-white font-bold border-0 hover:opacity-90 rounded-xl text-sm"
-                            style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}
-                          >
-                            {declaringId === listing.id ? (
-                              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Registrando...</>
-                            ) : (
-                              <><Handshake className="w-4 h-4 mr-2" /> Tenho Interesse / Comprar</>
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                              <Input
+                                type="number"
+                                value={declareQuantities[listing.id] ?? listing.points_amount}
+                                onChange={(e) => setDeclareQuantities(prev => ({ ...prev, [listing.id]: e.target.value }))}
+                                placeholder={String(listing.points_amount)}
+                                className="h-11 pr-10 bg-secondary/50 border-gold/20 focus:border-gold text-sm"
+                                min="1"
+                                max={listing.points_amount}
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-coin text-xs font-bold">pts</span>
+                            </div>
+                            <Button
+                              onClick={() => handleDeclareInterest(listing)}
+                              disabled={declaringId === listing.id}
+                              className="flex-1 h-11 text-white font-bold border-0 hover:opacity-90 rounded-xl text-sm"
+                              style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 18px rgba(232,35,232,0.55), inset 0 1px 0 rgba(255,255,255,0.3)' }}
+                            >
+                              {declaringId === listing.id ? (
+                                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> ...</>
+                              ) : (
+                                <><Handshake className="w-4 h-4 mr-2" /> Tenho Interesse</>
+                              )}
+                            </Button>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground text-center">
+                            De {listing.points_amount.toLocaleString('pt-BR')} pts disponíveis
+                          </p>
                           <Button
                             onClick={() => setContactListing(listing)}
                             className="w-full h-11 bg-none bg-[#25D366] text-white hover:bg-[#1ebe5d] font-semibold rounded-xl text-sm shadow-[0_0_18px_rgba(37,211,102,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]"
