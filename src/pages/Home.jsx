@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Search, Share2 } from 'lucide-react';
+import { Search, Share2, Megaphone } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import HeroSection from '@/components/home/HeroSection';
 import AnimatedFooter from '@/components/home/AnimatedFooter';
@@ -108,9 +108,22 @@ export default function Home() {
       {/* Advertisements Grid */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
-          {!dataLoading && filteredAds.length > 0 && (
-            <div className="mb-4">
-              <ShareAllButton user={user} ads={filteredAds} onShared={handlePointsEarned} />
+          {!dataLoading && (filteredAds.length > 0 || user) && (
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              {filteredAds.length > 0 && (
+                <ShareAllButton user={user} ads={filteredAds} onShared={handlePointsEarned} />
+              )}
+              {user && (
+                <Link
+                  to="/dashboard?tab=anuncios"
+                  className="group relative overflow-hidden inline-flex items-center gap-2.5 text-white font-bold px-6 py-3 rounded-xl border border-pink-500/30 hover:scale-105 active:scale-95 transition-all duration-300 ml-auto"
+                  style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 22px rgba(232,35,232,0.55), 0 6px 24px rgba(138,43,226,0.45), inset 0 1px 0 rgba(255,255,255,0.3)' }}
+                >
+                  <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
+                  <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
+                </Link>
+              )}
             </div>
           )}
           {dataLoading ? (

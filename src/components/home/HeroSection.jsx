@@ -222,18 +222,7 @@ export default function HeroSection({ user, authLoading }) {
                 <Zap className="w-4 h-4" />
                 Começar Grátis
               </button>
-            ) : (
-              <Link
-                to="/dashboard?tab=anuncios"
-                className="group relative overflow-hidden inline-flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-2xl border border-pink-500/30 hover:scale-105 active:scale-95 transition-all duration-300"
-                style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 24px rgba(232,35,232,0.6), 0 8px 30px rgba(138,43,226,0.5), inset 0 1px 0 rgba(255,255,255,0.35)' }}
-              >
-                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <Megaphone className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
-                <span className="relative z-10 tracking-wide">Publicar Anúncio</span>
-                <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            )}
+            ) : null}
           </motion.div>
         </div>
 
