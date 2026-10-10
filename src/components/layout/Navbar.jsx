@@ -32,9 +32,11 @@ export default function Navbar() {
         setUser(me);
         const pts = await base44.entities.UserPoints.filter({ user_email: me.email });
         if (pts.length > 0) setUserPoints(pts[0]);
-        const listings = await base44.entities.PointsListing.filter({ seller_email: me.email, status: 'active' });
-        const mpBalance = listings.reduce((sum, l) => sum + (l.points_amount || 0), 0);
-        setMarketplaceBalance(mpBalance);
+        const marketplace = await base44.entities.PointsListing.aggregate({
+          query: { status: 'active', seller_email: { $ne: me.email } },
+          sum: 'points_amount'
+        });
+        setMarketplaceBalance(marketplace.rows[0]?.sum_points_amount || 0);
       }
     };
 
