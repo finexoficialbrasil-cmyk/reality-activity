@@ -116,7 +116,7 @@ export default function Home() {
               {user && (
                 <Link
                   to="/dashboard?tab=anuncios"
-                  className="group relative overflow-hidden inline-flex items-center gap-2.5 text-white font-bold px-6 py-3 rounded-xl border border-pink-500/30 hover:scale-105 active:scale-95 transition-all duration-300 ml-auto"
+                  className="group relative overflow-hidden hidden md:inline-flex items-center gap-2.5 text-white font-bold px-6 py-3 rounded-xl border border-pink-500/30 hover:scale-105 active:scale-95 transition-all duration-300 ml-auto"
                   style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 22px rgba(232,35,232,0.55), 0 6px 24px rgba(138,43,226,0.45), inset 0 1px 0 rgba(255,255,255,0.3)' }}
                 >
                   <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
