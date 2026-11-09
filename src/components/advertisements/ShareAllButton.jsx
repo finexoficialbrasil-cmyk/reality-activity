@@ -209,14 +209,33 @@ export default function ShareAllButton({ user, ads, onShared }) {
     <>
       <motion.button
         onClick={handleOpen}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-bold text-sm transition-all hover:opacity-95"
-        style={{ background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)', boxShadow: '0 0 22px rgba(232,35,232,0.55), 0 6px 24px rgba(138,43,226,0.45), inset 0 1px 0 rgba(255,255,255,0.3)' }}
+        whileHover={{ scale: 1.015, y: -1 }}
+        whileTap={{ scale: 0.975 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+        className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-5 sm:px-6 py-3 rounded-2xl overflow-hidden text-white transition-shadow duration-300 active:shadow-[0_6px_18px_-6px_rgba(192,38,247,0.7)]"
+        style={{
+          background: 'linear-gradient(105deg, #E823E8 0%, #C026F7 48%, #8A2BE2 100%)',
+          boxShadow: '0 12px 32px -10px rgba(192,38,247,0.75), 0 0 24px rgba(232,35,232,0.35), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(0,0,0,0.28)',
+        }}
       >
-        <Zap className="w-5 h-5" />
-        Compartilhar Tudo
-        <span className="text-xs font-medium opacity-80 ml-1">({eligibleCount} anúncios)</span>
+        {/* Brilho de vidro no topo */}
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
+        {/* Varredura de luz no hover */}
+        <span className="pointer-events-none absolute top-0 -left-1/3 h-full w-1/3 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-[420%] transition-transform duration-700 ease-out" />
+
+        {/* Ícone em cápsula de vidro */}
+        <span className="relative z-10 grid place-items-center w-8 h-8 rounded-xl bg-white/15 border border-white/25 backdrop-blur-sm flex-shrink-0">
+          <Zap className="w-4 h-4" fill="currentColor" strokeWidth={2.5} />
+        </span>
+
+        <span className="relative z-10 flex items-center gap-2 min-w-0">
+          <span className="text-[15px] font-extrabold tracking-tight whitespace-nowrap drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">
+            Compartilhar Tudo
+          </span>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/15 border border-white/20 text-white/90 whitespace-nowrap">
+            {eligibleCount} anúncios
+          </span>
+        </span>
       </motion.button>
 
       {isMobile ? (
