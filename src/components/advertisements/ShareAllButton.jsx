@@ -207,47 +207,17 @@ export default function ShareAllButton({ user, ads, onShared }) {
 
   return (
     <>
-      <div className="relative w-full sm:w-auto">
-        {/* Halo neon atrás do botão */}
-        <div
-          className="pointer-events-none absolute -inset-[3px] rounded-full blur-xl opacity-65"
-          style={{ background: 'linear-gradient(90deg, rgba(232,35,232,0.9) 0%, rgba(192,38,247,0.75) 50%, rgba(112,40,220,0.7) 100%)' }}
-        />
-
-        <motion.button
-          onClick={handleOpen}
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.972 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-          className="group relative w-full inline-flex items-center justify-between gap-2 pl-2 pr-3 py-2 rounded-full overflow-hidden text-white"
-          style={{
-            background: 'linear-gradient(100deg, #E823E8 0%, #C026F7 42%, #8A2BE2 74%, #4E1070 100%)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -2px 4px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.12), 0 14px 34px -12px rgba(192,38,247,0.9)',
-          }}
-        >
-          {/* Reflexo de vidro no topo */}
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/30 via-white/5 to-transparent" />
-          {/* Varredura de luz */}
-          <span className="pointer-events-none absolute top-0 -left-1/3 h-full w-1/3 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full group-hover:translate-x-[420%] transition-transform duration-700 ease-out" />
-
-          {/* Ícone em cápsula */}
-          <span className="relative z-10 grid place-items-center w-9 h-9 rounded-full bg-white/18 border border-white/30 backdrop-blur-sm flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
-            <Send className="w-[17px] h-[17px] -ml-0.5" fill="currentColor" strokeWidth={1.5} />
-          </span>
-
-          {/* Textos */}
-          <span className="relative z-10 flex-1 min-w-0 text-center leading-tight">
-            <span className="block text-[14px] font-extrabold tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-              Compartilhar Tudo
-            </span>
-            <span className="block text-[10.5px] font-medium text-white/75">
-              ({eligibleCount} anúncios)
-            </span>
-          </span>
-
-          <ChevronRight className="relative z-10 w-4 h-4 text-white/85 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-        </motion.button>
-      </div>
+      <motion.button
+        type="button"
+        onClick={handleOpen}
+        whileTap={{ scale: 0.98 }}
+        className="share-all-neon w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 h-12 px-4 sm:px-5 rounded-full whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <Send aria-hidden="true" className="w-5 h-5 shrink-0" strokeWidth={1.8} />
+        <span className="font-bold text-sm tracking-tight">Compartilhar Tudo</span>
+        <span className="text-[11px] sm:text-xs font-normal opacity-85">({eligibleCount} anúncios)</span>
+        <ChevronRight aria-hidden="true" className="w-[18px] h-[18px] shrink-0 ml-1" strokeWidth={2} />
+      </motion.button>
 
       {isMobile ? (
         <Sheet open={open} onOpenChange={setOpen}>
