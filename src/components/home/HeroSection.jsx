@@ -1,146 +1,18 @@
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ArrowRight, Megaphone } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import HeroAnimation from '@/components/home/HeroAnimation';
 
 export default function HeroSection({ user, authLoading }) {
   return (
     <section className="relative pt-20 pb-10 px-4 overflow-hidden">
-      {/* ===== MOBILE: Card premium ===== */}
+      {/* ===== MOBILE: faixa de benefícios ===== */}
       <div className="md:hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative rounded-[28px] overflow-hidden"
-          style={{
-            background: 'linear-gradient(160deg, hsl(220 18% 9%) 0%, hsl(220 20% 6%) 100%)',
-            border: '1px solid hsl(270 80% 65% / 0.25)',
-            boxShadow: '0 20px 60px hsl(270 80% 65% / 0.12), 0 0 0 1px hsl(285 85% 60% / 0.05) inset',
-          }}
-        >
-          {/* Grid de fundo */}
-          <div className="cyber-grid absolute inset-0 opacity-25" />
-
-          {/* Glow radial dourado no topo */}
-          <div
-            className="absolute -top-20 -right-10 w-48 h-48 rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(circle, hsl(285 85% 60%), transparent 70%)' }}
-          />
-          {/* Glow radial roxo embaixo */}
-          <div
-            className="absolute -bottom-16 -left-10 w-40 h-40 rounded-full opacity-20 blur-3xl"
-            style={{ background: 'radial-gradient(circle, hsl(270 80% 65%), transparent 70%)' }}
-          />
-
-          {/* Linha de brilho superior animada */}
-          <motion.div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, hsl(285 85% 60% / 0.6), transparent)' }}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          <div className="relative z-10 p-6">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-4 rounded-full"
-              style={{
-                background: 'hsl(220 15% 13% / 0.8)',
-                border: '1px solid hsl(285 85% 60% / 0.35)',
-                boxShadow: '0 0 12px hsl(285 85% 60% / 0.1)',
-              }}
-            >
-              <motion.span
-                className="w-2 h-2 rounded-full bg-gold"
-                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <span className="text-[11px] font-bold tracking-wide text-foreground">Plataforma de Recompensas</span>
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="font-grotesk font-extrabold text-[2rem] leading-[1.12] tracking-tight mb-3 text-white"
-            >
-              Cada clique vira{' '}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: 'linear-gradient(135deg, hsl(285 85% 65%), hsl(280 80% 78%), hsl(290 85% 50%))',
-                  filter: 'drop-shadow(0 0 12px hsl(285 85% 60% / 0.4))',
-                }}
-              >
-                Pontos
-              </span>{' '}
-              de verdade.
-            </motion.h1>
-
-            {/* Body */}
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-muted-foreground text-[13px] leading-relaxed mb-6"
-            >
-              Descubra produtos incríveis, compartilhe com seus amigos e transforme cada compartilhamento em recompensas.
-            </motion.p>
-
-            {/* CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {authLoading ? (
-                <div className="h-14 w-full rounded-2xl bg-secondary/40 border border-border animate-pulse" />
-              ) : !user ? (
-                <button
-                  onClick={() => base44.auth.redirectToLogin()}
-                  className="group relative w-full overflow-hidden flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
-                  style={{
-                    background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)',
-                    boxShadow: '0 0 26px rgba(232,35,232,0.6), 0 8px 30px rgba(138,43,226,0.5), inset 0 1px 0 rgba(255,255,255,0.35)',
-                  }}
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                  <Zap className="w-5 h-5 relative z-10" fill="currentColor" />
-                  <span className="relative z-10 tracking-wide text-[15px]">Começar Grátis</span>
-                  <ArrowRight className="w-4 h-4 relative z-10" />
-                </button>
-              ) : (
-                <Link
-                  to="/dashboard?tab=anuncios"
-                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 font-bold px-6 py-4 rounded-2xl text-white transition-all active:scale-[0.97]"
-                  style={{
-                    background: 'linear-gradient(90deg, #E823E8 0%, #C026F7 50%, #8A2BE2 100%)',
-                    boxShadow: '0 0 26px rgba(232,35,232,0.6), 0 8px 30px rgba(138,43,226,0.5), inset 0 1px 0 rgba(255,255,255,0.35)',
-                  }}
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                  <Megaphone className="w-5 h-5 relative z-10" />
-                  <span className="relative z-10 tracking-wide text-[15px]">Publicar Anúncio</span>
-                  <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              )}
-            </motion.div>
-
-          </div>
-        </motion.div>
-
-        {/* Mini stats row — abaixo do card */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex items-center justify-center gap-4 mt-5"
+          transition={{ delay: 0.2 }}
+          className="flex items-center justify-center gap-4"
         >
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-gold" fill="currentColor" />
