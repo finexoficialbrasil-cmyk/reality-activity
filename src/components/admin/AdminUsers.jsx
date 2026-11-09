@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Star, TrendingUp, Play, Search, ShieldBan, ShieldCheck } from 'lucide-react';
 import { newRequestId } from '@/lib/requestId';
 import { toast } from 'sonner';
+import AdminUsersSummary from '@/components/admin/AdminUsersSummary';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -91,6 +92,7 @@ export default function AdminUsers() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <AdminUsersSummary />
       <h2 className="font-grotesk font-bold text-2xl mb-6">Usuários & Pontos</h2>
 
       <div className="grid lg:grid-cols-3 gap-6">
