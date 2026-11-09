@@ -164,8 +164,9 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         if (onAdCreated) onAdCreated();
       }, 10000);
     } catch (err) {
-      console.error('Erro ao criar anúncio:', err);
-      toast.error('Erro ao criar anúncio: ' + (err.message || 'Tente novamente'));
+      console.error('Erro ao salvar anúncio:', err);
+      const message = err?.response?.data?.error || err?.data?.error || err.message || 'Tente novamente';
+      toast.error((ad ? 'Erro ao atualizar anúncio: ' : 'Erro ao criar anúncio: ') + message);
     } finally {
       setSubmitting(false);
     }

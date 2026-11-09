@@ -56,6 +56,8 @@ export default async function(req) {
 
       const addAmount = Math.max(0, Number(add_credit) || 0);
 
+      // Mantém o resultado disponível para o extrato e a resposta após o débito.
+      let debit = null;
       // === DÉBITO ATÔMICO se vai adicionar créditos ===
       if (addAmount > 0) {
         if (!userPoints) {
@@ -63,7 +65,7 @@ export default async function(req) {
           await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
           return Response.json(errBody, { status: 400 });
         }
-        const debit = await atomicDebitBalance(base44, 'UserPoints', userPoints.id, addAmount);
+        debit = await atomicDebitBalance(base44, 'UserPoints', userPoints.id, addAmount);
         if (!debit.ok) {
           const errBody = { error: `Saldo insuficiente. Você precisa de ${addAmount} pontos.` };
           await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
@@ -110,7 +112,7 @@ export default async function(req) {
       const resultBody = {
         success: true,
         message: 'Anúncio atualizado com sucesso!',
-        new_balance: addAmount > 0 ? (Number(userPoints.balance) - addAmount) : (Number(userPoints?.balance) || 0),
+        new_balance: addAmount > 0 ? (Number(debit.record.balance) || 0) : (Number(userPoints?.balance) || 0),
         cost: addAmount
       };
       await recordIdempotency(base44, request_id, OP, user.email, resultBody, 200);
