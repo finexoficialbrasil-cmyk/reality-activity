@@ -211,11 +211,11 @@ export default function ShareAllButton({ user, ads, onShared }) {
         type="button"
         onClick={handleOpen}
         whileTap={{ scale: 0.98 }}
-        className="share-all-neon w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 h-12 px-4 sm:px-5 rounded-full whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="share-all-neon w-auto max-w-full inline-flex items-center justify-center gap-2 sm:gap-3 h-12 px-3.5 sm:px-4 rounded-full whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <Send aria-hidden="true" className="w-5 h-5 shrink-0" strokeWidth={1.8} />
         <span className="font-bold text-sm tracking-tight">Compartilhar Tudo</span>
-        <span className="text-[11px] sm:text-xs font-normal opacity-85">({eligibleCount} anúncios)</span>
+        <span className="ml-1.5 text-[11px] sm:text-xs font-normal opacity-85">({eligibleCount} anúncios)</span>
         <ChevronRight aria-hidden="true" className="w-[18px] h-[18px] shrink-0 ml-1" strokeWidth={2} />
       </motion.button>
 
