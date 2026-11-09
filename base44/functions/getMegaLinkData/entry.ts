@@ -74,6 +74,8 @@ export default async function(req) {
       title: a.title,
       description: a.description,
       image_url: a.image_url,
+      type: a.type,
+      video_url: a.video_url,
       link: a.link,
       category: a.category,
       reward_per_share: a.reward_per_share,
