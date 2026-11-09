@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ArrowRight, Megaphone } from 'lucide-react';
 import HeroAnimation from '@/components/home/HeroAnimation';
-import HeroAnimationMobile from '@/components/home/HeroAnimationMobile';
 
 export default function HeroSection({ user, authLoading }) {
   return (
@@ -44,16 +43,6 @@ export default function HeroSection({ user, authLoading }) {
           />
 
           <div className="relative z-10 p-6">
-            {/* Animação compacta acima do texto */}
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="mb-2 -mt-1"
-            >
-              <HeroAnimationMobile />
-            </motion.div>
-
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -143,26 +132,27 @@ export default function HeroSection({ user, authLoading }) {
               )}
             </motion.div>
 
-            {/* Mini stats row */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex items-center justify-center gap-4 mt-5 pt-4 border-t border-border/40"
-            >
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-gold" fill="currentColor" />
-                <span className="text-[11px] font-semibold text-muted-foreground">Compartilhe</span>
-              </div>
-              <div className="w-px h-3 bg-border/60" />
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold text-purple">Ganhe pontos</span>
-              </div>
-              <div className="w-px h-3 bg-border/60" />
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold text-coin">Resgate prêmios</span>
-              </div>
-            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Mini stats row — abaixo do card */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="flex items-center justify-center gap-4 mt-5"
+        >
+          <div className="flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-gold" fill="currentColor" />
+            <span className="text-[11px] font-semibold text-muted-foreground">Compartilhe</span>
+          </div>
+          <div className="w-px h-3 bg-border/60" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold text-purple">Ganhe pontos</span>
+          </div>
+          <div className="w-px h-3 bg-border/60" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold text-coin">Resgate prêmios</span>
           </div>
         </motion.div>
       </div>
