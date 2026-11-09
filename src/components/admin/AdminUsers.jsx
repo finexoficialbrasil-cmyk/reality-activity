@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Star, TrendingUp, Play, Search, ShieldBan, ShieldCheck } from 'lucide-react';
 import { newRequestId } from '@/lib/requestId';
@@ -11,8 +11,10 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [userTxs, setUserTxs] = useState([]);
-  const [userBlocked, setUserBlocked] = useState(false);
+  const [userBlocked, setUserBlocked] = useState(null);
+  const [blockedReason, setBlockedReason] = useState('');
   const [blockLoading, setBlockLoading] = useState(false);
+  const selectedEmail = useRef(null);
 
   useEffect(() => { load(); }, []);
 
@@ -27,19 +29,29 @@ export default function AdminUsers() {
   };
 
   const selectUser = async (u) => {
+    selectedEmail.current = u.user_email;
     setSelected(u);
     setUserTxs(transactions.filter(t => t.user_email === u.user_email));
-    setUserBlocked(false);
+    setUserBlocked(null);
+    setBlockedReason('');
     try {
-      const users = await base44.entities.User.filter({ email: u.user_email });
-      if (users[0]) setUserBlocked(!!users[0].is_blocked);
-    } catch (e) { /* ignore */ }
+      const accounts = await base44.entities.User.filter({ email: u.user_email });
+      if (selectedEmail.current !== u.user_email) return;
+      if (!accounts[0]) { toast.error('Conta do usuário não encontrada'); return; }
+      setUserBlocked(!!accounts[0].is_blocked);
+      setBlockedReason(accounts[0].blocked_reason || '');
+    } catch (e) {
+      toast.error('Não foi possível carregar o bloqueio do usuário. Selecione-o novamente.');
+    }
   };
 
   const handleToggleBlock = async () => {
-    if (!selected) return;
+    if (!selected || userBlocked === null || blockLoading) return;
+    const email = selected.user_email;
     const willBlock = !userBlocked;
-    const reason = willBlock ? window.prompt('Motivo do bloqueio (obrigatório):') : '';
+    const enteredReason = willBlock ? window.prompt('Motivo do bloqueio (obrigatório):') : '';
+    if (enteredReason === null) return;
+    const reason = enteredReason.trim();
     if (willBlock && !reason) { toast.error('Motivo é obrigatório para bloquear'); return; }
     setBlockLoading(true);
     try {
@@ -50,8 +62,11 @@ export default function AdminUsers() {
         request_id: newRequestId()
       });
       if (res.data?.success) {
-        setUserBlocked(willBlock);
-        toast.success(res.data?.message || (willBlock ? 'Usuário bloqueado' : 'Usuário desbloqueado'));
+        if (selectedEmail.current === email) {
+          setUserBlocked(res.data.is_blocked);
+          setBlockedReason(res.data.blocked_reason || '');
+        }
+        toast.success(res.data?.message || (willBlock ? 'Usuário bloqueado' : 'Usuário reativado'));
       } else {
         toast.error(res.data?.error || 'Erro ao alterar bloqueio');
       }
@@ -158,7 +173,7 @@ export default function AdminUsers() {
               <div className="mb-4">
                 <button
                   onClick={handleToggleBlock}
-                  disabled={blockLoading}
+                  disabled={blockLoading || userBlocked === null}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                     userBlocked
                       ? 'bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20'
@@ -166,9 +181,15 @@ export default function AdminUsers() {
                   } disabled:opacity-50`}
                 >
                   {userBlocked ? <ShieldCheck className="w-4 h-4" /> : <ShieldBan className="w-4 h-4" />}
-                  {blockLoading ? 'Processando...' : userBlocked ? 'Desbloquear Usuário' : 'Bloquear Usuário'}
+                  {blockLoading ? 'Processando...' : userBlocked === null ? 'Selecione para carregar o status' : userBlocked ? 'Reativar Usuário' : 'Bloquear Usuário'}
                 </button>
-                {userBlocked && <p className="text-xs text-red-400 text-center mt-1.5">Usuário bloqueado — operações financeiras suspensas</p>}
+                {userBlocked && <p className="text-xs text-destructive text-center mt-1.5">Usuário bloqueado — operações financeiras suspensas</p>}
+                {blockedReason && (
+                  <div className="mt-3 rounded-xl border border-border bg-secondary/30 p-3">
+                    <p className="text-xs font-semibold mb-1">{userBlocked ? 'Motivo do bloqueio' : 'Motivo do último bloqueio (usuário reativado)'}</p>
+                    <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">{blockedReason}</p>
+                  </div>
+                )}
               </div>
 
               <h4 className="text-sm font-medium mb-3">Últimas Transações</h4>

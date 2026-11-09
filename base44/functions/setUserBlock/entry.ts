@@ -19,7 +19,8 @@ export default async function(req) {
     if (admin.role !== 'admin') return Response.json({ error: 'Acesso negado — apenas administradores' }, { status: 403 });
 
     const body = await req.json();
-    const { user_email, block, reason, request_id } = body;
+    const { user_email, block, request_id } = body;
+    const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
 
     const prior = await getIdempotentResult(base44, request_id, OP);
     if (prior) {
@@ -69,11 +70,12 @@ export default async function(req) {
     // Atualiza o usuário
     const updateData = block
       ? { is_blocked: true, blocked_reason: reason, blocked_at: new Date().toISOString(), blocked_by: admin.email }
-      : { is_blocked: false, blocked_reason: '', blocked_at: '', blocked_by: '' };
+      : { is_blocked: false };
 
     await base44.asServiceRole.entities.User.update(target.id, updateData);
 
-    const valueAfter = { is_blocked: block, blocked_reason: block ? reason : '' };
+    const savedReason = block ? reason : (target.blocked_reason || '');
+    const valueAfter = { is_blocked: block, blocked_reason: savedReason };
 
     await recordAudit(base44, admin, block ? 'user_block' : 'user_unblock', {
       target_type: 'User',
@@ -88,9 +90,10 @@ export default async function(req) {
 
     const resultBody = {
       success: true,
-      message: block ? 'Usuário bloqueado com sucesso' : 'Usuário desbloqueado com sucesso',
+      message: block ? 'Usuário bloqueado com sucesso' : 'Usuário reativado com sucesso',
       user_email,
-      is_blocked: block
+      is_blocked: block,
+      blocked_reason: savedReason
     };
     await recordIdempotency(base44, request_id, OP, admin.email, resultBody, 200);
     return Response.json(resultBody);
