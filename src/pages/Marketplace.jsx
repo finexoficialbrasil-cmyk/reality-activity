@@ -393,7 +393,7 @@ export default function Marketplace() {
                   <Button
                     onClick={handleCreateListing}
                     disabled={creatingListing}
-                    className="w-full h-12 bg-[linear-gradient(90deg,#E823E8_0%,#C026F7_50%,#8A2BE2_100%)] text-white shadow-[0_0_18px_rgba(232,35,232,0.55),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold rounded-xl disabled:opacity-50"
+                    className="btn-gold w-full h-12 font-bold rounded-xl disabled:opacity-50"
                   >
                     {creatingListing ? (
                       <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Publicando...</>
