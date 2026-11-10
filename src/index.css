@@ -84,11 +84,11 @@
 }
 
 :root, .dark {
-  --share-neon-purple: 270 88% 33%;
-  --share-neon-deep: 266 86% 19%;
-  --share-neon-pink: 306 100% 53%;
-  --share-neon-edge: 287 100% 65%;
-  --share-neon-text: 0 0% 100%;
+  --share-neon-purple: 38 92% 40%;
+  --share-neon-deep: 32 90% 22%;
+  --share-neon-pink: 48 100% 56%;
+  --share-neon-edge: 45 100% 62%;
+  --share-neon-text: 30 60% 8%;
 }
 
 .share-all-neon {
