@@ -215,7 +215,7 @@ export default function ShareAllButton({ user, ads, onShared }) {
       >
         <Send aria-hidden="true" className="w-5 h-5 shrink-0" strokeWidth={1.8} />
         <span className="font-bold text-sm tracking-tight">Compartilhar Tudo</span>
-        <span className="ml-1.5 text-[11px] sm:text-xs font-normal opacity-85">({eligibleCount} anúncios)</span>
+        <span className="ml-1.5 text-[11px] sm:text-xs font-semibold">({eligibleCount} anúncios)</span>
         <ChevronRight aria-hidden="true" className="w-[18px] h-[18px] shrink-0 ml-1" strokeWidth={2} />
       </motion.button>
 
