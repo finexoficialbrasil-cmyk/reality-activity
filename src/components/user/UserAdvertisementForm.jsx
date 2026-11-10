@@ -48,7 +48,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
         type: ad.type || 'image',
         link: ad.link,
         category: ad.category,
-        add_credit: 0,
+        add_credit: '',
         reward_per_share: ad.reward_per_share,
         image_url: ad.image_url || '',
         video_url: ad.video_url || ''
@@ -139,7 +139,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
           type: ad.type || 'image',
           link: ad.link,
           category: ad.category,
-          add_credit: 0,
+          add_credit: '',
           reward_per_share: ad.reward_per_share,
           image_url: ad.image_url || '',
           video_url: ad.video_url || ''
@@ -439,7 +439,7 @@ export default function UserAdvertisementForm({ user, userPoints, onAdCreated, a
               <Input
                 type="number"
                 value={formData.add_credit}
-                onChange={(e) => setFormData({ ...formData, add_credit: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, add_credit: e.target.value.replace(/\D/g, '') })}
                 min="0"
                 placeholder="0"
               />
