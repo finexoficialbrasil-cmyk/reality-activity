@@ -7,16 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-const CATEGORIES = [
-  { value: 'mercado_livre', label: '💰 Mercado Livre' },
-  { value: 'shopee', label: '🛒 Shopee' },
-  { value: 'tiktok_shop', label: '🎵 TikTok Shop' },
-  { value: 'amazon', label: '📦 Amazon' },
-  { value: 'produtos_digitais', label: '💻 Produtos Digitais' },
-  { value: 'servicos', label: '🔧 Serviços' },
-  { value: 'outros', label: '⭐ Outros' },
-];
-
 const DEFAULT_DOMAINS = [
   { domain: 'mercadolivre.com.br', company_name: 'Mercado Livre', category: 'mercado_livre' },
   { domain: 'mercadolibre.com', company_name: 'Mercado Libre', category: 'mercado_livre' },
@@ -31,6 +21,12 @@ const DEFAULT_DOMAINS = [
 ];
 
 export default function AdminApprovedDomains() {
+  const getCategoryLabel = (value, list = categories) => {
+    const cat = list.find(c => c.value === value);
+    return cat ? `${cat.icon || ''} ${cat.label}`.trim() : value;
+  };
+  const [categories, setCategories] = useState([]);
+  const CATEGORIES = categories.map(c => ({ value: c.value, label: getCategoryLabel(c.value) }));
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -38,7 +34,16 @@ export default function AdminApprovedDomains() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.Category.list('order', 200).then(setCategories);
+  }, []);
+
+  useEffect(() => {
+    if (categories.length > 0 && !categories.some(c => c.value === form.category)) {
+      setForm(f => ({ ...f, category: categories[0].value }));
+    }
+  }, [categories]);
 
   const load = async () => {
     const data = await base44.entities.ApprovedDomain.list('-created_date');
@@ -65,7 +70,7 @@ export default function AdminApprovedDomains() {
       is_active: true,
     });
     toast.success('Domínio adicionado!');
-    setForm({ domain: '', company_name: '', category: 'outros', notes: '' });
+    setForm({ domain: '', company_name: '', category: categories[0]?.value || 'outros', notes: '' });
     setShowForm(false);
     setSaving(false);
     load();
@@ -90,8 +95,6 @@ export default function AdminApprovedDomains() {
     toast.success(`${toAdd.length} domínios padrão adicionados!`);
     load();
   };
-
-  const categoryLabel = (cat) => CATEGORIES.find(c => c.value === cat)?.label || cat;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -208,7 +211,7 @@ export default function AdminApprovedDomains() {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{d.company_name}</td>
                 <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{categoryLabel(d.category)}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{getCategoryLabel(d.category)}</span>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button onClick={() => handleToggle(d)}>
