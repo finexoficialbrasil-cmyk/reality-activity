@@ -87,7 +87,7 @@ export default function Home() {
           </div>
 
           {/* Categories - Chips */}
-          <div className="flex flex-wrap gap-2 pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold/40 [&::-webkit-scrollbar-track]:bg-transparent" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(285 85% 60% / 0.4) transparent' }}>
 
             {CATEGORIES.map(cat => (
               <button
