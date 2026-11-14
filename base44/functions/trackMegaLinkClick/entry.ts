@@ -81,6 +81,15 @@ export default async function(req) {
       canDetect = false;
     }
 
+    // Registro permanente do clique: cada visita vira uma linha e nunca é
+    // reiniciada/agrupada — o dono vê o total acumulado de todos os cliques.
+    await base44.asServiceRole.entities.MegaLinkClick.create({
+      owner_email: ownerEmail,
+      click_type: 'visit',
+      visitor_fingerprint: fingerprint,
+      visitor_id: visitor_id || null,
+    }).catch(() => {});
+
     // Fetch eligible ads (approved, active, with budget, not owned by link owner)
     const allAds = await base44.asServiceRole.entities.Advertisement.list('-reward_per_share', 500);
     const eligibleAds = allAds

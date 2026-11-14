@@ -1,0 +1,77 @@
+{
+  "name": "MegaLinkClick",
+  "type": "object",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "properties": {
+    "owner_email": {
+      "type": "string",
+      "description": "Email do dono do Mega-Link"
+    },
+    "click_type": {
+      "type": "string",
+      "enum": [
+        "visit",
+        "ad_click"
+      ],
+      "default": "visit",
+      "enumColors": [
+        "blue",
+        "purple"
+      ],
+      "description": "Tipo do clique: visita ao Mega-Link ou clique em um anuncio da vitrine"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categoria do anuncio clicado (apenas para click_type = ad_click)"
+    },
+    "advertisement_id": {
+      "type": "string",
+      "description": "ID do anuncio clicado (apenas para click_type = ad_click)"
+    },
+    "visitor_fingerprint": {
+      "type": "string",
+      "description": "Identificador do visitante (IP + user-agent ou email do usuario)"
+    },
+    "visitor_id": {
+      "type": "string",
+      "description": "Identificador do navegador do visitante"
+    },
+    "credited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica se este clique gerou pontos para o dono"
+    }
+  },
+  "required": [
+    "owner_email",
+    "click_type"
+  ]
+}

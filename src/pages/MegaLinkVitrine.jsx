@@ -197,6 +197,11 @@ export default function MegaLinkVitrine() {
     return () => { cancelled = true; };
   }, [userSlug]);
 
+  // Contador permanente de cliques por categoria: registra cada clique no anúncio
+  const handleAdClick = (ad) => {
+    base44.functions.invoke('trackMegaLinkAdClick', { slug: userSlug, advertisement_id: ad.id }).catch(() => {});
+  };
+
   const loading = ads.length === 0 && !ownerEmail;
   const error = trackError && !ownerEmail ? 'Vitrine não encontrada' : null;
 
@@ -422,7 +427,7 @@ export default function MegaLinkVitrine() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {ads.map((ad, i) => (
-                <CyberCard key={ad.id} ad={ad} index={i} onShare={setShareMenuFor} />
+                <CyberCard key={ad.id} ad={ad} index={i} onShare={setShareMenuFor} onAdClick={handleAdClick} />
               ))}
             </div>
           )}
@@ -491,7 +496,7 @@ function BudgetMeter({ remaining, total }) {
   );
 }
 
-function CyberCard({ ad, index, onShare }) {
+function CyberCard({ ad, index, onShare, onAdClick }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -549,6 +554,7 @@ function CyberCard({ ad, index, onShare }) {
             href={ad.link}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => onAdClick?.(ad)}
             className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg font-grotesk font-bold text-xs transition-all hover:brightness-110"
             style={{ background: CYAN, color: '#000', boxShadow: `0 0 12px ${CYAN}44` }}
           >
