@@ -106,9 +106,13 @@ export default function MegaLinkStats({ user }) {
         </span>
       </div>
 
-      {categoryClicks.length > 0 && (
-        <div className="mt-3">
-          <p className="text-xs text-muted-foreground mb-2">Cliques por categoria:</p>
+      <div className="mt-3">
+        <p className="text-xs text-muted-foreground mb-2">Cliques nos anúncios por categoria:</p>
+        {categoryClicks.length === 0 ? (
+          <p className="text-xs text-muted-foreground/70 px-3 py-2.5 rounded-lg bg-secondary/40 border border-dashed border-border">
+            Nenhum clique em anúncio da sua vitrine ainda.
+          </p>
+        ) : (
           <div className="flex flex-wrap gap-2">
             {categoryClicks.map(c => (
               <div
@@ -120,8 +124,8 @@ export default function MegaLinkStats({ user }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </motion.div>
   );
 }
