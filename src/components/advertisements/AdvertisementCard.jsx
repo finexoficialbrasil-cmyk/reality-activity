@@ -129,6 +129,8 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
       }
 
       case 'instagram': {
+        // Instagram não permite confirmar o compartilhamento (só copia o texto),
+        // então não gera pontos — evita que o usuário burle o sistema.
         const msg = `${ad.title}\n\n${productLink}`;
         if (isMobile && navigator.share) {
           navigator.share({ title: ad.title, text: msg, url: productLink }).catch(() => {});
@@ -139,7 +141,8 @@ export default function AdvertisementCard({ ad, user, onPointsEarned }) {
             toast.error('Não foi possível copiar o link');
           });
         }
-        break;
+        toast.info('Instagram não gera pontos. Compartilhe pelo WhatsApp, Telegram, Facebook ou X para ganhar.');
+        return;
       }
 
     }

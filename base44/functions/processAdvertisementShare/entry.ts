@@ -41,6 +41,14 @@ export default async function(req) {
       return Response.json(errBody, { status: 400 });
     }
 
+    // Instagram não permite confirmar o compartilhamento (só copia o texto) —
+    // não gera pontos, evitando que o usuário burle a validação.
+    if (platform === 'instagram') {
+      const errBody = { error: 'Compartilhamento no Instagram não gera pontos.' };
+      await recordIdempotency(base44, request_id, OP, user.email, errBody, 400);
+      return Response.json(errBody, { status: 400 });
+    }
+
     // Fetch the ad
     const advertisement = await base44.asServiceRole.entities.Advertisement.get(advertisement_id);
 
